@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Car 4 U 1 Fleet Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family:Arial;background:#f4f4f4;padding:15px}
+.card{background:white;padding:15px;margin:10px 0;border-radius:12px}
+input,button{width:100%;padding:12px;margin:6px 0;font-size:16px}
+button{background:#000;color:white;border:0;border-radius:8px}
+.red{color:red;font-weight:bold}
+.green{color:green}
+</style>
+</head>
+<body>
+
+<h2>🚖 Car 4 U 1 Fleet Manager</h2>
+
+<div class="card">
+<input id="plate" placeholder="Registration number">
+<input id="model" placeholder="Car model">
+<input id="driver" placeholder="Driver name">
+<input id="rent" placeholder="Weekly rent">
+<label>MOT expiry</label><input id="mot" type="date">
+<label>Road tax expiry</label><input id="tax" type="date">
+<label>Insurance expiry</label><input id="insurance" type="date">
+<label>Taxi inspection expiry</label><input id="inspection" type="date">
+<button onclick="addCar()">Add Car</button>
+</div>
+
+<div id="cars"></div>
+
+<script>
+let fleet = JSON.parse(localStorage.getItem("fleet") || "[]");
+
+function daysLeft(date){
+ if(!date) return "";
+ return Math.ceil((new Date(date)-new Date())/86400000);
+}
+
+function status(date,limit){
+ let d=daysLeft(date);
+ if(d==="") return "";
+ return d < limit ? "red" : "green";
+}
+
+function addCar(){
+ fleet.push({
+  plate:plate.value,
+  model:model.value,
+  driver:driver.value,
+  rent:rent.value,
+  mot:mot.value,
+  tax:tax.value,
+  insurance:insurance.value,
+  inspection:inspection.value
+ });
+ localStorage.setItem("fleet",JSON.stringify(fleet));
+ render();
+}
+
+function del(i){
+ fleet.splice(i,1);
+ localStorage.setItem("fleet",JSON.stringify(fleet));
+ render();
+}
+
+function markPaid(i){
+ alert("Rent marked paid for " + fleet[i].plate);
+}
+
+function render(){
+ cars.innerHTML="";
+ fleet.forEach((c,i)=>{
+  cars.innerHTML+=`
+  <div class="card">
+   <h3>${c.plate} - ${c.model}</h3>
+   <p>Driver: ${c.driver}</p>
+   <p>Rent: £${c.rent}/week</p>
+   <p class="${status(c.mot,30)}">MOT: ${c.mot} (${daysLeft(c.mot)} days)</p>
+   <p class="${status(c.tax,14)}">Road Tax: ${c.tax} (${daysLeft(c.tax)} days)</p>
+   <p class="${status(c.insurance,30)}">Insurance: ${c.insurance} (${daysLeft(c.insurance)} days)</p>
+   <p class="${status(c.inspection,30)}">Taxi Inspection: ${c.inspection} (${daysLeft(c.inspection)} days)</p>
+   <button onclick="markPaid(${i})">Mark Rent Paid</button>
+   <button onclick="del(${i})">Delete Car</button>
+  </div>`;
+ });
+}
+render();
+</script>
+
+</body>
+</html>
