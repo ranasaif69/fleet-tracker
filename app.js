@@ -113,8 +113,24 @@ function addBalance(i){
 }
 
 function addExpense(i){
-  let a=prompt("Repair/expense £");
-  if(a){ fleet[i].expenses+=(+a||0); save(); render(); }
+  let a = prompt("Add expense amount £");
+
+  if(a === null || a === "") return;
+
+  let current = Number(fleet[i].expenses || 0);
+  let amount = Number(a);
+
+  if(isNaN(amount)){
+    alert("Please enter a valid number");
+    return;
+  }
+
+  fleet[i].expenses = current + amount;
+
+  save();
+  render();
+
+  alert("Expense added: £" + amount);
 }
 
 function uploadDoc(i,type,input){
