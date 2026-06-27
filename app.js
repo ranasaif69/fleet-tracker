@@ -113,24 +113,37 @@ function addBalance(i){
 }
 
 function addExpense(i){
-  let a = prompt("Add expense amount £");
 
-  if(a === null || a === "") return;
+  let description = prompt("Expense description (e.g. Brake Pads)");
 
-  let current = Number(fleet[i].expenses || 0);
-  let amount = Number(a);
+  if(description===null) return;
+
+  let amount = prompt("Expense amount (£)");
+
+  if(amount===null || amount==="") return;
+
+  amount = Number(amount);
 
   if(isNaN(amount)){
-    alert("Please enter a valid number");
+    alert("Please enter a valid amount.");
     return;
   }
 
-  fleet[i].expenses = current + amount;
+  if(!fleet[i].expenseHistory)
+      fleet[i].expenseHistory=[];
+
+  fleet[i].expenseHistory.push({
+      date:new Date().toLocaleDateString(),
+      description:description,
+      amount:amount
+  });
+
+  fleet[i].expenses = Number(fleet[i].expenses||0)+amount;
 
   save();
   render();
 
-  alert("Expense added: £" + amount);
+  alert("Expense added successfully.");
 }
 
 function uploadDoc(i,type,input){
