@@ -1,91 +1,229 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Car 4 U 1 Fleet Manager</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{font-family:Arial;background:#f4f4f4;padding:15px}
-.card{background:white;padding:15px;margin:10px 0;border-radius:12px}
-input,button{width:100%;padding:12px;margin:6px 0;font-size:16px}
-button{background:#000;color:white;border:0;border-radius:8px}
-.red{color:red;font-weight:bold}
-.green{color:green}
-</style>
+  <title>Car 4 U 1 Ltd Fleet Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{font-family:Arial;margin:0;background:#f3f4f6;color:#111}
+    header{background:#111;color:white;padding:18px}
+    header h1{margin:0;font-size:22px}
+    .wrap{padding:14px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .stat,.card,.form{background:white;border-radius:14px;padding:14px;box-shadow:0 2px 8px #0001}
+    .stat b{font-size:22px;display:block}
+    input,select,textarea,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #ccc;font-size:15px;box-sizing:border-box}
+    button{background:#111;color:white;border:0;font-weight:bold}
+    .green{color:green;font-weight:bold}
+    .orange{color:#d97706;font-weight:bold}
+    .red{color:red;font-weight:bold}
+    .badge{padding:4px 8px;border-radius:20px;font-size:12px;background:#eee}
+    .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+    .small{font-size:13px;color:#555}
+    nav{display:flex;gap:8px;margin:12px 0}
+    nav button{background:#333}
+    .hidden{display:none}
+  </style>
 </head>
 <body>
 
-<h2>🚖 Car 4 U 1 Fleet Manager</h2>
+<header>
+  <h1>🚖 Car 4 U 1 Ltd Fleet Manager</h1>
+  <p class="small" style="color:#ddd">Taxi rental fleet control system</p>
+</header>
 
-<div class="card">
-<input id="plate" placeholder="Registration number">
-<input id="model" placeholder="Car model">
-<input id="driver" placeholder="Driver name">
-<input id="rent" placeholder="Weekly rent">
-<label>MOT expiry</label><input id="mot" type="date">
-<label>Road tax expiry</label><input id="tax" type="date">
-<label>Insurance expiry</label><input id="insurance" type="date">
-<label>Taxi inspection expiry</label><input id="inspection" type="date">
-<button onclick="addCar()">Add Car</button>
+<div class="wrap">
+
+  <div class="grid">
+    <div class="stat">Total Cars <b id="totalCars">0</b></div>
+    <div class="stat">On Rent <b id="onRent">0</b></div>
+    <div class="stat">Weekly Income <b id="weeklyIncome">£0</b></div>
+    <div class="stat">Alerts <b id="alertCount">0</b></div>
+  </div>
+
+  <nav>
+    <button onclick="showTab('fleet')">Fleet</button>
+    <button onclick="showTab('add')">Add Car</button>
+  </nav>
+
+  <div id="fleetTab">
+    <input id="search" placeholder="Search plate, model or driver" oninput="render()">
+    <div id="cars"></div>
+  </div>
+
+  <div id="addTab" class="hidden">
+    <div class="form">
+      <h3>Add Vehicle</h3>
+      <input id="plate" placeholder="Registration">
+      <input id="model" placeholder="Make / Model">
+      <input id="driver" placeholder="Driver name">
+      <input id="phone" placeholder="Driver phone">
+      <input id="rent" type="number" placeholder="Weekly rent £">
+      <input id="deposit" type="number" placeholder="Deposit £">
+
+      <label>MOT expiry</label>
+      <input id="mot" type="date">
+
+      <label>Road tax expiry</label>
+      <input id="tax" type="date">
+
+      <label>Insurance expiry</label>
+      <input id="insurance" type="date">
+
+      <label>Taxi inspection expiry</label>
+      <input id="inspection" type="date">
+
+      <select id="status">
+        <option value="Rented">Rented</option>
+        <option value="Available">Available</option>
+        <option value="In Garage">In Garage</option>
+      </select>
+
+      <textarea id="notes" placeholder="Notes"></textarea>
+
+      <button onclick="addCar()">Save Vehicle</button>
+    </div>
+  </div>
+
 </div>
 
-<div id="cars"></div>
-
 <script>
-let fleet = JSON.parse(localStorage.getItem("fleet") || "[]");
+let fleet = JSON.parse(localStorage.getItem("car4uFleet") || "[]");
 
-function daysLeft(date){
- if(!date) return "";
- return Math.ceil((new Date(date)-new Date())/86400000);
+function save(){
+  localStorage.setItem("car4uFleet", JSON.stringify(fleet));
 }
 
-function status(date,limit){
- let d=daysLeft(date);
- if(d==="") return "";
- return d < limit ? "red" : "green";
+function daysLeft(date){
+  if(!date) return "";
+  return Math.ceil((new Date(date) - new Date()) / 86400000);
+}
+
+function cls(date, limit){
+  let d = daysLeft(date);
+  if(d === "") return "";
+  if(d < 0) return "red";
+  if(d <= 7) return "red";
+  if(d <= limit) return "orange";
+  return "green";
+}
+
+function label(date, limit){
+  let d = daysLeft(date);
+  if(d === "") return "No date";
+  if(d < 0) return "Expired";
+  if(d === 0) return "Today";
+  return d + " days";
+}
+
+function showTab(tab){
+  fleetTab.classList.toggle("hidden", tab !== "fleet");
+  addTab.classList.toggle("hidden", tab !== "add");
 }
 
 function addCar(){
- fleet.push({
-  plate:plate.value,
-  model:model.value,
-  driver:driver.value,
-  rent:rent.value,
-  mot:mot.value,
-  tax:tax.value,
-  insurance:insurance.value,
-  inspection:inspection.value
- });
- localStorage.setItem("fleet",JSON.stringify(fleet));
- render();
+  fleet.push({
+    plate: plate.value.toUpperCase(),
+    model: model.value,
+    driver: driver.value,
+    phone: phone.value,
+    rent: Number(rent.value || 0),
+    deposit: Number(deposit.value || 0),
+    mot: mot.value,
+    tax: tax.value,
+    insurance: insurance.value,
+    inspection: inspection.value,
+    status: status.value,
+    notes: notes.value,
+    lastPaid: ""
+  });
+
+  save();
+  clearForm();
+  showTab("fleet");
+  render();
 }
 
-function del(i){
- fleet.splice(i,1);
- localStorage.setItem("fleet",JSON.stringify(fleet));
- render();
+function clearForm(){
+  document.querySelectorAll("input, textarea").forEach(x => x.value = "");
+}
+
+function deleteCar(i){
+  if(confirm("Delete this car?")){
+    fleet.splice(i,1);
+    save();
+    render();
+  }
 }
 
 function markPaid(i){
- alert("Rent marked paid for " + fleet[i].plate);
+  fleet[i].lastPaid = new Date().toLocaleDateString();
+  save();
+  render();
+}
+
+function rentStatus(car){
+  if(!car.lastPaid) return "Rent due";
+  return "Paid " + car.lastPaid;
+}
+
+function whatsapp(car){
+  let msg = `Hi ${car.driver}, reminder from Car 4 U 1 Ltd.%0A%0ACar: ${car.plate}%0AWeekly rent: £${car.rent}%0APlease contact us if needed.`;
+  window.open(`https://wa.me/${car.phone}?text=${msg}`, "_blank");
 }
 
 function render(){
- cars.innerHTML="";
- fleet.forEach((c,i)=>{
-  cars.innerHTML+=`
-  <div class="card">
-   <h3>${c.plate} - ${c.model}</h3>
-   <p>Driver: ${c.driver}</p>
-   <p>Rent: £${c.rent}/week</p>
-   <p class="${status(c.mot,30)}">MOT: ${c.mot} (${daysLeft(c.mot)} days)</p>
-   <p class="${status(c.tax,14)}">Road Tax: ${c.tax} (${daysLeft(c.tax)} days)</p>
-   <p class="${status(c.insurance,30)}">Insurance: ${c.insurance} (${daysLeft(c.insurance)} days)</p>
-   <p class="${status(c.inspection,30)}">Taxi Inspection: ${c.inspection} (${daysLeft(c.inspection)} days)</p>
-   <button onclick="markPaid(${i})">Mark Rent Paid</button>
-   <button onclick="del(${i})">Delete Car</button>
-  </div>`;
- });
+  let q = (search.value || "").toLowerCase();
+  let filtered = fleet.filter(c =>
+    (c.plate+c.model+c.driver).toLowerCase().includes(q)
+  );
+
+  totalCars.innerText = fleet.length;
+  onRent.innerText = fleet.filter(c => c.status === "Rented").length;
+  weeklyIncome.innerText = "£" + fleet.reduce((s,c)=>s+(c.status==="Rented"?Number(c.rent||0):0),0);
+
+  let alerts = 0;
+  fleet.forEach(c=>{
+    if(daysLeft(c.mot) <= 30) alerts++;
+    if(daysLeft(c.tax) <= 14) alerts++;
+    if(daysLeft(c.insurance) <= 30) alerts++;
+    if(daysLeft(c.inspection) <= 30) alerts++;
+  });
+  alertCount.innerText = alerts;
+
+  cars.innerHTML = "";
+
+  filtered.forEach((c,i)=>{
+    cars.innerHTML += `
+      <div class="card">
+        <div class="row">
+          <h3>${c.plate || "No Plate"}</h3>
+          <span class="badge">${c.status}</span>
+        </div>
+
+        <p><b>${c.model}</b></p>
+        <p>👨‍✈️ Driver: ${c.driver || "Not assigned"}</p>
+        <p>📞 ${c.phone || ""}</p>
+        <p>💷 Rent: £${c.rent}/week</p>
+        <p>💰 Deposit: £${c.deposit}</p>
+        <p class="${rentStatus(c).includes('due') ? 'red' : 'green'}">Rent Status: ${rentStatus(c)}</p>
+
+        <hr>
+
+        <p class="${cls(c.mot,30)}">MOT: ${c.mot || "-"} (${label(c.mot,30)})</p>
+        <p class="${cls(c.tax,14)}">Road Tax: ${c.tax || "-"} (${label(c.tax,14)})</p>
+        <p class="${cls(c.insurance,30)}">Insurance: ${c.insurance || "-"} (${label(c.insurance,30)})</p>
+        <p class="${cls(c.inspection,30)}">Taxi Inspection: ${c.inspection || "-"} (${label(c.inspection,30)})</p>
+
+        <p class="small">Notes: ${c.notes || "-"}</p>
+
+        <button onclick="markPaid(${i})">Mark Rent Paid</button>
+        <button onclick="whatsapp(fleet[${i}])">WhatsApp Driver</button>
+        <button onclick="deleteCar(${i})" style="background:#b91c1c">Delete</button>
+      </div>
+    `;
+  });
 }
+
 render();
 </script>
 
