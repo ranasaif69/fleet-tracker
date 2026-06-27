@@ -1,354 +1,270 @@
-pin = localStorage.getItem("car4uPin") || "1234";
-
-function login(){
-  if(document.getElementById("pinInput").value === pin){
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
-    render();
-  } else {
-    alert("Wrong PIN");
-  }
-}let fleet = JSON.parse(localStorage.getItem("car4uFleetV6") || "[]");
+let fleet = JSON.parse(localStorage.getItem("car4uFleetV7") || "[]");
+let pin = localStorage.getItem("car4uPin") || "1234";
 let editIndex = null;
 
-function save(){
-  localStorage.setItem("car4uFleetV6", JSON.stringify(fleet));
+const $ = id => document.getElementById(id);
+
+function save(){ localStorage.setItem("car4uFleetV7", JSON.stringify(fleet)); }
+
+function login(){
+  if($("pinInput").value === pin){
+    $("loginScreen").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    render();
+  } else alert("Wrong PIN");
 }
 
-function $(id){
-  return document.getElementById(id);
+function logout(){ location.reload(); }
+
+function showTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.add("hidden"));
+  $(name).classList.remove("hidden");
+  if(name==="reports") report();
 }
 
 function days(d){
   if(!d) return "";
-  return Math.ceil((new Date(d) - new Date()) / 86400000);
+  return Math.ceil((new Date(d)-new Date())/86400000);
 }
 
-function colour(d, limit){
-  let x = days(d);
-  if(x === "") return "";
-  if(x < 0 || x <= 7) return "red";
-  if(x <= limit) return "orange";
-  return "green";
+function statusClass(d, limit){
+  let x=days(d);
+  if(x==="") return "";
+  if(x<0 || x<=7) return "red";
+  if(x<=limit) return "orange";
+  return "greenText";
 }
 
-function text(d){
-  let x = days(d);
-  if(x === "") return "No date";
-  if(x < 0) return "Expired";
-  if(x === 0) return "Today";
-  return x + " days";
-}
-
-function tab(t){
-  $("fleetTab").classList.toggle("hidden", t !== "fleet");
-  $("addTab").classList.toggle("hidden", t !== "add");
-  $("reportsTab").classList.toggle("hidden", t !== "reports");
-  if(t === "reports") report();
+function dateText(d){
+  let x=days(d);
+  if(x==="") return "No date";
+  if(x<0) return "Expired";
+  if(x===0) return "Today";
+  return x+" days";
 }
 
 function newCar(){
-  editIndex = null;
-  $("formTitle").innerText = "Add Vehicle";
-  document.querySelectorAll("#addTab input,#addTab textarea").forEach(x => x.value = "");
-  $("status").value = "Rented";
-  tab("add");
+  editIndex=null;
+  $("vehicleFormTitle").innerText="Add Vehicle";
+  document.querySelectorAll("#addVehicle input,#addVehicle textarea").forEach(x=>x.value="");
+  $("status").value="Rented";
+  showTab("addVehicle");
 }
 
-function saveCar(){
-  let car = {
-    plate: $("plate").value.toUpperCase(),
-    model: $("model").value,
-    driver: $("driver").value,
-    phone: $("phone").value,
-    licence: $("licence").value,
-    badge: $("badge").value,
-    rent: +$("rent").value || 0,
-    deposit: +$("deposit").value || 0,
-    balance: +$("balance").value || 0,
-    expenses: +$("expenses").value || 0,
-    mot: $("mot").value,
-    tax: $("tax").value,
-    insurance: $("insurance").value,
-    inspection: $("inspection").value,
-    service: $("service").value,
-    status: $("status").value,
-    notes: $("notes").value,
-    lastPaid: editIndex !== null ? fleet[editIndex].lastPaid : "",
-    documents: editIndex !== null ? (fleet[editIndex].documents || {}) : {}
+function saveVehicle(){
+  let car={
+    plate:$("plate").value.toUpperCase(),
+    model:$("model").value,
+    year:$("year").value,
+    mileage:$("mileage").value,
+    driver:$("driver").value,
+    phone:$("phone").value,
+    rent:+$("rent").value||0,
+    deposit:+$("deposit").value||0,
+    balance:+$("balance").value||0,
+    expenses:+$("expenses").value||0,
+    mot:$("mot").value,
+    tax:$("tax").value,
+    insurance:$("insurance").value,
+    inspection:$("inspection").value,
+    service:$("service").value,
+    licence:$("licence").value,
+    badge:$("badge").value,
+    status:$("status").value,
+    notes:$("notes").value,
+    lastPaid: editIndex!==null ? fleet[editIndex].lastPaid : "",
+    docs: editIndex!==null ? (fleet[editIndex].docs||{}) : {}
   };
 
-  if(editIndex === null){
-    fleet.push(car);
-  } else {
-    fleet[editIndex] = car;
-  }
+  if(editIndex===null) fleet.push(car);
+  else fleet[editIndex]=car;
 
   save();
   render();
-  tab("fleet");
+  showTab("vehicles");
 }
 
-function editCar(i){
-  let c = fleet[i];
-  editIndex = i;
-  $("formTitle").innerText = "Edit Vehicle";
-
-  $("plate").value = c.plate || "";
-  $("model").value = c.model || "";
-  $("driver").value = c.driver || "";
-  $("phone").value = c.phone || "";
-  $("licence").value = c.licence || "";
-  $("badge").value = c.badge || "";
-  $("rent").value = c.rent || "";
-  $("deposit").value = c.deposit || "";
-  $("balance").value = c.balance || "";
-  $("expenses").value = c.expenses || "";
-  $("mot").value = c.mot || "";
-  $("tax").value = c.tax || "";
-  $("insurance").value = c.insurance || "";
-  $("inspection").value = c.inspection || "";
-  $("service").value = c.service || "";
-  $("status").value = c.status || "Rented";
-  $("notes").value = c.notes || "";
-
-  tab("add");
+function editVehicle(i){
+  let c=fleet[i]; editIndex=i;
+  $("vehicleFormTitle").innerText="Edit Vehicle";
+  ["plate","model","year","mileage","driver","phone","rent","deposit","balance","expenses","mot","tax","insurance","inspection","service","licence","badge","notes"].forEach(k=>{
+    $(k).value=c[k]||"";
+  });
+  $("status").value=c.status||"Rented";
+  showTab("addVehicle");
 }
 
-function del(i){
-  if(confirm("Delete this vehicle?")){
+function deleteVehicle(i){
+  if(confirm("Delete vehicle?")){
     fleet.splice(i,1);
-    save();
-    render();
+    save(); render();
   }
 }
 
-function paid(i){
-  fleet[i].lastPaid = new Date().toLocaleDateString();
-  fleet[i].balance = 0;
-  save();
-  render();
+function markPaid(i){
+  fleet[i].lastPaid=new Date().toLocaleDateString();
+  fleet[i].balance=0;
+  save(); render();
 }
 
 function addBalance(i){
-  let a = prompt("Add outstanding rent £");
-  if(a){
-    fleet[i].balance += (+a || 0);
-    save();
-    render();
-  }
+  let a=prompt("Outstanding rent £");
+  if(a){ fleet[i].balance+=(+a||0); save(); render(); }
 }
 
 function addExpense(i){
-  let a = prompt("Add repair / expense £");
-  if(a){
-    fleet[i].expenses += (+a || 0);
-    save();
-    render();
-  }
+  let a=prompt("Repair/expense £");
+  if(a){ fleet[i].expenses+=(+a||0); save(); render(); }
 }
 
-function wa(i){
-  let c = fleet[i];
-  let phone = (c.phone || "").replace(/[^0-9]/g,"");
-
-  if(!phone){
-    alert("No driver phone number saved");
-    return;
-  }
-
-  let msg = `Hi ${c.driver}, reminder from Car 4 U 1 Ltd.%0A%0ACar: ${c.plate}%0AWeekly rent: £${c.rent}%0AOutstanding: £${c.balance}%0APlease contact us.`;
-
-  window.open("https://wa.me/" + phone + "?text=" + msg, "_blank");
-}
-
-function agreement(i){
-  let c = fleet[i];
-  let phone = (c.phone || "").replace(/[^0-9]/g,"");
-
-  if(!phone){
-    alert("No driver phone number saved");
-    return;
-  }
-
-  let txt = `TAXI RENTAL AGREEMENT%0A%0ACar 4 U 1 Ltd%0ADriver: ${c.driver}%0AVehicle: ${c.model} ${c.plate}%0AWeekly Rent: £${c.rent}%0ADeposit: £${c.deposit}%0A%0ADriver agrees to pay rent weekly and keep vehicle in good condition.`;
-
-  window.open("https://wa.me/" + phone + "?text=" + txt, "_blank");
-}
-
-function uploadDoc(i, type, input){
-  let file = input.files[0];
+function uploadDoc(i,type,input){
+  let file=input.files[0];
   if(!file) return;
-
-  let reader = new FileReader();
-
-  reader.onload = function(e){
-    if(!fleet[i].documents) fleet[i].documents = {};
-
-    fleet[i].documents[type] = {
-      name: file.name,
-      data: e.target.result,
-      date: new Date().toLocaleDateString()
-    };
-
-    save();
-    render();
+  let reader=new FileReader();
+  reader.onload=e=>{
+    if(!fleet[i].docs) fleet[i].docs={};
+    fleet[i].docs[type]={name:file.name,data:e.target.result,date:new Date().toLocaleDateString()};
+    save(); render();
   };
-
   reader.readAsDataURL(file);
 }
 
-function viewDoc(i, type){
-  let doc = fleet[i].documents && fleet[i].documents[type];
-
-  if(!doc){
-    alert("No document saved");
-    return;
-  }
-
-  let w = window.open();
-  w.document.write(`
-    <html>
-      <body style="font-family:Arial;padding:20px">
-        <h2>${type}</h2>
-        <p>${doc.name}</p>
-        <p>Saved: ${doc.date}</p>
-        <iframe src="${doc.data}" style="width:100%;height:80vh"></iframe>
-      </body>
-    </html>
-  `);
+function viewDoc(i,type){
+  let d=fleet[i].docs&&fleet[i].docs[type];
+  if(!d){ alert("No document saved"); return; }
+  let w=window.open();
+  w.document.write(`<iframe src="${d.data}" style="width:100%;height:100vh;border:0"></iframe>`);
 }
 
-function docBox(i, type, label){
-  let has = fleet[i].documents && fleet[i].documents[type];
+function docBox(i,type,label){
+  let d=fleet[i].docs&&fleet[i].docs[type];
+  return `<div class="doc">
+    <b>${label}</b>
+    <input type="file" accept="image/*,.pdf" onchange="uploadDoc(${i},'${type}',this)">
+    <button onclick="viewDoc(${i},'${type}')">${d?"View saved":"No document saved"}</button>
+    ${d?`<p class="small">${d.name} - ${d.date}</p>`:""}
+  </div>`;
+}
 
-  return `
-    <div class="doc-box">
-      <b>${label}</b><br>
-      <input type="file" accept="image/*,.pdf" onchange="uploadDoc(${i}, '${type}', this)">
-      <button onclick="viewDoc(${i}, '${type}')">${has ? "View Saved Document" : "No Document Saved"}</button>
-      ${has ? `<p class="small">Saved: ${has.date}</p>` : ""}
-    </div>
-  `;
+function whatsapp(i){
+  let c=fleet[i];
+  let phone=(c.phone||"").replace(/[^0-9]/g,"");
+  if(!phone){alert("No phone number");return;}
+  let msg=`Hi ${c.driver}, reminder from Car 4 U 1 Ltd.%0A%0ACar: ${c.plate}%0AWeekly rent: £${c.rent}%0AOutstanding: £${c.balance}`;
+  window.open("https://wa.me/"+phone+"?text="+msg,"_blank");
 }
 
 function render(){
-  let searchBox = $("search");
-  let q = searchBox ? searchBox.value.toLowerCase() : "";
+  let q=($("vehicleSearch")?.value||"").toLowerCase();
+  let list=fleet.filter(c=>((c.plate||"")+(c.model||"")+(c.driver||"")).toLowerCase().includes(q));
 
-  let list = fleet.filter(c =>
-    ((c.plate || "") + (c.model || "") + (c.driver || "")).toLowerCase().includes(q)
-  );
+  $("statTotal").innerText=fleet.length;
+  $("statRented").innerText=fleet.filter(c=>c.status==="Rented").length;
+  $("statAvailable").innerText=fleet.filter(c=>c.status==="Available").length;
+  $("statWeekly").innerText="£"+fleet.reduce((s,c)=>s+(c.status==="Rented"?c.rent:0),0);
+  $("statOutstanding").innerText="£"+fleet.reduce((s,c)=>s+(+c.balance||0),0);
 
-  $("total").innerText = fleet.length;
-  $("rented").innerText = fleet.filter(c => c.status === "Rented").length;
-  $("available").innerText = fleet.filter(c => c.status === "Available").length;
-  $("income").innerText = "£" + fleet.reduce((s,c)=>s+(c.status==="Rented"?c.rent:0),0);
-  $("outstanding").innerText = "£" + fleet.reduce((s,c)=>s+(+c.balance||0),0);
-
-  let a = 0;
+  let alerts=[];
   fleet.forEach(c=>{
-    ["mot","tax","insurance","inspection","service","licence","badge"].forEach(k=>{
-      if(days(c[k]) !== "" && days(c[k]) <= 30) a++;
+    [["MOT","mot",30],["Tax","tax",14],["Insurance","insurance",30],["Inspection","inspection",30],["Service","service",30],["Licence","licence",30],["Badge","badge",30]].forEach(x=>{
+      if(days(c[x[1]])!=="" && days(c[x[1]])<=x[2]) alerts.push(`${c.plate} ${x[0]}: ${dateText(c[x[1]])}`);
     });
   });
-  $("alerts").innerText = a;
+  $("statAlerts").innerText=alerts.length;
+  $("urgentAlerts").innerHTML=alerts.length?alerts.map(a=>`<p class="red">⚠️ ${a}</p>`).join(""):"<p class='greenText'>No urgent alerts</p>";
 
-  $("cars").innerHTML = "";
+  $("vehicleList").innerHTML="";
+  list.forEach(c=>{
+    let i=fleet.indexOf(c);
+    let monthly=c.status==="Rented"?c.rent*4:0;
+    let profit=monthly-(+c.expenses||0);
 
-  list.forEach((c)=>{
-    let i = fleet.indexOf(c);
-    let monthly = c.status === "Rented" ? c.rent * 4 : 0;
-    let profit = monthly - (+c.expenses || 0);
+    $("vehicleList").innerHTML+=`
+    <div class="vehicle-card">
+      <div class="row"><h2>${c.plate||"No Plate"}</h2><span class="badge">${c.status}</span></div>
+      <p><b>${c.model||"-"}</b> ${c.year?`(${c.year})`:""}</p>
+      <p>👨‍✈️ ${c.driver||"-"}</p>
+      <p>📞 ${c.phone||"-"}</p>
+      <p>💷 £${c.rent}/week | Deposit £${c.deposit}</p>
+      <p class="${c.balance>0?'red':'greenText'}">Outstanding: £${c.balance}</p>
+      <p>🛠 Expenses: £${c.expenses}</p>
+      <p class="${profit<0?'red':'greenText'}">Monthly profit estimate: £${profit}</p>
+      <hr>
+      <p class="${statusClass(c.mot,30)}">MOT: ${c.mot||"-"} (${dateText(c.mot)})</p>
+      <p class="${statusClass(c.tax,14)}">Road Tax: ${c.tax||"-"} (${dateText(c.tax)})</p>
+      <p class="${statusClass(c.insurance,30)}">Insurance: ${c.insurance||"-"} (${dateText(c.insurance)})</p>
+      <p class="${statusClass(c.inspection,30)}">Taxi Inspection: ${c.inspection||"-"} (${dateText(c.inspection)})</p>
+      <p class="${statusClass(c.licence,30)}">Driver Licence: ${c.licence||"-"} (${dateText(c.licence)})</p>
+      <p class="${statusClass(c.badge,30)}">Taxi Badge: ${c.badge||"-"} (${dateText(c.badge)})</p>
 
-    $("cars").innerHTML += `
-      <div class="card">
-        <div class="row">
-          <h2>${c.plate || "No Plate"}</h2>
-          <span class="badge">${c.status || "-"}</span>
-        </div>
-
-        <p><b>${c.model || "-"}</b></p>
-        <p>👨‍✈️ Driver: ${c.driver || "-"}</p>
-        <p>📞 ${c.phone || "-"}</p>
-        <p>💷 Rent: £${c.rent || 0}/week</p>
-        <p>💰 Deposit: £${c.deposit || 0}</p>
-        <p class="${c.balance > 0 ? "red" : "green"}">Outstanding: £${c.balance || 0}</p>
-        <p>Last paid: ${c.lastPaid || "Not recorded"}</p>
-        <p>🛠 Expenses: £${c.expenses || 0}</p>
-        <p class="${profit < 0 ? "red" : "green"}">Monthly profit estimate: £${profit}</p>
-
-        <hr>
-
-        <p class="${colour(c.mot,30)}">MOT: ${c.mot || "-"} (${text(c.mot)})</p>
-        <p class="${colour(c.tax,14)}">Road Tax: ${c.tax || "-"} (${text(c.tax)})</p>
-        <p class="${colour(c.insurance,30)}">Insurance: ${c.insurance || "-"} (${text(c.insurance)})</p>
-        <p class="${colour(c.inspection,30)}">Taxi Inspection: ${c.inspection || "-"} (${text(c.inspection)})</p>
-        <p class="${colour(c.service,30)}">Service: ${c.service || "-"} (${text(c.service)})</p>
-        <p class="${colour(c.licence,30)}">Driver Licence: ${c.licence || "-"} (${text(c.licence)})</p>
-        <p class="${colour(c.badge,30)}">Taxi Badge: ${c.badge || "-"} (${text(c.badge)})</p>
-
-        <h3>📂 Documents</h3>
-        ${docBox(i, "driverLicence", "Driver Licence")}
-        ${docBox(i, "driverTaxiBadge", "Driver Taxi Badge")}
-        ${docBox(i, "insuranceCert", "Insurance Certificate")}
-        ${docBox(i, "motCert", "MOT Certificate")}
-        ${docBox(i, "logbook", "V5C Logbook")}
-        ${docBox(i, "taxiLicence", "Taxi Licence / Plate")}
-
-        <p class="small">Notes: ${c.notes || "-"}</p>
-
-        <button class="greenbtn" onclick="paid(${i})">Mark Rent Paid</button>
-        <button class="blue" onclick="editCar(${i})">Edit</button>
-        <button class="blue" onclick="addBalance(${i})">Add Balance</button>
-        <button class="blue" onclick="addExpense(${i})">Add Expense</button>
-        <button onclick="wa(${i})">WhatsApp Reminder</button>
-        <button onclick="agreement(${i})">Agreement Text</button>
-        <button class="danger" onclick="del(${i})">Delete</button>
+      <h3>📂 Documents</h3>
+      <div class="doc-grid">
+        ${docBox(i,"driverLicence","Driver Licence")}
+        ${docBox(i,"driverBadge","Driver Taxi Badge")}
+        ${docBox(i,"insuranceCert","Insurance Certificate")}
+        ${docBox(i,"motCert","MOT Certificate")}
+        ${docBox(i,"logbook","V5C Logbook")}
+        ${docBox(i,"taxiLicence","Taxi Licence / Plate")}
       </div>
-    `;
+
+      <p class="small">Notes: ${c.notes||"-"}</p>
+      <button class="green" onclick="markPaid(${i})">Mark Rent Paid</button>
+      <button class="blue" onclick="editVehicle(${i})">Edit</button>
+      <button class="blue" onclick="addBalance(${i})">Add Balance</button>
+      <button class="blue" onclick="addExpense(${i})">Add Expense</button>
+      <button onclick="whatsapp(${i})">WhatsApp Reminder</button>
+      <button class="danger" onclick="deleteVehicle(${i})">Delete</button>
+    </div>`;
   });
+
+  renderDrivers();
+}
+
+function renderDrivers(){
+  $("driverList").innerHTML=fleet.filter(c=>c.driver).map(c=>`
+    <div class="card">
+      <h3>${c.driver}</h3>
+      <p>Vehicle: ${c.plate}</p>
+      <p>Phone: ${c.phone||"-"}</p>
+      <p class="${statusClass(c.licence,30)}">Licence: ${dateText(c.licence)}</p>
+      <p class="${statusClass(c.badge,30)}">Badge: ${dateText(c.badge)}</p>
+    </div>`).join("") || "<p>No drivers yet</p>";
 }
 
 function report(){
-  let income = fleet.reduce((s,c)=>s+(c.status==="Rented"?c.rent*4:0),0);
-  let exp = fleet.reduce((s,c)=>s+(+c.expenses||0),0);
-  let bal = fleet.reduce((s,c)=>s+(+c.balance||0),0);
-
-  $("reportText").innerHTML =
-    `Monthly income estimate: <b>£${income}</b><br>
-     Expenses: <b>£${exp}</b><br>
-     Outstanding rent: <b>£${bal}</b><br>
-     Estimated profit: <b>£${income-exp}</b>`;
+  let income=fleet.reduce((s,c)=>s+(c.status==="Rented"?c.rent*4:0),0);
+  let exp=fleet.reduce((s,c)=>s+(+c.expenses||0),0);
+  let bal=fleet.reduce((s,c)=>s+(+c.balance||0),0);
+  $("reportBox").innerHTML=`Monthly Income: <b>£${income}</b><br>Expenses: <b>£${exp}</b><br>Outstanding: <b>£${bal}</b><br>Estimated Profit: <b>£${income-exp}</b>`;
 }
 
-function exportData(){
-  let blob = new Blob([JSON.stringify(fleet,null,2)], {type:"application/json"});
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "car4u-fleet-backup.json";
+function exportBackup(){
+  let blob=new Blob([JSON.stringify(fleet,null,2)],{type:"application/json"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="car4u-fleet-backup.json";
   a.click();
 }
 
-function importData(e){
-  let f = e.target.files[0];
-  if(!f) return;
-
-  let r = new FileReader();
-  r.onload = ()=>{
-    fleet = JSON.parse(r.result);
-    save();
-    render();
-    alert("Backup imported");
-  };
+function importBackup(e){
+  let f=e.target.files[0];
+  if(!f)return;
+  let r=new FileReader();
+  r.onload=()=>{fleet=JSON.parse(r.result);save();render();alert("Backup restored");};
   r.readAsText(f);
 }
 
+function changePin(){
+  if($("newPin").value){
+    pin=$("newPin").value;
+    localStorage.setItem("car4uPin",pin);
+    alert("PIN changed");
+  }
+}
+
 function clearAll(){
-  if(confirm("Delete all fleet data?")){
-    fleet = [];
-    save();
-    render();
+  if(confirm("Delete all data?")){
+    fleet=[];save();render();
   }
 }
 
