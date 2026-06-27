@@ -1,4 +1,14 @@
-let fleet = JSON.parse(localStorage.getItem("car4uFleetV6") || "[]");
+pin = localStorage.getItem("car4uPin") || "1234";
+
+function login(){
+  if(document.getElementById("pinInput").value === pin){
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    render();
+  } else {
+    alert("Wrong PIN");
+  }
+}let fleet = JSON.parse(localStorage.getItem("car4uFleetV6") || "[]");
 let editIndex = null;
 
 function save(){
