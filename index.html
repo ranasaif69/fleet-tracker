@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Car 4 U 1 Ltd Fleet Manager V6</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
@@ -107,6 +106,7 @@
   <div id="settingsTab" class="hidden">
     <div class="card">
       <h2>⚙️ Settings</h2>
+      <button onclick="exportData()">Download Backup for iCloud</button>
       <input type="file" id="importFile" onchange="importData(event)">
       <button class="danger" onclick="clearAll()">Delete All Data</button>
     </div>
@@ -116,11 +116,6 @@
 </div>
 
 <script src="app.js"></script>
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
-}
-</script>
 
 </body>
 </html>
