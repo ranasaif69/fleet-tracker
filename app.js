@@ -1,6 +1,7 @@
 let fleet = JSON.parse(localStorage.getItem("car4uFleetV7") || "[]");
 let pin = localStorage.getItem("car4uPin") || "1234";
 let editIndex = null;
+let expenseVehicleIndex = null;
 
 const $ = id => document.getElementById(id);
 
@@ -58,6 +59,8 @@ function newCar(){
 }
 
 function saveVehicle(){
+  let old = editIndex !== null ? fleet[editIndex] : {};
+
   let car = {
     plate: $("plate").value.toUpperCase(),
     model: $("model").value,
@@ -78,9 +81,9 @@ function saveVehicle(){
     badge: $("badge").value,
     status: $("status").value,
     notes: $("notes").value,
-    lastPaid: editIndex !== null ? fleet[editIndex].lastPaid : "",
-    docs: editIndex !== null ? (fleet[editIndex].docs || {}) : {},
-    expenseHistory: editIndex !== null ? (fleet[editIndex].expenseHistory || []) : []
+    lastPaid: old.lastPaid || "",
+    docs: old.docs || {},
+    expenseHistory: old.expenseHistory || []
   };
 
   if(editIndex === null){
@@ -100,32 +103,21 @@ function editVehicle(i){
 
   $("vehicleFormTitle").innerText = "Edit Vehicle";
 
-  $("plate").value = c.plate || "";
-  $("model").value = c.model || "";
-  $("year").value = c.year || "";
-  $("mileage").value = c.mileage || "";
-  $("driver").value = c.driver || "";
-  $("phone").value = c.phone || "";
-  $("rent").value = c.rent || "";
-  $("deposit").value = c.deposit || "";
-  $("balance").value = c.balance || "";
-  $("expenses").value = c.expenses || "";
-  $("mot").value = c.mot || "";
-  $("tax").value = c.tax || "";
-  $("insurance").value = c.insurance || "";
-  $("inspection").value = c.inspection || "";
-  $("service").value = c.service || "";
-  $("licence").value = c.licence || "";
-  $("badge").value = c.badge || "";
-  $("status").value = c.status || "Rented";
-  $("notes").value = c.notes || "";
+  [
+    "plate","model","year","mileage","driver","phone",
+    "rent","deposit","balance","expenses","mot","tax",
+    "insurance","inspection","service","licence","badge","notes"
+  ].forEach(k => {
+    $(k).value = c[k] || "";
+  });
 
+  $("status").value = c.status || "Rented";
   showTab("addVehicle");
 }
 
 function deleteVehicle(i){
   if(confirm("Delete vehicle?")){
-    fleet.splice(i,1);
+    fleet.splice(i, 1);
     save();
     render();
   }
@@ -157,53 +149,109 @@ function addBalance(i){
 }
 
 function addExpense(i){
-  let description = prompt("Expense description e.g. tyres, service, brake pads");
-  if(description === null || description.trim() === "") return;
+  expenseVehicleIndex = i;
 
-  let garage = prompt("Garage / mechanic name");
-  if(garage === null) garage = "";
+  $("expenseDesc").value = "";
+  $("expenseAmount").value = "";
+  $("expenseGarage").value = "";
+  $("expenseDate").value = new Date().toISOString().split("T")[0];
+  $("expensePaidBy").value = "Cash";
+  $("expenseReceipt").value = "";
 
-  let amount = prompt("Expense amount £");
-  if(amount === null || amount === "") return;
+  showTab("expenseForm");
+}
 
-  amount = Number(amount);
+function saveExpense(){
+  let i = expenseVehicleIndex;
+  if(i === null) return;
 
-  if(isNaN(amount)){
-    alert("Please enter valid amount");
+  let desc = $("expenseDesc").value.trim();
+  let amount = Number($("expenseAmount").value);
+  let garage = $("expenseGarage").value.trim();
+  let date = $("expenseDate").value;
+  let paidBy = $("expensePaidBy").value;
+  let file = $("expenseReceipt").files[0];
+
+  if(!desc || !amount){
+    alert("Please add description and amount");
     return;
   }
 
-  let paidBy = prompt("Paid by: Cash / Card / Bank");
-  if(paidBy === null) paidBy = "";
+  function finish(receiptData){
+    if(!fleet[i].expenseHistory){
+      fleet[i].expenseHistory = [];
+    }
 
-  if(!fleet[i].expenseHistory){
-    fleet[i].expenseHistory = [];
+    fleet[i].expenseHistory.push({
+      description: desc,
+      amount: amount,
+      garage: garage,
+      date: date,
+      paidBy: paidBy,
+      receipt: receiptData || ""
+    });
+
+    fleet[i].expenses = Number(fleet[i].expenses || 0) + amount;
+
+    save();
+    render();
+    showTab("vehicles");
   }
 
-  fleet[i].expenseHistory.push({
-    date: new Date().toLocaleDateString(),
-    description: description,
-    garage: garage,
-    amount: amount,
-    paidBy: paidBy
-  });
+  if(file){
+    let reader = new FileReader();
+    reader.onload = e => finish(e.target.result);
+    reader.readAsDataURL(file);
+  } else {
+    finish("");
+  }
+}
 
-  fleet[i].expenses = Number(fleet[i].expenses || 0) + amount;
+function deleteExpense(vehicleIndex, expenseIndex){
+  if(!confirm("Delete this expense?")) return;
+
+  let expense = fleet[vehicleIndex].expenseHistory[expenseIndex];
+
+  fleet[vehicleIndex].expenses =
+    Number(fleet[vehicleIndex].expenses || 0) -
+    Number(expense.amount || 0);
+
+  if(fleet[vehicleIndex].expenses < 0){
+    fleet[vehicleIndex].expenses = 0;
+  }
+
+  fleet[vehicleIndex].expenseHistory.splice(expenseIndex, 1);
 
   save();
   render();
 
-  alert("Expense added successfully");
+  alert("Expense deleted");
 }
 
-function uploadDoc(i,type,input){
+function viewExpenseReceipt(i, idx){
+  let receipt = fleet[i].expenseHistory[idx].receipt;
+
+  if(!receipt){
+    alert("No receipt saved");
+    return;
+  }
+
+  let w = window.open();
+  w.document.write(`
+    <iframe src="${receipt}" style="width:100%;height:100vh;border:0"></iframe>
+  `);
+}
+
+function uploadDoc(i, type, input){
   let file = input.files[0];
   if(!file) return;
 
   let reader = new FileReader();
 
   reader.onload = e => {
-    if(!fleet[i].docs) fleet[i].docs = {};
+    if(!fleet[i].docs){
+      fleet[i].docs = {};
+    }
 
     fleet[i].docs[type] = {
       name: file.name,
@@ -218,7 +266,7 @@ function uploadDoc(i,type,input){
   reader.readAsDataURL(file);
 }
 
-function viewDoc(i,type){
+function viewDoc(i, type){
   let d = fleet[i].docs && fleet[i].docs[type];
 
   if(!d){
@@ -232,7 +280,7 @@ function viewDoc(i,type){
   `);
 }
 
-function docBox(i,type,label){
+function docBox(i, type, label){
   let d = fleet[i].docs && fleet[i].docs[type];
 
   return `
@@ -254,7 +302,11 @@ function whatsapp(i){
     return;
   }
 
-  let msg = `Hi ${c.driver}, reminder from Car 4 U 1 Ltd.%0A%0ACar: ${c.plate}%0AWeekly rent: £${c.rent}%0AOutstanding: £${c.balance}`;
+  let msg =
+    `Hi ${c.driver}, reminder from Car 4 U 1 Ltd.%0A%0A` +
+    `Car: ${c.plate}%0A` +
+    `Weekly rent: £${c.rent}%0A` +
+    `Outstanding: £${c.balance}`;
 
   window.open("https://wa.me/" + phone + "?text=" + msg, "_blank");
 }
@@ -263,7 +315,9 @@ function render(){
   let q = ($("vehicleSearch")?.value || "").toLowerCase();
 
   let list = fleet.filter(c =>
-    ((c.plate || "") + (c.model || "") + (c.driver || "")).toLowerCase().includes(q)
+    ((c.plate || "") + (c.model || "") + (c.driver || ""))
+      .toLowerCase()
+      .includes(q)
   );
 
   $("statTotal").innerText = fleet.length;
@@ -306,30 +360,31 @@ function render(){
 
     $("vehicleList").innerHTML += `
       <div class="vehicle-card">
-
         <div class="row">
           <h2>${c.plate || "No Plate"}</h2>
-          <span class="badge">${c.status}</span>
+          <span class="badge">${c.status || "-"}</span>
         </div>
 
         <p><b>${c.model || "-"}</b> ${c.year ? `(${c.year})` : ""}</p>
         <p>👨‍✈️ ${c.driver || "-"}</p>
         <p>📞 ${c.phone || "-"}</p>
-        <p>💷 £${c.rent}/week | Deposit £${c.deposit}</p>
-        <p class="${c.balance > 0 ? "red" : "greenText"}">Outstanding: £${c.balance}</p>
-        <p>🛠 Total Expenses: £${c.expenses || 0}</p>
+        <p>💷 £${c.rent || 0}/week | Deposit £${c.deposit || 0}</p>
+        <p class="${c.balance > 0 ? "red" : "greenText"}">Outstanding: £${c.balance || 0}</p>
+        <p><b>🛠 Total Expenses:</b> £${c.expenses || 0}</p>
         <p class="${profit < 0 ? "red" : "greenText"}">Monthly profit estimate: £${profit}</p>
 
         ${
           (c.expenseHistory || []).length
           ? "<h3>🧾 Expense History</h3>" +
-            c.expenseHistory.map(e => `
+            c.expenseHistory.map((e,idx)=>`
               <div class="doc">
                 <b>${e.description}</b><br>
-                Amount: £${e.amount}<br>
-                Garage: ${e.garage || "-"}<br>
-                Paid by: ${e.paidBy || "-"}<br>
-                <small>${e.date}</small>
+                💷 £${e.amount}<br>
+                🏢 Garage: ${e.garage || "-"}<br>
+                💳 Paid by: ${e.paidBy || "-"}<br>
+                📅 ${e.date || "-"}<br>
+                ${e.receipt ? `<button onclick="viewExpenseReceipt(${i},${idx})">View Receipt</button>` : ""}
+                <button class="danger" onclick="deleteExpense(${i},${idx})">Delete Expense</button>
               </div>
             `).join("")
           : "<p class='small'>No expenses recorded.</p>"
@@ -341,12 +396,15 @@ function render(){
         <p class="${statusClass(c.tax,14)}">Road Tax: ${c.tax || "-"} (${dateText(c.tax)})</p>
         <p class="${statusClass(c.insurance,30)}">Insurance: ${c.insurance || "-"} (${dateText(c.insurance)})</p>
         <p class="${statusClass(c.inspection,30)}">Taxi Inspection: ${c.inspection || "-"} (${dateText(c.inspection)})</p>
+        <p class="${statusClass(c.service,30)}">Service: ${c.service || "-"} (${dateText(c.service)})</p>
         <p class="${statusClass(c.licence,30)}">Driver Licence: ${c.licence || "-"} (${dateText(c.licence)})</p>
         <p class="${statusClass(c.badge,30)}">Taxi Badge: ${c.badge || "-"} (${dateText(c.badge)})</p>
 
         <h3>📂 Documents</h3>
 
         <div class="doc-grid">
+          ${docBox(i,"vehiclePhoto","Vehicle Photo")}
+          ${docBox(i,"driverPhoto","Driver Photo")}
           ${docBox(i,"driverLicence","Driver Licence")}
           ${docBox(i,"driverBadge","Driver Taxi Badge")}
           ${docBox(i,"insuranceCert","Insurance Certificate")}
