@@ -1,121 +1,132 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Car 4 U 1 Ltd Fleet Manager V6</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Car 4 U 1 Ltd Fleet Manager V7</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
-
-<div id="loginBox" class="wrap">
-  <div class="card">
-    <h2>🔐 Car 4 U 1 Login</h2>
-    <input id="pinInput" type="password" placeholder="Enter PIN">
-    <button onclick="login()">Login</button>
-    <p class="small">Default PIN: 1234</p>
-  </div>
-</div>
-
-<div id="app" class="hidden">
-
-<header>
-  <h1>🚖 Car 4 U 1 Ltd Fleet Manager V6</h1>
-  <p>Fleet, documents, rent and compliance tracker</p>
-</header>
-
-<div class="wrap">
-
-  <div class="grid">
-    <div class="stat">Total Cars <b id="total">0</b></div>
-    <div class="stat">On Rent <b id="rented">0</b></div>
-    <div class="stat">Available <b id="available">0</b></div>
-    <div class="stat">Weekly Income <b id="income">£0</b></div>
-    <div class="stat">Outstanding <b id="outstanding">£0</b></div>
-    <div class="stat">Alerts <b id="alerts">0</b></div>
-  </div>
-
-  <div class="grid">
-    <button onclick="tab('fleet')">Fleet</button>
-    <button onclick="newCar()">Add Car</button>
-    <button onclick="tab('reports')">Reports</button>
-    <button onclick="tab('settings')">Settings</button>
-  </div>
-
-  <div id="fleetTab">
-    <input id="search" placeholder="Search registration, driver or model" oninput="render()">
-    <div id="cars"></div>
-  </div>
-
-  <div id="addTab" class="hidden">
-    <div class="card">
-      <h2 id="formTitle">Add Vehicle</h2>
-
-      <input id="plate" placeholder="Registration">
-      <input id="model" placeholder="Make / Model">
-      <input id="driver" placeholder="Driver name">
-      <input id="phone" placeholder="Driver phone e.g. 4474...">
-
-      <label>Driver licence expiry</label>
-      <input id="licence" type="date">
-
-      <label>Taxi badge expiry</label>
-      <input id="badge" type="date">
-
-      <input id="rent" type="number" placeholder="Weekly rent £">
-      <input id="deposit" type="number" placeholder="Deposit £">
-      <input id="balance" type="number" placeholder="Outstanding balance £">
-      <input id="expenses" type="number" placeholder="Repairs / expenses £">
-
-      <label>MOT expiry</label>
-      <input id="mot" type="date">
-
-      <label>Road Tax expiry</label>
-      <input id="tax" type="date">
-
-      <label>Insurance expiry</label>
-      <input id="insurance" type="date">
-
-      <label>Taxi Inspection expiry</label>
-      <input id="inspection" type="date">
-
-      <label>Service due</label>
-      <input id="service" type="date">
-
-      <select id="status">
-        <option>Rented</option>
-        <option>Available</option>
-        <option>In Garage</option>
-      </select>
-
-      <textarea id="notes" placeholder="Notes"></textarea>
-
-      <button onclick="saveCar()">Save Vehicle</button>
-      <button class="grey" onclick="tab('fleet')">Cancel</button>
+  <section id="loginScreen" class="screen centered">
+    <div class="panel login-card">
+      <div class="logo">🚖</div>
+      <h1>Car 4 U 1 Ltd</h1>
+      <p>Fleet Manager V7</p>
+      <input id="pinInput" type="password" placeholder="Enter PIN" />
+      <button onclick="login()">Login</button>
+      <small>Default PIN: 1234</small>
     </div>
-  </div>
+  </section>
 
-  <div id="reportsTab" class="hidden">
-    <div class="card">
-      <h2>📊 Business Report</h2>
-      <p id="reportText"></p>
-      <button onclick="exportData()">Download Backup for iCloud</button>
-    </div>
-  </div>
+  <main id="app" class="hidden">
+    <header class="topbar">
+      <div>
+        <h1>🚖 Car 4 U 1 Fleet Manager</h1>
+        <p>Fleet, drivers, rent, documents and reminders</p>
+      </div>
+      <button class="outline" onclick="logout()">Logout</button>
+    </header>
 
-  <div id="settingsTab" class="hidden">
-    <div class="card">
-      <h2>⚙️ Settings</h2>
-      <button onclick="exportData()">Download Backup for iCloud</button>
-      <input type="file" id="importFile" onchange="importData(event)">
-      <button class="danger" onclick="clearAll()">Delete All Data</button>
-    </div>
-  </div>
+    <nav class="tabs">
+      <button onclick="showTab('dashboard')">Dashboard</button>
+      <button onclick="showTab('vehicles')">Vehicles</button>
+      <button onclick="showTab('addVehicle')">Add Vehicle</button>
+      <button onclick="showTab('drivers')">Drivers</button>
+      <button onclick="showTab('reports')">Reports</button>
+      <button onclick="showTab('settings')">Settings</button>
+    </nav>
 
-</div>
-</div>
+    <section id="dashboard" class="tab">
+      <div class="stats">
+        <div class="stat"><span>Total Cars</span><b id="statTotal">0</b></div>
+        <div class="stat"><span>On Rent</span><b id="statRented">0</b></div>
+        <div class="stat"><span>Available</span><b id="statAvailable">0</b></div>
+        <div class="stat"><span>Weekly Income</span><b id="statWeekly">£0</b></div>
+        <div class="stat"><span>Outstanding</span><b id="statOutstanding">£0</b></div>
+        <div class="stat"><span>Alerts</span><b id="statAlerts">0</b></div>
+      </div>
+      <div class="panel">
+        <h2>Urgent Alerts</h2>
+        <div id="urgentAlerts"></div>
+      </div>
+    </section>
 
-<script src="app.js"></script>
+    <section id="vehicles" class="tab hidden">
+      <input id="vehicleSearch" class="search" placeholder="Search registration, model, driver" oninput="render()" />
+      <div id="vehicleList"></div>
+    </section>
 
+    <section id="addVehicle" class="tab hidden">
+      <div class="panel">
+        <h2 id="vehicleFormTitle">Add Vehicle</h2>
+        <div class="form-grid">
+          <input id="plate" placeholder="Registration" />
+          <input id="model" placeholder="Make / Model" />
+          <input id="year" placeholder="Year" />
+          <input id="mileage" placeholder="Mileage" />
+          <input id="driver" placeholder="Driver name" />
+          <input id="phone" placeholder="Driver WhatsApp e.g. 4474..." />
+          <input id="rent" type="number" placeholder="Weekly rent £" />
+          <input id="deposit" type="number" placeholder="Deposit £" />
+          <input id="balance" type="number" placeholder="Outstanding balance £" />
+          <input id="expenses" type="number" placeholder="Repairs / expenses £" />
+        </div>
+        <h3>Compliance Dates</h3>
+        <div class="form-grid">
+          <label>MOT expiry<input id="mot" type="date" /></label>
+          <label>Road tax expiry<input id="tax" type="date" /></label>
+          <label>Insurance expiry<input id="insurance" type="date" /></label>
+          <label>Taxi inspection expiry<input id="inspection" type="date" /></label>
+          <label>Service due<input id="service" type="date" /></label>
+          <label>Driver licence expiry<input id="licence" type="date" /></label>
+          <label>Taxi badge expiry<input id="badge" type="date" /></label>
+        </div>
+        <select id="status">
+          <option>Rented</option>
+          <option>Available</option>
+          <option>In Garage</option>
+          <option>Sold</option>
+        </select>
+        <textarea id="notes" placeholder="Notes"></textarea>
+        <div class="actions">
+          <button onclick="saveVehicle()">Save Vehicle</button>
+          <button class="secondary" onclick="showTab('vehicles')">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="drivers" class="tab hidden">
+      <div class="panel">
+        <h2>Drivers</h2>
+        <div id="driverList"></div>
+      </div>
+    </section>
+
+    <section id="reports" class="tab hidden">
+      <div class="panel">
+        <h2>Business Report</h2>
+        <div id="reportBox"></div>
+        <button onclick="exportBackup()">Download Backup for iCloud</button>
+      </div>
+    </section>
+
+    <section id="settings" class="tab hidden">
+      <div class="panel">
+        <h2>Settings</h2>
+        <input id="newPin" placeholder="New PIN" />
+        <button onclick="changePin()">Change PIN</button>
+        <label class="upload-label">Restore Backup<input type="file" accept="application/json" onchange="importBackup(event)"></label>
+        <button class="danger" onclick="clearAll()">Delete All Data</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js')
+    }
+  </script>
 </body>
 </html>
