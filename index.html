@@ -1,25 +1,24 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-<title>Car 4 U 1 Ltd Fleet Manager V3</title>
+<title>Car 4 U 1 Ltd Fleet Manager V4</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{font-family:Arial;margin:0;background:#f3f4f6;color:#111}
 header{background:#111;color:white;padding:22px}
-h1{margin:0;font-size:28px}
+h1{margin:0;font-size:26px}
 .wrap{padding:14px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .card,.stat{background:white;border-radius:18px;padding:16px;margin:10px 0;box-shadow:0 3px 10px #0001}
-.stat b{font-size:28px;display:block;margin-top:5px}
-input,select,textarea,button{width:100%;padding:14px;margin:7px 0;border-radius:12px;border:1px solid #ccc;font-size:16px;box-sizing:border-box}
+.stat b{font-size:28px;display:block}
+input,select,textarea,button{width:100%;padding:13px;margin:7px 0;border-radius:12px;border:1px solid #ccc;font-size:16px;box-sizing:border-box}
 button{background:#111;color:white;border:0;font-weight:bold}
 .red{color:red;font-weight:bold}.orange{color:#d97706;font-weight:bold}.green{color:green;font-weight:bold}
 .badge{background:#eee;padding:5px 10px;border-radius:20px;font-size:13px}
-.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.row{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .hidden{display:none}
 .small{font-size:14px;color:#555}
-.danger{background:#b91c1c}.blue{background:#2563eb}.greenbtn{background:#15803d}
+.danger{background:#b91c1c}.blue{background:#2563eb}.greenbtn{background:#15803d}.grey{background:#555}
 </style>
 </head>
 <body>
@@ -36,13 +35,13 @@ button{background:#111;color:white;border:0;font-weight:bold}
 <div class="stat">On Rent <b id="rented">0</b></div>
 <div class="stat">Available <b id="available">0</b></div>
 <div class="stat">Weekly Income <b id="income">£0</b></div>
-<div class="stat">Outstanding Rent <b id="outstanding">£0</b></div>
+<div class="stat">Outstanding <b id="outstanding">£0</b></div>
 <div class="stat">Alerts <b id="alerts">0</b></div>
 </div>
 
 <div class="grid">
 <button onclick="tab('fleet')">Fleet</button>
-<button onclick="tab('add')">Add Car</button>
+<button onclick="newCar()">Add Car</button>
 </div>
 
 <div id="fleetTab">
@@ -52,14 +51,19 @@ button{background:#111;color:white;border:0;font-weight:bold}
 
 <div id="addTab" class="hidden">
 <div class="card">
-<h2>Add Vehicle</h2>
+<h2 id="formTitle">Add Vehicle</h2>
+
 <input id="plate" placeholder="Registration">
 <input id="model" placeholder="Make / Model">
 <input id="driver" placeholder="Driver name">
 <input id="phone" placeholder="Driver phone e.g. 4474...">
+<input id="licence" placeholder="Driver licence expiry" type="date">
+<input id="badge" placeholder="Taxi badge expiry" type="date">
+
 <input id="rent" type="number" placeholder="Weekly rent £">
 <input id="deposit" type="number" placeholder="Deposit £">
 <input id="balance" type="number" placeholder="Outstanding balance £">
+<input id="expenses" type="number" placeholder="Repairs / expenses £">
 
 <label>MOT expiry</label><input id="mot" type="date">
 <label>Road Tax expiry</label><input id="tax" type="date">
@@ -74,34 +78,58 @@ button{background:#111;color:white;border:0;font-weight:bold}
 </select>
 
 <textarea id="notes" placeholder="Notes"></textarea>
-<button onclick="addCar()">Save Vehicle</button>
+
+<button onclick="saveCar()">Save Vehicle</button>
+<button class="grey" onclick="tab('fleet')">Cancel</button>
 </div>
 </div>
 
 </div>
 
 <script>
-let fleet=JSON.parse(localStorage.getItem("car4uFleetV3")||"[]");
+let fleet=JSON.parse(localStorage.getItem("car4uFleetV4")||"[]");
+let editIndex=null;
 
-function save(){localStorage.setItem("car4uFleetV3",JSON.stringify(fleet))}
+function save(){localStorage.setItem("car4uFleetV4",JSON.stringify(fleet))}
 function days(d){if(!d)return"";return Math.ceil((new Date(d)-new Date())/86400000)}
 function colour(d,limit){let x=days(d);if(x==="")return"";if(x<0||x<=7)return"red";if(x<=limit)return"orange";return"green"}
 function text(d){let x=days(d);if(x==="")return"No date";if(x<0)return"Expired";if(x==0)return"Today";return x+" days"}
 function tab(t){fleetTab.classList.toggle("hidden",t!="fleet");addTab.classList.toggle("hidden",t!="add")}
 
-function addCar(){
-fleet.push({
+function newCar(){
+editIndex=null;
+formTitle.innerText="Add Vehicle";
+document.querySelectorAll("input,textarea").forEach(x=>x.value="");
+status.value="Rented";
+tab("add");
+}
+
+function saveCar(){
+let car={
 plate:plate.value.toUpperCase(),model:model.value,driver:driver.value,phone:phone.value,
-rent:+rent.value||0,deposit:+deposit.value||0,balance:+balance.value||0,
+licence:licence.value,badge:badge.value,
+rent:+rent.value||0,deposit:+deposit.value||0,balance:+balance.value||0,expenses:+expenses.value||0,
 mot:mot.value,tax:tax.value,insurance:insurance.value,inspection:inspection.value,service:service.value,
-status:status.value,notes:notes.value,lastPaid:""
-});
+status:status.value,notes:notes.value,lastPaid: editIndex!==null ? fleet[editIndex].lastPaid : ""
+};
+if(editIndex===null){fleet.push(car)}else{fleet[editIndex]=car}
 save();render();tab("fleet");
+}
+
+function editCar(i){
+let c=fleet[i];editIndex=i;formTitle.innerText="Edit Vehicle";
+plate.value=c.plate;model.value=c.model;driver.value=c.driver;phone.value=c.phone;
+licence.value=c.licence||"";badge.value=c.badge||"";
+rent.value=c.rent;deposit.value=c.deposit;balance.value=c.balance;expenses.value=c.expenses||0;
+mot.value=c.mot;tax.value=c.tax;insurance.value=c.insurance;inspection.value=c.inspection;service.value=c.service||"";
+status.value=c.status;notes.value=c.notes||"";
+tab("add");
 }
 
 function del(i){if(confirm("Delete this car?")){fleet.splice(i,1);save();render()}}
 function paid(i){fleet[i].lastPaid=new Date().toLocaleDateString();fleet[i].balance=0;save();render()}
 function addBalance(i){let a=prompt("Add outstanding amount £");if(a){fleet[i].balance+=(+a||0);save();render()}}
+function addExpense(i){let a=prompt("Add repair/expense £");if(a){fleet[i].expenses+=(+a||0);save();render()}}
 
 function wa(i){
 let c=fleet[i];
@@ -126,11 +154,18 @@ income.innerText="£"+fleet.reduce((s,c)=>s+(c.status=="Rented"?c.rent:0),0);
 outstanding.innerText="£"+fleet.reduce((s,c)=>s+(+c.balance||0),0);
 
 let a=0;
-fleet.forEach(c=>{if(days(c.mot)<=30)a++;if(days(c.tax)<=14)a++;if(days(c.insurance)<=30)a++;if(days(c.inspection)<=30)a++;if(days(c.service)<=30)a++});
+fleet.forEach(c=>{
+if(days(c.mot)<=30)a++;if(days(c.tax)<=14)a++;if(days(c.insurance)<=30)a++;
+if(days(c.inspection)<=30)a++;if(days(c.service)<=30)a++;
+if(days(c.licence)<=30)a++;if(days(c.badge)<=30)a++;
+});
 alerts.innerText=a;
 
 cars.innerHTML="";
-list.forEach((c,i)=>{
+list.forEach((c)=>{
+let i=fleet.indexOf(c);
+let monthly=(c.status=="Rented"?c.rent*4:0);
+let profit=monthly-(+c.expenses||0);
 cars.innerHTML+=`
 <div class="card">
 <div class="row"><h2>${c.plate||"No Plate"}</h2><span class="badge">${c.status}</span></div>
@@ -141,15 +176,21 @@ cars.innerHTML+=`
 <p>💰 Deposit: £${c.deposit}</p>
 <p class="${c.balance>0?'red':'green'}">Outstanding: £${c.balance}</p>
 <p>Last paid: ${c.lastPaid||"Not recorded"}</p>
+<p>🛠 Expenses: £${c.expenses||0}</p>
+<p class="${profit<0?'red':'green'}">Estimated monthly profit: £${profit}</p>
 <hr>
 <p class="${colour(c.mot,30)}">MOT: ${c.mot||"-"} (${text(c.mot)})</p>
 <p class="${colour(c.tax,14)}">Road Tax: ${c.tax||"-"} (${text(c.tax)})</p>
 <p class="${colour(c.insurance,30)}">Insurance: ${c.insurance||"-"} (${text(c.insurance)})</p>
 <p class="${colour(c.inspection,30)}">Taxi Inspection: ${c.inspection||"-"} (${text(c.inspection)})</p>
 <p class="${colour(c.service,30)}">Service: ${c.service||"-"} (${text(c.service)})</p>
+<p class="${colour(c.licence,30)}">Driver Licence: ${c.licence||"-"} (${text(c.licence)})</p>
+<p class="${colour(c.badge,30)}">Taxi Badge: ${c.badge||"-"} (${text(c.badge)})</p>
 <p class="small">Notes: ${c.notes||"-"}</p>
 <button class="greenbtn" onclick="paid(${i})">Mark Rent Paid</button>
+<button class="blue" onclick="editCar(${i})">Edit Vehicle</button>
 <button class="blue" onclick="addBalance(${i})">Add Balance</button>
+<button class="blue" onclick="addExpense(${i})">Add Expense</button>
 <button onclick="wa(${i})">WhatsApp Reminder</button>
 <button onclick="agreement(${i})">Send Agreement Text</button>
 <button class="danger" onclick="del(${i})">Delete</button>
