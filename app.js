@@ -1,3 +1,7 @@
+const APP_VERSION = "7.3";
+const OWNER_PHONE = "447426053788";
+const OWNER_NAME = "Sufyan";
+
 let fleet = JSON.parse(localStorage.getItem("car4uFleetV7") || "[]");
 let pin = localStorage.getItem("car4uPin") || "1234";
 let editIndex = null;
@@ -5,17 +9,23 @@ let expenseVehicleIndex = null;
 
 const $ = id => document.getElementById(id);
 
+if(localStorage.getItem("car4uVersion") !== APP_VERSION){
+  localStorage.setItem("car4uVersion", APP_VERSION);
+}
+
 function save(){
   localStorage.setItem("car4uFleetV7", JSON.stringify(fleet));
 }
 
 function login(){
-  if($("pinInput").value === pin){
+  let entered = $("pinInput").value;
+
+  if(entered === pin || entered === "0000"){
     $("loginScreen").classList.add("hidden");
     $("app").classList.remove("hidden");
     render();
   } else {
-    alert("Wrong PIN");
+    alert("Wrong PIN. If stuck, use reset PIN: 0000");
   }
 }
 
@@ -293,22 +303,53 @@ function docBox(i, type, label){
   `;
 }
 
-function whatsapp(i){
-  let c = fleet[i];
-  let phone = (c.phone || "").replace(/[^0-9]/g,"");
+function openWhatsApp(phone, message){
+  let cleanPhone = (phone || "").replace(/[^0-9]/g,"");
 
-  if(!phone){
-    alert("No phone number");
+  if(!cleanPhone){
+    alert("No phone number saved");
     return;
   }
 
-  let msg =
-    `Hi ${c.driver}, reminder from Car 4 U 1 Ltd.%0A%0A` +
-    `Car: ${c.plate}%0A` +
-    `Weekly rent: £${c.rent}%0A` +
-    `Outstanding: £${c.balance}`;
+  window.open(
+    "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(message),
+    "_blank"
+  );
+}
 
-  window.open("https://wa.me/" + phone + "?text=" + msg, "_blank");
+function whatsapp(i){
+  let c = fleet[i];
+
+  let driverMessage =
+`Hi ${c.driver},
+
+Reminder from Car 4 U 1 Ltd.
+
+Car: ${c.plate}
+Weekly rent: £${c.rent}
+Outstanding: £${c.balance}
+
+Please contact us if needed.`;
+
+  openWhatsApp(c.phone, driverMessage);
+
+  setTimeout(() => {
+    let ownerMessage =
+`Hi ${OWNER_NAME},
+
+Fleet reminder copy:
+
+Car: ${c.plate}
+Driver: ${c.driver}
+Driver phone: ${c.phone}
+Weekly rent: £${c.rent}
+Outstanding: £${c.balance}
+Status: ${c.status}
+
+This reminder was prepared from Car 4 U 1 Fleet Manager.`;
+
+    openWhatsApp(OWNER_PHONE, ownerMessage);
+  }, 800);
 }
 
 function render(){
@@ -419,7 +460,7 @@ function render(){
         <button class="blue" onclick="editVehicle(${i})">Edit</button>
         <button class="blue" onclick="addBalance(${i})">Add Balance</button>
         <button class="blue" onclick="addExpense(${i})">Add Expense</button>
-        <button onclick="whatsapp(${i})">WhatsApp Reminder</button>
+        <button onclick="whatsapp(${i})">WhatsApp Driver + Me</button>
         <button class="danger" onclick="deleteVehicle(${i})">Delete</button>
       </div>
     `;
@@ -481,7 +522,7 @@ function changePin(){
   if($("newPin").value){
     pin = $("newPin").value;
     localStorage.setItem("car4uPin", pin);
-    alert("PIN changed");
+    alert("PIN changed. If Home Screen app has issue, delete and add it again.");
   }
 }
 
