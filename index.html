@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json" />
 </head>
+
 <body>
   <section id="loginScreen" class="screen centered">
     <div class="panel login-card">
@@ -15,7 +16,7 @@
       <p>Fleet Manager V7</p>
       <input id="pinInput" type="password" placeholder="Enter PIN" />
       <button onclick="login()">Login</button>
-      <small>Default PIN: 1234</small>
+      <small>Default PIN: 1234 / Emergency PIN: 0000</small>
     </div>
   </section>
 
@@ -23,7 +24,7 @@
     <header class="topbar">
       <div>
         <h1>🚖 Car 4 U 1 Fleet Manager</h1>
-        <p>Fleet, drivers, rent, documents and reminders</p>
+        <p>Fleet, drivers, rent, expenses, documents and reminders</p>
       </div>
       <button class="outline" onclick="logout()">Logout</button>
     </header>
@@ -31,7 +32,7 @@
     <nav class="tabs">
       <button onclick="showTab('dashboard')">Dashboard</button>
       <button onclick="showTab('vehicles')">Vehicles</button>
-      <button onclick="showTab('addVehicle')">Add Vehicle</button>
+      <button onclick="newCar()">Add Vehicle</button>
       <button onclick="showTab('drivers')">Drivers</button>
       <button onclick="showTab('reports')">Reports</button>
       <button onclick="showTab('settings')">Settings</button>
@@ -46,6 +47,7 @@
         <div class="stat"><span>Outstanding</span><b id="statOutstanding">£0</b></div>
         <div class="stat"><span>Alerts</span><b id="statAlerts">0</b></div>
       </div>
+
       <div class="panel">
         <h2>Urgent Alerts</h2>
         <div id="urgentAlerts"></div>
@@ -53,13 +55,19 @@
     </section>
 
     <section id="vehicles" class="tab hidden">
-      <input id="vehicleSearch" class="search" placeholder="Search registration, model, driver" oninput="render()" />
+      <input
+        id="vehicleSearch"
+        class="search"
+        placeholder="Search registration, model, driver"
+        oninput="render()"
+      />
       <div id="vehicleList"></div>
     </section>
 
     <section id="addVehicle" class="tab hidden">
       <div class="panel">
         <h2 id="vehicleFormTitle">Add Vehicle</h2>
+
         <div class="form-grid">
           <input id="plate" placeholder="Registration" />
           <input id="model" placeholder="Make / Model" />
@@ -70,9 +78,11 @@
           <input id="rent" type="number" placeholder="Weekly rent £" />
           <input id="deposit" type="number" placeholder="Deposit £" />
           <input id="balance" type="number" placeholder="Outstanding balance £" />
-          <input id="expenses" type="number" placeholder="Repairs / expenses £" />
+          <input id="expenses" type="number" placeholder="Starting repairs / expenses £" />
         </div>
+
         <h3>Compliance Dates</h3>
+
         <div class="form-grid">
           <label>MOT expiry<input id="mot" type="date" /></label>
           <label>Road tax expiry<input id="tax" type="date" /></label>
@@ -82,17 +92,52 @@
           <label>Driver licence expiry<input id="licence" type="date" /></label>
           <label>Taxi badge expiry<input id="badge" type="date" /></label>
         </div>
+
         <select id="status">
           <option>Rented</option>
           <option>Available</option>
           <option>In Garage</option>
           <option>Sold</option>
         </select>
+
         <textarea id="notes" placeholder="Notes"></textarea>
+
         <div class="actions">
           <button onclick="saveVehicle()">Save Vehicle</button>
           <button class="secondary" onclick="showTab('vehicles')">Cancel</button>
         </div>
+      </div>
+    </section>
+
+    <!-- BUG FIX: this section is required for Add Expense to work -->
+    <section id="expenseForm" class="tab hidden">
+      <div class="panel">
+        <h2>🧾 Add Expense</h2>
+
+        <input id="expenseDesc" placeholder="Description e.g. tyres, service, brake pads" />
+
+        <input id="expenseAmount" type="number" placeholder="Amount £" />
+
+        <input id="expenseGarage" placeholder="Garage / mechanic" />
+
+        <label>Expense date</label>
+        <input id="expenseDate" type="date" />
+
+        <label>Paid by</label>
+        <select id="expensePaidBy">
+          <option>Cash</option>
+          <option>Card</option>
+          <option>Bank</option>
+          <option>Bank Transfer</option>
+          <option>Other</option>
+        </select>
+
+        <label>Receipt / invoice photo or PDF</label>
+        <input id="expenseReceipt" type="file" accept="image/*,.pdf" />
+
+        <button onclick="saveExpense()">Save Expense</button>
+
+        <button class="secondary" onclick="showTab('vehicles')">Cancel</button>
       </div>
     </section>
 
@@ -114,18 +159,26 @@
     <section id="settings" class="tab hidden">
       <div class="panel">
         <h2>Settings</h2>
+
         <input id="newPin" placeholder="New PIN" />
+
         <button onclick="changePin()">Change PIN</button>
-        <label class="upload-label">Restore Backup<input type="file" accept="application/json" onchange="importBackup(event)"></label>
+
+        <label class="upload-label">
+          Restore Backup
+          <input type="file" accept="application/json" onchange="importBackup(event)" />
+        </label>
+
         <button class="danger" onclick="clearAll()">Delete All Data</button>
       </div>
     </section>
   </main>
 
   <script src="app.js"></script>
+
   <script>
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('sw.js')
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
     }
   </script>
 </body>
