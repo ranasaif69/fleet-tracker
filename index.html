@@ -1,49 +1,95 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Car 4 U 1 Ltd Fleet Manager V8</title>
 
-  <link rel="stylesheet" href="style.css" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>
+    Car 4 U 1 Ltd Fleet Manager V8
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  />
+
 </head>
 
 <body>
 
-  <section id="loginScreen" class="screen centered">
+
+  <!-- ==================================================
+       LOGIN SCREEN
+  =================================================== -->
+
+  <section
+    id="loginScreen"
+    class="screen centered"
+  >
+
     <div class="panel login-card">
 
-      <div class="logo">🚖</div>
+      <div class="logo">
+        🚖
+      </div>
 
-      <h1>Car 4 U 1 Ltd</h1>
+      <h1>
+        Car 4 U 1 Ltd
+      </h1>
 
-      <p>Fleet Manager V8</p>
+      <p>
+        Fleet Manager V8
+      </p>
 
       <input
         id="loginEmail"
         type="email"
-        placeholder="Email"
+        placeholder="Email address"
+        autocomplete="email"
       />
 
       <input
         id="loginPassword"
         type="password"
         placeholder="Password"
+        autocomplete="current-password"
       />
 
-      <button onclick="login()">
+      <button
+        onclick="login()"
+      >
         Login
       </button>
 
-      <p id="loginMessage" class="small"></p>
+      <p
+        id="loginMessage"
+        class="small"
+      ></p>
 
     </div>
+
   </section>
 
 
-  <main id="app" class="hidden">
+
+  <!-- ==================================================
+       MAIN APP
+  =================================================== -->
+
+  <main
+    id="app"
+    class="hidden"
+  >
+
+
+    <!-- ==================================================
+         HEADER
+    =================================================== -->
 
     <header class="topbar">
 
@@ -59,113 +105,225 @@
 
       </div>
 
+
       <button
         class="outline"
-        onclick="logout()">
+        onclick="logout()"
+      >
         Logout
       </button>
 
     </header>
 
 
+
+    <!-- ==================================================
+         NAVIGATION
+    =================================================== -->
+
     <nav class="tabs">
 
-      <button onclick="showTab('dashboard')">
+      <button
+        onclick="showTab('dashboard')"
+      >
         Dashboard
       </button>
 
-      <button onclick="showTab('vehicles')">
+      <button
+        onclick="showTab('vehicles')"
+      >
         Vehicles
       </button>
 
-      <button onclick="newCar()">
+      <button
+        onclick="newCar()"
+      >
         Add Vehicle
       </button>
 
-      <button onclick="showTab('drivers')">
+      <button
+        onclick="showTab('drivers')"
+      >
         Drivers
       </button>
 
-      <button onclick="showTab('reports')">
+      <button
+        onclick="showTab('reports')"
+      >
         Reports
       </button>
 
-      <button onclick="showTab('settings')">
+      <button
+        onclick="showTab('settings')"
+      >
         Settings
       </button>
 
     </nav>
 
 
-    <section id="dashboard" class="tab">
+
+    <!-- ==================================================
+         DASHBOARD
+    =================================================== -->
+
+    <section
+      id="dashboard"
+      class="tab"
+    >
 
       <div class="stats">
 
-        <div class="stat">
-          <span>Total Cars</span>
-          <b id="statTotal">0</b>
-        </div>
 
         <div class="stat">
-          <span>On Rent</span>
-          <b id="statRented">0</b>
+
+          <span>
+            Total Cars
+          </span>
+
+          <b id="statTotal">
+            0
+          </b>
+
         </div>
 
-        <div class="stat">
-          <span>Available</span>
-          <b id="statAvailable">0</b>
-        </div>
 
         <div class="stat">
-          <span>Weekly Income</span>
-          <b id="statWeekly">£0</b>
+
+          <span>
+            On Rent
+          </span>
+
+          <b id="statRented">
+            0
+          </b>
+
         </div>
 
-        <div class="stat">
-          <span>Outstanding</span>
-          <b id="statOutstanding">£0</b>
-        </div>
 
         <div class="stat">
-          <span>Alerts</span>
-          <b id="statAlerts">0</b>
+
+          <span>
+            Available
+          </span>
+
+          <b id="statAvailable">
+            0
+          </b>
+
         </div>
+
+
+        <div class="stat">
+
+          <span>
+            Weekly Income
+          </span>
+
+          <b id="statWeekly">
+            £0.00
+          </b>
+
+        </div>
+
+
+        <div class="stat">
+
+          <span>
+            Outstanding
+          </span>
+
+          <b id="statOutstanding">
+            £0.00
+          </b>
+
+        </div>
+
+
+        <div class="stat">
+
+          <span>
+            Alerts
+          </span>
+
+          <b id="statAlerts">
+            0
+          </b>
+
+        </div>
+
 
       </div>
 
 
       <div class="panel">
 
-        <h2>Urgent Alerts</h2>
+        <h2>
+          Urgent Alerts
+        </h2>
 
-        <div id="urgentAlerts"></div>
+        <div id="urgentAlerts">
+
+          <p class="greenText">
+            No urgent alerts
+          </p>
+
+        </div>
 
       </div>
 
     </section>
 
 
-    <section id="vehicles" class="tab hidden">
+
+    <!-- ==================================================
+         VEHICLES
+    =================================================== -->
+
+    <section
+      id="vehicles"
+      class="tab hidden"
+    >
 
       <input
         id="vehicleSearch"
         class="search"
+        type="search"
         placeholder="Search registration, model or driver"
         oninput="renderVehicles()"
       />
 
-      <div id="vehicleList"></div>
+      <div id="vehicleList">
+
+        <div class="panel">
+
+          <p>
+            No vehicles yet.
+          </p>
+
+        </div>
+
+      </div>
 
     </section>
 
 
-    <section id="addVehicle" class="tab hidden">
+
+    <!-- ==================================================
+         ADD / EDIT VEHICLE
+    =================================================== -->
+
+    <section
+      id="addVehicle"
+      class="tab hidden"
+    >
 
       <div class="panel">
 
         <h2 id="vehicleFormTitle">
           Add Vehicle
         </h2>
+
 
         <input
           id="vehicleId"
@@ -175,59 +333,83 @@
 
         <div class="form-grid">
 
+
           <input
             id="plate"
+            type="text"
             placeholder="Registration"
+            autocapitalize="characters"
           />
+
 
           <input
             id="model"
+            type="text"
             placeholder="Make / Model"
           />
 
+
           <input
             id="year"
+            type="text"
             placeholder="Year"
           />
+
 
           <input
             id="mileage"
             type="number"
+            inputmode="numeric"
             placeholder="Mileage"
           />
 
+
           <input
             id="driver"
+            type="text"
             placeholder="Driver name"
           />
 
+
           <input
             id="phone"
+            type="tel"
             placeholder="Driver WhatsApp e.g. 4474..."
           />
+
 
           <input
             id="rent"
             type="number"
+            inputmode="decimal"
             step="0.01"
+            min="0"
             placeholder="Weekly rent £"
           />
+
 
           <input
             id="deposit"
             type="number"
+            inputmode="decimal"
             step="0.01"
+            min="0"
             placeholder="Deposit £"
           />
+
 
           <input
             id="balance"
             type="number"
+            inputmode="decimal"
             step="0.01"
+            min="0"
             placeholder="Outstanding balance £"
           />
 
+
         </div>
+
 
 
         <h3>
@@ -237,83 +419,164 @@
 
         <div class="form-grid">
 
+
           <label>
+
             MOT expiry
-            <input id="mot" type="date" />
+
+            <input
+              id="mot"
+              type="date"
+            />
+
           </label>
 
+
           <label>
+
             Road tax expiry
-            <input id="tax" type="date" />
+
+            <input
+              id="tax"
+              type="date"
+            />
+
           </label>
 
+
           <label>
+
             Insurance expiry
-            <input id="insurance" type="date" />
+
+            <input
+              id="insurance"
+              type="date"
+            />
+
           </label>
 
+
           <label>
+
             Taxi inspection expiry
-            <input id="inspection" type="date" />
+
+            <input
+              id="inspection"
+              type="date"
+            />
+
           </label>
 
+
           <label>
+
             Service due
-            <input id="service" type="date" />
+
+            <input
+              id="service"
+              type="date"
+            />
+
           </label>
 
+
           <label>
+
             Driver licence expiry
-            <input id="licence" type="date" />
+
+            <input
+              id="licence"
+              type="date"
+            />
+
           </label>
 
+
           <label>
+
             Taxi badge expiry
-            <input id="badge" type="date" />
+
+            <input
+              id="badge"
+              type="date"
+            />
+
           </label>
+
 
         </div>
 
 
-        <select id="status">
 
-          <option>Rented</option>
+        <label>
 
-          <option>Available</option>
+          Vehicle status
 
-          <option>In Garage</option>
+          <select id="status">
 
-          <option>Sold</option>
+            <option value="Rented">
+              Rented
+            </option>
 
-        </select>
+            <option value="Available">
+              Available
+            </option>
+
+            <option value="In Garage">
+              In Garage
+            </option>
+
+            <option value="Sold">
+              Sold
+            </option>
+
+          </select>
+
+        </label>
+
 
 
         <textarea
           id="notes"
-          placeholder="Notes">
-        </textarea>
+          placeholder="Vehicle notes"
+          rows="5"
+        ></textarea>
+
 
 
         <div class="actions">
 
-          <button onclick="saveVehicle()">
+          <button
+            onclick="saveVehicle()"
+          >
             Save Vehicle
           </button>
 
+
           <button
             class="secondary"
-            onclick="showTab('vehicles')">
+            onclick="showTab('vehicles')"
+          >
             Cancel
           </button>
 
         </div>
+
 
       </div>
 
     </section>
 
 
-    <section id="expenseForm" class="tab hidden">
+
+    <!-- ==================================================
+         EXPENSE FORM
+    =================================================== -->
+
+    <section
+      id="expenseForm"
+      class="tab hidden"
+    >
 
       <div class="panel">
 
@@ -321,27 +584,53 @@
           🧾 Add Expense
         </h2>
 
+
         <input
           id="expenseVehicleId"
           type="hidden"
         />
 
-        <input
-          id="expenseDesc"
-          placeholder="Description"
-        />
 
-        <input
-          id="expenseAmount"
-          type="number"
-          step="0.01"
-          placeholder="Amount £"
-        />
+        <label>
 
-        <input
-          id="expenseGarage"
-          placeholder="Garage / mechanic"
-        />
+          Description
+
+          <input
+            id="expenseDesc"
+            type="text"
+            placeholder="e.g. Front brake pads"
+          />
+
+        </label>
+
+
+        <label>
+
+          Amount
+
+          <input
+            id="expenseAmount"
+            type="number"
+            inputmode="decimal"
+            step="0.01"
+            min="0"
+            placeholder="Amount £"
+          />
+
+        </label>
+
+
+        <label>
+
+          Garage / Mechanic
+
+          <input
+            id="expenseGarage"
+            type="text"
+            placeholder="Garage or mechanic name"
+          />
+
+        </label>
 
 
         <label>
@@ -356,22 +645,36 @@
         </label>
 
 
-        <select id="expensePaidBy">
+        <label>
 
-          <option>Cash</option>
+          Paid by
 
-          <option>Card</option>
+          <select id="expensePaidBy">
 
-          <option>Bank Transfer</option>
+            <option value="Cash">
+              Cash
+            </option>
 
-          <option>Other</option>
+            <option value="Card">
+              Card
+            </option>
 
-        </select>
+            <option value="Bank Transfer">
+              Bank Transfer
+            </option>
+
+            <option value="Other">
+              Other
+            </option>
+
+          </select>
+
+        </label>
 
 
         <label>
 
-          Receipt / invoice
+          Receipt / Invoice
 
           <input
             id="expenseReceipt"
@@ -382,23 +685,39 @@
         </label>
 
 
-        <button onclick="saveExpense()">
-          Save Expense
-        </button>
+        <div class="actions">
+
+          <button
+            onclick="saveExpense()"
+          >
+            Save Expense
+          </button>
 
 
-        <button
-          class="secondary"
-          onclick="showTab('vehicles')">
-          Cancel
-        </button>
+          <button
+            class="secondary"
+            onclick="showTab('vehicles')"
+          >
+            Cancel
+          </button>
+
+        </div>
+
 
       </div>
 
     </section>
 
 
-    <section id="drivers" class="tab hidden">
+
+    <!-- ==================================================
+         DRIVERS
+    =================================================== -->
+
+    <section
+      id="drivers"
+      class="tab hidden"
+    >
 
       <div class="panel">
 
@@ -406,14 +725,28 @@
           Drivers
         </h2>
 
-        <div id="driverList"></div>
+        <div id="driverList">
+
+          <p>
+            No drivers yet.
+          </p>
+
+        </div>
 
       </div>
 
     </section>
 
 
-    <section id="reports" class="tab hidden">
+
+    <!-- ==================================================
+         REPORTS
+    =================================================== -->
+
+    <section
+      id="reports"
+      class="tab hidden"
+    >
 
       <div class="panel">
 
@@ -421,14 +754,50 @@
           Business Report
         </h2>
 
-        <div id="reportBox"></div>
+        <div id="reportBox">
+
+          Estimated Monthly Rent:
+          <b>
+            £0.00
+          </b>
+
+          <br><br>
+
+          Recorded Expenses:
+          <b>
+            £0.00
+          </b>
+
+          <br><br>
+
+          Outstanding:
+          <b>
+            £0.00
+          </b>
+
+          <br><br>
+
+          Estimated Profit:
+          <b>
+            £0.00
+          </b>
+
+        </div>
 
       </div>
 
     </section>
 
 
-    <section id="settings" class="tab hidden">
+
+    <!-- ==================================================
+         SETTINGS
+    =================================================== -->
+
+    <section
+      id="settings"
+      class="tab hidden"
+    >
 
       <div class="panel">
 
@@ -436,12 +805,27 @@
           Settings
         </h2>
 
+
         <p class="small">
-          Fleet data is stored in Supabase cloud.
+          Fleet data, expenses and vehicle records are stored in Supabase cloud.
         </p>
 
-        <button onclick="refreshAll()">
+
+        <button
+          onclick="refreshAll()"
+        >
           Refresh Cloud Data
+        </button>
+
+
+        <br><br>
+
+
+        <button
+          class="outline"
+          onclick="logout()"
+        >
+          Logout
         </button>
 
       </div>
@@ -452,7 +836,24 @@
   </main>
 
 
+
+  <!-- ==================================================
+       SUPABASE LIBRARY
+       MUST LOAD BEFORE app.js
+  =================================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+
+  <!-- ==================================================
+       FLEET MANAGER JAVASCRIPT
+  =================================================== -->
+
   <script src="app.js"></script>
 
+
 </body>
+
 </html>
