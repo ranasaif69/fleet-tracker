@@ -5,7 +5,7 @@
 // ======================================================
 
 const SUPABASE_URL = "https://ugsxnraeivhluhpzuful.supabase.co";
-const SUPABASE_KEY = "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_tBBhN_wybueoX75Copcd2w_f5s9w4b7
 
 const OWNER_PHONE = "447426053788";
 const OWNER_NAME = "Sufyan";
