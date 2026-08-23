@@ -1,152 +1,541 @@
-const APP_VERSION = "7.4";
+// ======================================================
+// CAR 4 U 1 LTD - FLEET MANAGER V8
+// CLOUD VERSION - SUPABASE
+// PART 1 OF 3
+// ======================================================
+
+const SUPABASE_URL = "https://ugsxnraeivhluhpzuful.supabase.co";
+const SUPABASE_KEY = "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+
 const OWNER_PHONE = "447426053788";
 const OWNER_NAME = "Sufyan";
 
-// Try current V7 storage first
-let savedFleet = localStorage.getItem("car4uFleetV7");
+const sb = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
-// If empty, try older storage key and recover it
-if(!savedFleet || savedFleet === "[]"){
-  const oldFleet = localStorage.getItem("car4uFleetSingleHTML");
+let currentUser = null;
+let currentProfile = null;
 
-  if(oldFleet && oldFleet !== "[]"){
-    savedFleet = oldFleet;
-    localStorage.setItem("car4uFleetV7", oldFleet);
-  }
-}
+let fleet = [];
+let expenses = {};
+let documents = {};
 
-let fleet = JSON.parse(savedFleet || "[]");
-let pin = localStorage.getItem("car4uPin") || "1234";
-let editIndex = null;
-let expenseVehicleIndex = null;
+let editVehicleId = null;
+let expenseVehicleId = null;
 
 const $ = id => document.getElementById(id);
 
-if(localStorage.getItem("car4uVersion") !== APP_VERSION){
-  localStorage.setItem("car4uVersion", APP_VERSION);
-}
 
-function save(){
-  localStorage.setItem("car4uFleetV7", JSON.stringify(fleet));
-}
+// ======================================================
+// START APP
+// ======================================================
 
-function login(){
-  let entered = $("pinInput").value;
+document.addEventListener("DOMContentLoaded", async () => {
 
-  if(entered === pin || entered === "0000"){
-    $("loginScreen").classList.add("hidden");
-    $("app").classList.remove("hidden");
-    render();
-  } else {
-    alert("Wrong PIN. If stuck, use reset PIN: 0000");
-  }
-}
+  addCreateAccountButton();
 
-function logout(){
-  location.reload();
-}
+  await checkSession();
 
-function showTab(name){
-  document.querySelectorAll(".tab").forEach(t => t.classList.add("hidden"));
+});
 
-  const tab = $(name);
-  if(tab){
-    tab.classList.remove("hidden");
+
+// ======================================================
+// CREATE ACCOUNT BUTTON
+// ======================================================
+
+function addCreateAccountButton(){
+
+  const loginButton =
+    document.querySelector("#loginScreen button");
+
+  if(!loginButton){
+    return;
   }
 
-  if(name === "reports"){
-    report();
+  if(document.getElementById("createAccountBtn")){
+    return;
   }
-}
 
-function days(d){
-  if(!d) return "";
+  const signupButton =
+    document.createElement("button");
 
-  return Math.ceil(
-    (new Date(d) - new Date()) / 86400000
+  signupButton.id =
+    "createAccountBtn";
+
+  signupButton.innerText =
+    "Create Admin Account";
+
+  signupButton.className =
+    "secondary";
+
+  signupButton.onclick =
+    createAccount;
+
+  loginButton.insertAdjacentElement(
+    "afterend",
+    signupButton
   );
 }
 
-function statusClass(d, limit){
-  let x = days(d);
 
-  if(x === "") return "";
-  if(x < 0 || x <= 7) return "red";
-  if(x <= limit) return "orange";
+// ======================================================
+// CHECK EXISTING LOGIN
+// ======================================================
 
-  return "greenText";
+async function checkSession(){
+
+  try{
+
+    const {
+      data,
+      error
+    } = await sb.auth.getSession();
+
+    if(error){
+      throw error;
+    }
+
+    const session =
+      data.session;
+
+    if(!session){
+
+      showLogin();
+
+      return;
+    }
+
+    currentUser =
+      session.user;
+
+    await loadProfile();
+
+    showApp();
+
+    await refreshAll();
+
+    showTab("dashboard");
+
+  } catch(error){
+
+    console.error(error);
+
+    showLogin();
+
+    if($("loginMessage")){
+
+      $("loginMessage").innerText =
+        error.message;
+
+    }
+  }
 }
 
-function dateText(d){
-  let x = days(d);
 
-  if(x === "") return "No date";
-  if(x < 0) return "Expired";
-  if(x === 0) return "Today";
+// ======================================================
+// LOGIN
+// ======================================================
 
-  return x + " days";
-}
+async function login(){
 
-function newCar(){
-  editIndex = null;
+  const email =
+    $("loginEmail").value.trim();
 
-  $("vehicleFormTitle").innerText = "Add Vehicle";
+  const password =
+    $("loginPassword").value;
 
-  document
-    .querySelectorAll("#addVehicle input,#addVehicle textarea")
-    .forEach(x => x.value = "");
+  if(!email || !password){
 
-  $("status").value = "Rented";
+    $("loginMessage").innerText =
+      "Please enter your email and password.";
 
-  showTab("addVehicle");
-}
-
-function saveVehicle(){
-  let old = editIndex !== null ? fleet[editIndex] : {};
-
-  let car = {
-    plate: $("plate").value.toUpperCase(),
-    model: $("model").value,
-    year: $("year").value,
-    mileage: $("mileage").value,
-    driver: $("driver").value,
-    phone: $("phone").value,
-    rent: +$("rent").value || 0,
-    deposit: +$("deposit").value || 0,
-    balance: +$("balance").value || 0,
-    expenses: +$("expenses").value || 0,
-    mot: $("mot").value,
-    tax: $("tax").value,
-    insurance: $("insurance").value,
-    inspection: $("inspection").value,
-    service: $("service").value,
-    licence: $("licence").value,
-    badge: $("badge").value,
-    status: $("status").value,
-    notes: $("notes").value,
-    lastPaid: old.lastPaid || "",
-    docs: old.docs || {},
-    expenseHistory: old.expenseHistory || []
-  };
-
-  if(editIndex === null){
-    fleet.push(car);
-  } else {
-    fleet[editIndex] = car;
+    return;
   }
 
-  save();
-  render();
-  showTab("vehicles");
+  $("loginMessage").innerText =
+    "Signing in...";
+
+  try{
+
+    const {
+      data,
+      error
+    } = await sb.auth.signInWithPassword({
+
+      email: email,
+
+      password: password
+
+    });
+
+    if(error){
+      throw error;
+    }
+
+    currentUser =
+      data.user;
+
+    await loadProfile();
+
+    showApp();
+
+    await refreshAll();
+
+    showTab("dashboard");
+
+    $("loginMessage").innerText =
+      "";
+
+  } catch(error){
+
+    console.error(error);
+
+    $("loginMessage").innerText =
+      error.message;
+
+  }
 }
 
-function editVehicle(i){
-  let c = fleet[i];
-  editIndex = i;
 
-  $("vehicleFormTitle").innerText = "Edit Vehicle";
+// ======================================================
+// CREATE ADMIN ACCOUNT
+// ======================================================
 
-  [
+async function createAccount(){
+
+  const email =
+    $("loginEmail").value.trim();
+
+  const password =
+    $("loginPassword").value;
+
+  if(!email){
+
+    alert(
+      "Enter your email address first."
+    );
+
+    return;
+  }
+
+  if(!password || password.length < 6){
+
+    alert(
+      "Choose a password with at least 6 characters."
+    );
+
+    return;
+  }
+
+  const ok =
+    confirm(
+      "Create this as your Car 4 U 1 Fleet Manager account?"
+    );
+
+  if(!ok){
+    return;
+  }
+
+  $("loginMessage").innerText =
+    "Creating account...";
+
+  try{
+
+    const {
+      data,
+      error
+    } = await sb.auth.signUp({
+
+      email: email,
+
+      password: password,
+
+      options: {
+
+        data: {
+          name: OWNER_NAME
+        }
+
+      }
+
+    });
+
+    if(error){
+      throw error;
+    }
+
+    if(data.session){
+
+      currentUser =
+        data.user;
+
+      await loadProfile();
+
+      showApp();
+
+      await refreshAll();
+
+      showTab("dashboard");
+
+      return;
+    }
+
+    $("loginMessage").innerText =
+      "Account created. Check your email for the confirmation message, confirm it, then return here and log in.";
+
+  } catch(error){
+
+    console.error(error);
+
+    $("loginMessage").innerText =
+      error.message;
+
+  }
+}
+
+
+// ======================================================
+// SHOW LOGIN / APP
+// ======================================================
+
+function showLogin(){
+
+  if($("loginScreen")){
+
+    $("loginScreen")
+      .classList
+      .remove("hidden");
+
+  }
+
+  if($("app")){
+
+    $("app")
+      .classList
+      .add("hidden");
+
+  }
+}
+
+
+function showApp(){
+
+  if($("loginScreen")){
+
+    $("loginScreen")
+      .classList
+      .add("hidden");
+
+  }
+
+  if($("app")){
+
+    $("app")
+      .classList
+      .remove("hidden");
+
+  }
+}
+
+
+// ======================================================
+// LOGOUT
+// ======================================================
+
+async function logout(){
+
+  await sb.auth.signOut();
+
+  currentUser = null;
+
+  currentProfile = null;
+
+  fleet = [];
+
+  expenses = {};
+
+  documents = {};
+
+  showLogin();
+
+}
+
+
+// ======================================================
+// LOAD PROFILE
+// ======================================================
+
+async function loadProfile(){
+
+  if(!currentUser){
+    return;
+  }
+
+  for(
+    let attempt = 0;
+    attempt < 6;
+    attempt++
+  ){
+
+    const {
+      data,
+      error
+    } = await sb
+      .from("profiles")
+      .select("*")
+      .eq(
+        "id",
+        currentUser.id
+      )
+      .maybeSingle();
+
+    if(error){
+
+      console.error(error);
+
+    }
+
+    if(data){
+
+      currentProfile =
+        data;
+
+      return;
+
+    }
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          500
+        )
+    );
+  }
+
+  throw new Error(
+    "Your Fleet Manager profile could not be loaded."
+  );
+}
+
+
+// ======================================================
+// TABS
+// ======================================================
+
+function showTab(name){
+
+  document
+    .querySelectorAll(".tab")
+    .forEach(tab => {
+
+      tab.classList.add("hidden");
+
+    });
+
+  const selected =
+    $(name);
+
+  if(selected){
+
+    selected
+      .classList
+      .remove("hidden");
+
+  }
+
+  if(name === "reports"){
+
+    report();
+
+  }
+}
+
+
+// ======================================================
+// REFRESH CLOUD DATA
+// ======================================================
+
+async function refreshAll(){
+
+  if(!currentUser){
+    return;
+  }
+
+  try{
+
+    await loadVehicles();
+
+    await loadExpenses();
+
+    await loadDocuments();
+
+    render();
+
+  } catch(error){
+
+    console.error(error);
+
+    alert(
+      "Could not refresh cloud data: " +
+      error.message
+    );
+
+  }
+}
+
+
+// ======================================================
+// LOAD VEHICLES
+// ======================================================
+
+async function loadVehicles(){
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("vehicles")
+    .select("*")
+    .order(
+      "registration",
+      {
+        ascending: true
+      }
+    );
+
+  if(error){
+
+    throw error;
+
+  }
+
+  fleet =
+    data || [];
+
+}
+
+
+// ======================================================
+// NEW VEHICLE
+// ======================================================
+
+function newCar(){
+
+  editVehicleId =
+    null;
+
+  if($("vehicleFormTitle")){
+
+    $("vehicleFormTitle").innerText =
+      "Add Vehicle";
+
+  }
+
+  const fields = [
+
     "plate",
     "model",
     "year",
@@ -156,7 +545,6 @@ function editVehicle(i){
     "rent",
     "deposit",
     "balance",
-    "expenses",
     "mot",
     "tax",
     "insurance",
@@ -165,799 +553,2427 @@ function editVehicle(i){
     "licence",
     "badge",
     "notes"
-  ].forEach(k => {
-    $(k).value = c[k] || "";
-  });
 
-  $("status").value = c.status || "Rented";
+  ];
 
-  showTab("addVehicle");
-}
+  fields.forEach(id => {
 
-function deleteVehicle(i){
-  if(confirm("Delete vehicle?")){
-    fleet.splice(i, 1);
-    save();
-    render();
-  }
-}
+    if($(id)){
 
-function markPaid(i){
-  fleet[i].lastPaid = new Date().toLocaleDateString();
-  fleet[i].balance = 0;
+      $(id).value =
+        "";
 
-  save();
-  render();
-}
-
-function addBalance(i){
-  let amount = prompt("Outstanding rent amount £");
-
-  if(amount === null || amount === ""){
-    return;
-  }
-
-  amount = Number(amount);
-
-  if(isNaN(amount)){
-    alert("Please enter a valid number");
-    return;
-  }
-
-  fleet[i].balance =
-    Number(fleet[i].balance || 0) + amount;
-
-  save();
-  render();
-}
-
-function addExpense(i){
-  expenseVehicleIndex = i;
-
-  $("expenseDesc").value = "";
-  $("expenseAmount").value = "";
-  $("expenseGarage").value = "";
-  $("expenseDate").value =
-    new Date().toISOString().split("T")[0];
-  $("expensePaidBy").value = "Cash";
-  $("expenseReceipt").value = "";
-
-  showTab("expenseForm");
-}
-
-function saveExpense(){
-  let i = expenseVehicleIndex;
-
-  if(i === null){
-    return;
-  }
-
-  let desc = $("expenseDesc").value.trim();
-  let amount = Number($("expenseAmount").value);
-  let garage = $("expenseGarage").value.trim();
-  let date = $("expenseDate").value;
-  let paidBy = $("expensePaidBy").value;
-  let file = $("expenseReceipt").files[0];
-
-  if(!desc || !amount){
-    alert("Please add description and amount");
-    return;
-  }
-
-  function finish(receiptData){
-    if(!fleet[i].expenseHistory){
-      fleet[i].expenseHistory = [];
     }
 
-    fleet[i].expenseHistory.push({
-      description: desc,
-      amount: amount,
-      garage: garage,
-      date: date,
-      paidBy: paidBy,
-      receipt: receiptData || ""
-    });
+  });
 
-    fleet[i].expenses =
-      Number(fleet[i].expenses || 0) + amount;
+  if($("status")){
 
-    save();
-    render();
-    showTab("vehicles");
+    $("status").value =
+      "Rented";
+
   }
 
-  if(file){
-    let reader = new FileReader();
+  showTab(
+    "addVehicle"
+  );
 
-    reader.onload = e => {
-      finish(e.target.result);
-    };
+}
 
-    reader.readAsDataURL(file);
-  } else {
-    finish("");
+
+// ======================================================
+// SAVE VEHICLE
+// ======================================================
+
+async function saveVehicle(){
+
+  if(!currentUser){
+
+    alert(
+      "Please login first."
+    );
+
+    return;
+
+  }
+
+  const registration =
+    $("plate")
+      .value
+      .trim()
+      .toUpperCase();
+
+  if(!registration){
+
+    alert(
+      "Please enter the vehicle registration."
+    );
+
+    return;
+
+  }
+
+  const car = {
+
+    manager_id:
+      currentUser.id,
+
+    registration:
+      registration,
+
+    make_model:
+      $("model")
+        .value
+        .trim(),
+
+    year:
+      $("year").value.trim() ||
+      null,
+
+    mileage:
+      $("mileage").value
+      ? Number(
+          $("mileage").value
+        )
+      : null,
+
+    driver_name:
+      $("driver")
+        .value
+        .trim(),
+
+    driver_phone:
+      $("phone")
+        .value
+        .trim(),
+
+    weekly_rent:
+      Number(
+        $("rent").value ||
+        0
+      ),
+
+    deposit:
+      Number(
+        $("deposit").value ||
+        0
+      ),
+
+    outstanding:
+      Number(
+        $("balance").value ||
+        0
+      ),
+
+    mot_expiry:
+      $("mot").value ||
+      null,
+
+    tax_expiry:
+      $("tax").value ||
+      null,
+
+    insurance_expiry:
+      $("insurance").value ||
+      null,
+
+    inspection_expiry:
+      $("inspection").value ||
+      null,
+
+    service_due:
+      $("service").value ||
+      null,
+
+    licence_expiry:
+      $("licence").value ||
+      null,
+
+    badge_expiry:
+      $("badge").value ||
+      null,
+
+    status:
+      $("status").value,
+
+    notes:
+      $("notes")
+        .value
+        .trim()
+
+  };
+
+  try{
+
+    let result;
+
+    if(editVehicleId){
+
+      result =
+        await sb
+          .from("vehicles")
+          .update(car)
+          .eq(
+            "id",
+            editVehicleId
+          );
+
+    } else {
+
+      result =
+        await sb
+          .from("vehicles")
+          .insert(car);
+
+    }
+
+    if(result.error){
+
+      throw result.error;
+
+    }
+
+    editVehicleId =
+      null;
+
+    await refreshAll();
+
+    showTab(
+      "vehicles"
+    );
+
+    alert(
+      "Vehicle saved to cloud."
+    );
+
+  } catch(error){
+
+    console.error(error);
+
+    alert(
+      "Could not save vehicle: " +
+      error.message
+    );
+
   }
 }
 
-function deleteExpense(vehicleIndex, expenseIndex){
-  if(!confirm("Delete this expense?")){
+
+// ======================================================
+// EDIT VEHICLE
+// ======================================================
+
+function editVehicle(id){
+
+  const car =
+    fleet.find(
+      vehicle =>
+        vehicle.id === id
+    );
+
+  if(!car){
     return;
   }
 
-  let expense =
-    fleet[vehicleIndex].expenseHistory[expenseIndex];
+  editVehicleId =
+    id;
 
-  fleet[vehicleIndex].expenses =
-    Number(fleet[vehicleIndex].expenses || 0) -
-    Number(expense.amount || 0);
+  $("vehicleFormTitle").innerText =
+    "Edit Vehicle";
 
-  if(fleet[vehicleIndex].expenses < 0){
-    fleet[vehicleIndex].expenses = 0;
-  }
+  $("plate").value =
+    car.registration || "";
 
-  fleet[vehicleIndex]
-    .expenseHistory
-    .splice(expenseIndex, 1);
+  $("model").value =
+    car.make_model || "";
 
-  save();
-  render();
+  $("year").value =
+    car.year || "";
 
-  alert("Expense deleted");
+  $("mileage").value =
+    car.mileage || "";
+
+  $("driver").value =
+    car.driver_name || "";
+
+  $("phone").value =
+    car.driver_phone || "";
+
+  $("rent").value =
+    car.weekly_rent || "";
+
+  $("deposit").value =
+    car.deposit || "";
+
+  $("balance").value =
+    car.outstanding || "";
+
+  $("mot").value =
+    car.mot_expiry || "";
+
+  $("tax").value =
+    car.tax_expiry || "";
+
+  $("insurance").value =
+    car.insurance_expiry || "";
+
+  $("inspection").value =
+    car.inspection_expiry || "";
+
+  $("service").value =
+    car.service_due || "";
+
+  $("licence").value =
+    car.licence_expiry || "";
+
+  $("badge").value =
+    car.badge_expiry || "";
+
+  $("status").value =
+    car.status || "Rented";
+
+  $("notes").value =
+    car.notes || "";
+
+  showTab(
+    "addVehicle"
+  );
+
 }
 
-function viewExpenseReceipt(i, idx){
-  let receipt =
-    fleet[i].expenseHistory[idx].receipt;
 
-  if(!receipt){
-    alert("No receipt saved");
+// ======================================================
+// DELETE VEHICLE
+// ======================================================
+
+async function deleteVehicle(id){
+
+  if(
+    !confirm(
+      "Delete this vehicle?"
+    )
+  ){
+
     return;
+
   }
 
-  let w = window.open();
+  try{
 
-  if(!w){
-    alert("Please allow popups to view the receipt");
-    return;
+    const {
+      error
+    } = await sb
+      .from("vehicles")
+      .delete()
+      .eq(
+        "id",
+        id
+      );
+
+    if(error){
+
+      throw error;
+
+    }
+
+    await refreshAll();
+
+  } catch(error){
+
+    alert(
+      "Could not delete vehicle: " +
+      error.message
+    );
+
   }
-
-  w.document.write(`
-    <iframe
-      src="${receipt}"
-      style="width:100%;height:100vh;border:0">
-    </iframe>
-  `);
 }
 
-function uploadDoc(i, type, input){
-  let file = input.files[0];
+
+// ======================================================
+// END PART 1
+// PASTE PART 2 DIRECTLY BELOW THIS LINE
+// ======================================================// ======================================================
+// PART 2 OF 3
+// EXPENSES + DOCUMENTS
+// ======================================================
+
+
+// ======================================================
+// LOAD EXPENSES
+// ======================================================
+
+async function loadExpenses(){
+
+  expenses = {};
+
+  if(!fleet.length){
+    return;
+  }
+
+  const vehicleIds =
+    fleet.map(
+      vehicle =>
+        vehicle.id
+    );
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("expenses")
+    .select("*")
+    .in(
+      "vehicle_id",
+      vehicleIds
+    )
+    .order(
+      "expense_date",
+      {
+        ascending: false
+      }
+    );
+
+  if(error){
+    throw error;
+  }
+
+  (data || []).forEach(expense => {
+
+    if(!expenses[expense.vehicle_id]){
+
+      expenses[expense.vehicle_id] =
+        [];
+
+    }
+
+    expenses[expense.vehicle_id]
+      .push(expense);
+
+  });
+}
+
+
+// ======================================================
+// OPEN ADD EXPENSE
+// ======================================================
+
+function addExpense(vehicleId){
+
+  expenseVehicleId =
+    vehicleId;
+
+  if($("expenseVehicleId")){
+
+    $("expenseVehicleId").value =
+      vehicleId;
+
+  }
+
+  $("expenseDesc").value =
+    "";
+
+  $("expenseAmount").value =
+    "";
+
+  $("expenseGarage").value =
+    "";
+
+  $("expenseDate").value =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  $("expensePaidBy").value =
+    "Cash";
+
+  $("expenseReceipt").value =
+    "";
+
+  showTab(
+    "expenseForm"
+  );
+
+}
+
+
+// ======================================================
+// SAVE EXPENSE
+// ======================================================
+
+async function saveExpense(){
+
+  if(!expenseVehicleId){
+
+    alert(
+      "No vehicle selected."
+    );
+
+    return;
+
+  }
+
+  const description =
+    $("expenseDesc")
+      .value
+      .trim();
+
+  const amount =
+    Number(
+      $("expenseAmount").value
+    );
+
+  if(!description){
+
+    alert(
+      "Please enter an expense description."
+    );
+
+    return;
+
+  }
+
+  if(
+    !amount ||
+    amount <= 0
+  ){
+
+    alert(
+      "Please enter a valid expense amount."
+    );
+
+    return;
+
+  }
+
+  let receiptPath =
+    null;
+
+  const receiptFile =
+    $("expenseReceipt")
+      .files[0];
+
+  try{
+
+    if(receiptFile){
+
+      receiptPath =
+        await uploadFile(
+          receiptFile,
+          "receipts"
+        );
+
+    }
+
+    const {
+      error
+    } = await sb
+      .from("expenses")
+      .insert({
+
+        vehicle_id:
+          expenseVehicleId,
+
+        description:
+          description,
+
+        garage:
+          $("expenseGarage")
+            .value
+            .trim(),
+
+        amount:
+          amount,
+
+        paid_by:
+          $("expensePaidBy")
+            .value,
+
+        expense_date:
+          $("expenseDate")
+            .value ||
+          null,
+
+        receipt_path:
+          receiptPath
+
+      });
+
+    if(error){
+
+      throw error;
+
+    }
+
+    await refreshAll();
+
+    showTab(
+      "vehicles"
+    );
+
+    alert(
+      "Expense saved."
+    );
+
+  } catch(error){
+
+    console.error(error);
+
+    alert(
+      "Could not save expense: " +
+      error.message
+    );
+
+  }
+}
+
+
+// ======================================================
+// DELETE EXPENSE
+// ======================================================
+
+async function deleteExpense(id){
+
+  if(
+    !confirm(
+      "Delete this expense?"
+    )
+  ){
+
+    return;
+
+  }
+
+  try{
+
+    const {
+      error
+    } = await sb
+      .from("expenses")
+      .delete()
+      .eq(
+        "id",
+        id
+      );
+
+    if(error){
+
+      throw error;
+
+    }
+
+    await refreshAll();
+
+  } catch(error){
+
+    alert(
+      "Could not delete expense: " +
+      error.message
+    );
+
+  }
+}
+
+
+// ======================================================
+// LOAD DOCUMENTS
+// ======================================================
+
+async function loadDocuments(){
+
+  documents = {};
+
+  if(!fleet.length){
+    return;
+  }
+
+  const vehicleIds =
+    fleet.map(
+      vehicle =>
+        vehicle.id
+    );
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("documents")
+    .select("*")
+    .in(
+      "vehicle_id",
+      vehicleIds
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+  if(error){
+
+    throw error;
+
+  }
+
+  (data || []).forEach(doc => {
+
+    if(!documents[doc.vehicle_id]){
+
+      documents[doc.vehicle_id] =
+        [];
+
+    }
+
+    documents[doc.vehicle_id]
+      .push(doc);
+
+  });
+}
+
+
+// ======================================================
+// UPLOAD FILE
+// ======================================================
+
+async function uploadFile(
+  file,
+  folder
+){
+
+  if(!currentUser){
+
+    throw new Error(
+      "Please login first."
+    );
+
+  }
+
+  const extension =
+    file.name.includes(".")
+    ? file.name.split(".").pop()
+    : "file";
+
+  const uniqueName =
+    Date.now() +
+    "-" +
+    Math.random()
+      .toString(36)
+      .slice(2);
+
+  const path =
+    currentUser.id +
+    "/" +
+    folder +
+    "/" +
+    uniqueName +
+    "." +
+    extension;
+
+  const {
+    error
+  } = await sb
+    .storage
+    .from("fleet-files")
+    .upload(
+      path,
+      file,
+      {
+        upsert: false
+      }
+    );
+
+  if(error){
+
+    throw error;
+
+  }
+
+  return path;
+}
+
+
+// ======================================================
+// UPLOAD VEHICLE DOCUMENT
+// ======================================================
+
+async function uploadDocument(
+  vehicleId,
+  type,
+  input
+){
+
+  const file =
+    input.files[0];
 
   if(!file){
     return;
   }
 
-  let reader = new FileReader();
+  try{
 
-  reader.onload = e => {
-    if(!fleet[i].docs){
-      fleet[i].docs = {};
+    const path =
+      await uploadFile(
+        file,
+        "documents"
+      );
+
+    const {
+      error
+    } = await sb
+      .from("documents")
+      .insert({
+
+        vehicle_id:
+          vehicleId,
+
+        document_type:
+          type,
+
+        file_name:
+          file.name,
+
+        file_path:
+          path
+
+      });
+
+    if(error){
+
+      throw error;
+
     }
 
-    fleet[i].docs[type] = {
-      name: file.name,
-      data: e.target.result,
-      date: new Date().toLocaleDateString()
-    };
+    await refreshAll();
 
-    save();
-    render();
-  };
+    alert(
+      "Document uploaded."
+    );
 
-  reader.readAsDataURL(file);
+  } catch(error){
+
+    console.error(error);
+
+    alert(
+      "Document upload failed: " +
+      error.message
+    );
+
+  }
 }
 
-function viewDoc(i, type){
-  let d =
-    fleet[i].docs &&
-    fleet[i].docs[type];
 
-  if(!d){
-    alert("No document saved");
-    return;
+// ======================================================
+// OPEN PRIVATE FILE
+// ======================================================
+
+async function openPrivateFile(path){
+
+  try{
+
+    const {
+      data,
+      error
+    } = await sb
+      .storage
+      .from("fleet-files")
+      .createSignedUrl(
+        path,
+        300
+      );
+
+    if(error){
+
+      throw error;
+
+    }
+
+    window.open(
+      data.signedUrl,
+      "_blank"
+    );
+
+  } catch(error){
+
+    alert(
+      "Could not open file: " +
+      error.message
+    );
+
   }
-
-  let w = window.open();
-
-  if(!w){
-    alert("Please allow popups to view this document");
-    return;
-  }
-
-  w.document.write(`
-    <iframe
-      src="${d.data}"
-      style="width:100%;height:100vh;border:0">
-    </iframe>
-  `);
 }
 
-function docBox(i, type, label){
-  let d =
-    fleet[i].docs &&
-    fleet[i].docs[type];
+
+// ======================================================
+// DELETE DOCUMENT
+// ======================================================
+
+async function deleteDocument(id){
+
+  if(
+    !confirm(
+      "Delete this document?"
+    )
+  ){
+
+    return;
+
+  }
+
+  const allDocs =
+    Object
+      .values(documents)
+      .flat();
+
+  const doc =
+    allDocs.find(
+      item =>
+        item.id === id
+    );
+
+  try{
+
+    if(
+      doc &&
+      doc.file_path
+    ){
+
+      await sb
+        .storage
+        .from("fleet-files")
+        .remove([
+          doc.file_path
+        ]);
+
+    }
+
+    const {
+      error
+    } = await sb
+      .from("documents")
+      .delete()
+      .eq(
+        "id",
+        id
+      );
+
+    if(error){
+
+      throw error;
+
+    }
+
+    await refreshAll();
+
+  } catch(error){
+
+    alert(
+      "Could not delete document: " +
+      error.message
+    );
+
+  }
+}
+
+
+// ======================================================
+// DOCUMENT UPLOAD BOX
+// ======================================================
+
+function documentUploadBox(
+  vehicleId,
+  type,
+  label
+){
 
   return `
     <div class="doc">
+
       <b>${label}</b>
 
       <input
         type="file"
         accept="image/*,.pdf"
-        onchange="uploadDoc(${i},'${type}',this)"
+        onchange="uploadDocument('${vehicleId}','${type}',this)"
       >
 
-      <button onclick="viewDoc(${i},'${type}')">
-        ${d ? "View saved" : "No document saved"}
-      </button>
-
-      ${
-        d
-        ? `<p class="small">${d.name} - ${d.date}</p>`
-        : ""
-      }
     </div>
   `;
 }
 
-function openWhatsApp(phone, message){
-  let cleanPhone =
-    (phone || "").replace(/[^0-9]/g, "");
 
-  if(!cleanPhone){
-    alert("No phone number saved");
-    return;
+// ======================================================
+// DOCUMENT LIST
+// ======================================================
+
+function documentList(vehicleId){
+
+  const docs =
+    documents[vehicleId] || [];
+
+  if(!docs.length){
+
+    return `
+      <p class="small">
+        No documents uploaded.
+      </p>
+    `;
+
   }
 
-  window.open(
-    "https://wa.me/" +
-    cleanPhone +
-    "?text=" +
-    encodeURIComponent(message),
-    "_blank"
-  );
+  return docs
+    .map(doc => `
+
+      <div class="doc">
+
+        <b>
+          ${
+            (
+              doc.document_type ||
+              ""
+            )
+            .replaceAll(
+              "_",
+              " "
+            )
+          }
+        </b>
+
+        <br>
+
+        ${
+          doc.file_name ||
+          ""
+        }
+
+        <br>
+
+        <button
+          onclick="openPrivateFile('${doc.file_path}')">
+          View
+        </button>
+
+        <button
+          class="danger"
+          onclick="deleteDocument('${doc.id}')">
+          Delete
+        </button>
+
+      </div>
+
+    `)
+    .join("");
 }
 
-function whatsapp(i){
-  let c = fleet[i];
 
-  let driverMessage =
-`Hi ${c.driver},
+// ======================================================
+// DATE HELPERS
+// ======================================================
 
-Reminder from Car 4 U 1 Ltd.
+function days(date){
 
-Car: ${c.plate}
-Weekly rent: £${c.rent}
-Outstanding: £${c.balance}
+  if(!date){
+    return "";
+  }
 
-Please contact us if needed.`;
+  const today =
+    new Date();
 
-  openWhatsApp(
-    c.phone,
-    driverMessage
+  today.setHours(
+    0,
+    0,
+    0,
+    0
   );
 
-  setTimeout(() => {
-    let ownerMessage =
-`Hi ${OWNER_NAME},
-
-Fleet reminder copy:
-
-Car: ${c.plate}
-Driver: ${c.driver}
-Driver phone: ${c.phone}
-Weekly rent: £${c.rent}
-Outstanding: £${c.balance}
-Status: ${c.status}
-
-This reminder was prepared from Car 4 U 1 Fleet Manager.`;
-
-    openWhatsApp(
-      OWNER_PHONE,
-      ownerMessage
+  const target =
+    new Date(
+      date +
+      "T00:00:00"
     );
-  }, 800);
+
+  return Math.ceil(
+    (
+      target -
+      today
+    )
+    /
+    86400000
+  );
 }
+
+
+function dateText(date){
+
+  const left =
+    days(date);
+
+  if(left === ""){
+
+    return "No date";
+
+  }
+
+  if(left < 0){
+
+    return "Expired";
+
+  }
+
+  if(left === 0){
+
+    return "Today";
+
+  }
+
+  return (
+    left +
+    " days"
+  );
+}
+
+
+function statusClass(
+  date,
+  limit
+){
+
+  const left =
+    days(date);
+
+  if(left === ""){
+
+    return "";
+
+  }
+
+  if(
+    left < 0 ||
+    left <= 7
+  ){
+
+    return "red";
+
+  }
+
+  if(
+    left <= limit
+  ){
+
+    return "orange";
+
+  }
+
+  return "greenText";
+}
+
+
+function money(value){
+
+  return (
+    "£" +
+    Number(
+      value ||
+      0
+    ).toFixed(2)
+  );
+}
+
+
+// ======================================================
+// BUILD ALERTS
+// ======================================================
+
+function buildAlerts(){
+
+  const alerts = [];
+
+  const checks = [
+
+    [
+      "MOT",
+      "mot_expiry",
+      30
+    ],
+
+    [
+      "Road Tax",
+      "tax_expiry",
+      14
+    ],
+
+    [
+      "Insurance",
+      "insurance_expiry",
+      30
+    ],
+
+    [
+      "Taxi Inspection",
+      "inspection_expiry",
+      30
+    ],
+
+    [
+      "Service",
+      "service_due",
+      30
+    ],
+
+    [
+      "Driver Licence",
+      "licence_expiry",
+      30
+    ],
+
+    [
+      "Taxi Badge",
+      "badge_expiry",
+      30
+    ]
+
+  ];
+
+  fleet.forEach(
+    vehicle => {
+
+      checks.forEach(
+        (
+          [
+            label,
+            key,
+            limit
+          ]
+        ) => {
+
+          const left =
+            days(
+              vehicle[key]
+            );
+
+          if(
+            left !== "" &&
+            left <= limit
+          ){
+
+            alerts.push(
+
+              (
+                vehicle.registration ||
+                "Vehicle"
+              )
+              +
+              " "
+              +
+              label
+              +
+              ": "
+              +
+              dateText(
+                vehicle[key]
+              )
+
+            );
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+  return alerts;
+}
+
+
+// ======================================================
+// END PART 2
+// PASTE PART 3 DIRECTLY BELOW THIS LINE
+// ======================================================// ======================================================
+// PART 3 OF 3
+// RENDERING + REPORTS + WHATSAPP + AUTH STATE
+// ======================================================
+
+
+// ======================================================
+// RENDER DASHBOARD
+// ======================================================
 
 function render(){
-  let q =
-    ($("vehicleSearch")?.value || "")
-      .toLowerCase();
 
-  let list =
-    fleet.filter(c =>
+  if(
+    currentProfile &&
+    $("welcomeText")
+  ){
+
+    $("welcomeText").innerText =
+      "Welcome " +
       (
-        (c.plate || "") +
-        (c.model || "") +
-        (c.driver || "")
-      )
-      .toLowerCase()
-      .includes(q)
-    );
+        currentProfile.name ||
+        OWNER_NAME
+      ) +
+      " • " +
+      (
+        currentProfile.role === "admin"
+        ? "Admin"
+        : "Manager"
+      );
+  }
+
 
   if($("statTotal")){
+
     $("statTotal").innerText =
       fleet.length;
+
   }
+
 
   if($("statRented")){
+
     $("statRented").innerText =
-      fleet.filter(c =>
-        c.status === "Rented"
+      fleet.filter(
+        vehicle =>
+          vehicle.status ===
+          "Rented"
       ).length;
+
   }
+
 
   if($("statAvailable")){
+
     $("statAvailable").innerText =
-      fleet.filter(c =>
-        c.status === "Available"
+      fleet.filter(
+        vehicle =>
+          vehicle.status ===
+          "Available"
       ).length;
+
   }
 
-  if($("statWeekly")){
-    $("statWeekly").innerText =
-      "£" +
-      fleet.reduce(
-        (s,c) =>
-          s +
-          (
-            c.status === "Rented"
-            ? Number(c.rent || 0)
-            : 0
+
+  const weeklyIncome =
+    fleet
+      .filter(
+        vehicle =>
+          vehicle.status ===
+          "Rented"
+      )
+      .reduce(
+        (
+          sum,
+          vehicle
+        ) =>
+          sum +
+          Number(
+            vehicle.weekly_rent ||
+            0
           ),
         0
       );
+
+
+  if($("statWeekly")){
+
+    $("statWeekly").innerText =
+      money(
+        weeklyIncome
+      );
+
   }
+
+
+  const outstanding =
+    fleet.reduce(
+      (
+        sum,
+        vehicle
+      ) =>
+        sum +
+        Number(
+          vehicle.outstanding ||
+          0
+        ),
+      0
+    );
+
 
   if($("statOutstanding")){
+
     $("statOutstanding").innerText =
-      "£" +
-      fleet.reduce(
-        (s,c) =>
-          s + Number(c.balance || 0),
-        0
+      money(
+        outstanding
       );
+
   }
 
-  let alerts = [];
 
-  fleet.forEach(c => {
-    [
-      ["MOT", "mot", 30],
-      ["Tax", "tax", 14],
-      ["Insurance", "insurance", 30],
-      ["Inspection", "inspection", 30],
-      ["Service", "service", 30],
-      ["Licence", "licence", 30],
-      ["Badge", "badge", 30]
-    ].forEach(x => {
-      if(
-        days(c[x[1]]) !== "" &&
-        days(c[x[1]]) <= x[2]
-      ){
-        alerts.push(
-          `${c.plate} ${x[0]}: ${dateText(c[x[1]])}`
-        );
-      }
-    });
-  });
+  const alerts =
+    buildAlerts();
+
 
   if($("statAlerts")){
+
     $("statAlerts").innerText =
       alerts.length;
+
   }
 
+
   if($("urgentAlerts")){
+
     $("urgentAlerts").innerHTML =
+
       alerts.length
+
       ? alerts
           .map(
-            a =>
-              `<p class="red">⚠️ ${a}</p>`
+            text =>
+              `
+                <p class="red">
+                  ⚠️ ${text}
+                </p>
+              `
           )
           .join("")
-      : "<p class='greenText'>No urgent alerts</p>";
+
+      : `
+          <p class="greenText">
+            No urgent alerts
+          </p>
+        `;
+
   }
+
+
+  renderVehicles();
+
+  renderDrivers();
+}
+
+
+// ======================================================
+// RENDER VEHICLES
+// ======================================================
+
+function renderVehicles(){
 
   if(!$("vehicleList")){
     return;
   }
 
-  $("vehicleList").innerHTML = "";
 
-  list.forEach(c => {
-    let i = fleet.indexOf(c);
+  const search =
+    (
+      $("vehicleSearch")
+      ?.value ||
+      ""
+    )
+    .toLowerCase();
 
-    let monthly =
-      c.status === "Rented"
-      ? Number(c.rent || 0) * 4
-      : 0;
 
-    let profit =
-      monthly -
-      Number(c.expenses || 0);
+  const list =
+    fleet.filter(
+      vehicle => {
 
-    $("vehicleList").innerHTML += `
-      <div class="vehicle-card">
+        const text =
+          (
+            vehicle.registration ||
+            ""
+          )
+          +
+          " "
+          +
+          (
+            vehicle.make_model ||
+            ""
+          )
+          +
+          " "
+          +
+          (
+            vehicle.driver_name ||
+            ""
+          );
 
-        <div class="row">
-          <h2>${c.plate || "No Plate"}</h2>
-          <span class="badge">
-            ${c.status || "-"}
-          </span>
+        return text
+          .toLowerCase()
+          .includes(
+            search
+          );
+
+      }
+    );
+
+
+  if(!list.length){
+
+    $("vehicleList").innerHTML =
+      `
+        <div class="panel">
+          <p>
+            No vehicles yet.
+          </p>
         </div>
+      `;
 
-        <p>
-          <b>${c.model || "-"}</b>
-          ${c.year ? `(${c.year})` : ""}
-        </p>
+    return;
+  }
 
-        <p>👨‍✈️ ${c.driver || "-"}</p>
-        <p>📞 ${c.phone || "-"}</p>
 
-        <p>
-          💷 £${c.rent || 0}/week
-          | Deposit £${c.deposit || 0}
-        </p>
+  $("vehicleList").innerHTML =
+    list
+      .map(
+        vehicle => {
 
-        <p class="${
-          c.balance > 0
-          ? "red"
-          : "greenText"
-        }">
-          Outstanding: £${c.balance || 0}
-        </p>
+          const vehicleExpenses =
+            expenses[
+              vehicle.id
+            ] || [];
 
-        <p>
-          <b>🛠 Total Expenses:</b>
-          £${c.expenses || 0}
-        </p>
 
-        <p class="${
-          profit < 0
-          ? "red"
-          : "greenText"
-        }">
-          Monthly profit estimate:
-          £${profit}
-        </p>
+          const totalExpenses =
+            vehicleExpenses
+              .reduce(
+                (
+                  sum,
+                  expense
+                ) =>
+                  sum +
+                  Number(
+                    expense.amount ||
+                    0
+                  ),
+                0
+              );
 
-        ${
-          (c.expenseHistory || []).length
 
-          ? "<h3>🧾 Expense History</h3>" +
+          return `
 
-            c.expenseHistory
-            .map((e,idx) => `
-              <div class="doc">
+            <div class="vehicle-card">
 
-                <b>
-                  ${e.description || "Expense"}
-                </b>
-                <br>
+              <div class="row">
 
-                💷 £${e.amount || 0}
-                <br>
+                <h2>
+                  ${
+                    vehicle.registration ||
+                    "No Plate"
+                  }
+                </h2>
 
-                🏢 Garage:
-                ${e.garage || "-"}
-                <br>
-
-                💳 Paid by:
-                ${e.paidBy || "-"}
-                <br>
-
-                📅
-                ${e.date || "-"}
-                <br>
-
-                ${
-                  e.receipt
-                  ? `
-                    <button
-                      onclick="viewExpenseReceipt(${i},${idx})">
-                      View Receipt
-                    </button>
-                  `
-                  : ""
-                }
-
-                <button
-                  class="danger"
-                  onclick="deleteExpense(${i},${idx})">
-                  Delete Expense
-                </button>
+                <span class="badge">
+                  ${
+                    vehicle.status ||
+                    "-"
+                  }
+                </span>
 
               </div>
-            `)
-            .join("")
 
-          : "<p class='small'>No expenses recorded.</p>"
+
+              <p>
+
+                <b>
+                  ${
+                    vehicle.make_model ||
+                    "-"
+                  }
+                </b>
+
+                ${
+                  vehicle.year
+                  ?
+                    "(" +
+                    vehicle.year +
+                    ")"
+                  :
+                    ""
+                }
+
+              </p>
+
+
+              <p>
+                👨‍✈️
+                ${
+                  vehicle.driver_name ||
+                  "-"
+                }
+              </p>
+
+
+              <p>
+                📞
+                ${
+                  vehicle.driver_phone ||
+                  "-"
+                }
+              </p>
+
+
+              <p>
+                💷
+                ${
+                  money(
+                    vehicle.weekly_rent
+                  )
+                }
+                /week
+              </p>
+
+
+              <p>
+                Deposit:
+                ${
+                  money(
+                    vehicle.deposit
+                  )
+                }
+              </p>
+
+
+              <p class="${
+                Number(
+                  vehicle.outstanding ||
+                  0
+                ) > 0
+
+                ? "red"
+
+                : "greenText"
+              }">
+
+                Outstanding:
+                ${
+                  money(
+                    vehicle.outstanding
+                  )
+                }
+
+              </p>
+
+
+              <p>
+
+                🛠 Total Expenses:
+
+                <b>
+                  ${
+                    money(
+                      totalExpenses
+                    )
+                  }
+                </b>
+
+              </p>
+
+
+              <hr>
+
+
+              <p class="${
+                statusClass(
+                  vehicle.mot_expiry,
+                  30
+                )
+              }">
+
+                MOT:
+
+                ${
+                  vehicle.mot_expiry ||
+                  "-"
+                }
+
+                (
+                  ${
+                    dateText(
+                      vehicle.mot_expiry
+                    )
+                  }
+                )
+
+              </p>
+
+
+              <p class="${
+                statusClass(
+                  vehicle.tax_expiry,
+                  14
+                )
+              }">
+
+                Road Tax:
+
+                ${
+                  vehicle.tax_expiry ||
+                  "-"
+                }
+
+                (
+                  ${
+                    dateText(
+                      vehicle.tax_expiry
+                    )
+                  }
+                )
+
+              </p>
+
+
+              <p class="${
+                statusClass(
+                  vehicle.insurance_expiry,
+                  30
+                )
+              }">
+
+                Insurance:
+
+                ${
+                  vehicle.insurance_expiry ||
+                  "-"
+                }
+
+                (
+                  ${
+                    dateText(
+                      vehicle.insurance_expiry
+                    )
+                  }
+                )
+
+              </p>
+
+
+              <p class="${
+                statusClass(
+                  vehicle.inspection_expiry,
+                  30
+                )
+              }">
+
+                Taxi Inspection:
+
+                ${
+                  vehicle.inspection_expiry ||
+                  "-"
+                }
+
+                (
+                  ${
+                    dateText(
+                      vehicle.inspection_expiry
+                    )
+                  }
+                )
+
+              </p>
+
+
+              <p class="${
+                statusClass(
+                  vehicle.service_due,
+                  30
+                )
+              }">
+
+                Service:
+
+                ${
+                  vehicle.service_due ||
+                  "-"
+                }
+
+                (
+                  ${
+                    dateText(
+                      vehicle.service_due
+                    )
+                  }
+                )
+
+              </p>
+
+
+              <p class="${
+                statusClass(
+                  vehicle.licence_expiry,
+                  30
+                )
+              }">
+
+                Driver Licence:
+
+                ${
+                  vehicle.licence_expiry ||
+                  "-"
+                }
+
+                (
+                  ${
+                    dateText(
+                      vehicle.licence_expiry
+                    )
+                  }
+                )
+
+              </p>
+
+
+              <p class="${
+                statusClass(
+                  vehicle.badge_expiry,
+                  30
+                )
+              }">
+
+                Taxi Badge:
+
+                ${
+                  vehicle.badge_expiry ||
+                  "-"
+                }
+
+                (
+                  ${
+                    dateText(
+                      vehicle.badge_expiry
+                    )
+                  }
+                )
+
+              </p>
+
+
+              <h3>
+                🧾 Expense History
+              </h3>
+
+
+              ${
+                vehicleExpenses.length
+
+                ? vehicleExpenses
+                    .map(
+                      expense => `
+
+                        <div class="doc">
+
+                          <b>
+                            ${
+                              expense.description ||
+                              "Expense"
+                            }
+                          </b>
+
+                          <br>
+
+                          💷
+                          ${
+                            money(
+                              expense.amount
+                            )
+                          }
+
+                          <br>
+
+                          🏢 Garage:
+                          ${
+                            expense.garage ||
+                            "-"
+                          }
+
+                          <br>
+
+                          💳 Paid by:
+                          ${
+                            expense.paid_by ||
+                            "-"
+                          }
+
+                          <br>
+
+                          📅
+                          ${
+                            expense.expense_date ||
+                            "-"
+                          }
+
+                          <br>
+
+
+                          ${
+                            expense.receipt_path
+
+                            ? `
+                                <button
+                                  onclick="openPrivateFile('${expense.receipt_path}')">
+                                  View Receipt
+                                </button>
+                              `
+
+                            : ""
+                          }
+
+
+                          <button
+                            class="danger"
+                            onclick="deleteExpense('${expense.id}')">
+                            Delete Expense
+                          </button>
+
+                        </div>
+
+                      `
+                    )
+                    .join("")
+
+                : `
+                    <p class="small">
+                      No expenses recorded.
+                    </p>
+                  `
+              }
+
+
+              <h3>
+                📂 Documents & Photos
+              </h3>
+
+
+              ${
+                documentList(
+                  vehicle.id
+                )
+              }
+
+
+              <div class="doc-grid">
+
+                ${
+                  documentUploadBox(
+                    vehicle.id,
+                    "vehicle_photo",
+                    "Vehicle Photo"
+                  )
+                }
+
+                ${
+                  documentUploadBox(
+                    vehicle.id,
+                    "driver_photo",
+                    "Driver Photo"
+                  )
+                }
+
+                ${
+                  documentUploadBox(
+                    vehicle.id,
+                    "driver_licence",
+                    "Driver Licence"
+                  )
+                }
+
+                ${
+                  documentUploadBox(
+                    vehicle.id,
+                    "driver_badge",
+                    "Driver Taxi Badge"
+                  )
+                }
+
+                ${
+                  documentUploadBox(
+                    vehicle.id,
+                    "insurance_certificate",
+                    "Insurance Certificate"
+                  )
+                }
+
+                ${
+                  documentUploadBox(
+                    vehicle.id,
+                    "mot_certificate",
+                    "MOT Certificate"
+                  )
+                }
+
+                ${
+                  documentUploadBox(
+                    vehicle.id,
+                    "v5c_logbook",
+                    "V5C Logbook"
+                  )
+                }
+
+                ${
+                  documentUploadBox(
+                    vehicle.id,
+                    "taxi_licence",
+                    "Taxi Licence / Plate"
+                  )
+                }
+
+              </div>
+
+
+              <p class="small">
+
+                Notes:
+                ${
+                  vehicle.notes ||
+                  "-"
+                }
+
+              </p>
+
+
+              <button
+                class="blue"
+                onclick="editVehicle('${vehicle.id}')">
+                Edit Vehicle
+              </button>
+
+
+              <button
+                class="blue"
+                onclick="addExpense('${vehicle.id}')">
+                Add Expense
+              </button>
+
+
+              <button
+                onclick="whatsapp('${vehicle.id}')">
+                WhatsApp Driver + Me
+              </button>
+
+
+              <button
+                class="danger"
+                onclick="deleteVehicle('${vehicle.id}')">
+                Delete Vehicle
+              </button>
+
+            </div>
+
+          `;
+
         }
-
-        <hr>
-
-        <p class="${statusClass(c.mot,30)}">
-          MOT:
-          ${c.mot || "-"}
-          (${dateText(c.mot)})
-        </p>
-
-        <p class="${statusClass(c.tax,14)}">
-          Road Tax:
-          ${c.tax || "-"}
-          (${dateText(c.tax)})
-        </p>
-
-        <p class="${statusClass(c.insurance,30)}">
-          Insurance:
-          ${c.insurance || "-"}
-          (${dateText(c.insurance)})
-        </p>
-
-        <p class="${statusClass(c.inspection,30)}">
-          Taxi Inspection:
-          ${c.inspection || "-"}
-          (${dateText(c.inspection)})
-        </p>
-
-        <p class="${statusClass(c.service,30)}">
-          Service:
-          ${c.service || "-"}
-          (${dateText(c.service)})
-        </p>
-
-        <p class="${statusClass(c.licence,30)}">
-          Driver Licence:
-          ${c.licence || "-"}
-          (${dateText(c.licence)})
-        </p>
-
-        <p class="${statusClass(c.badge,30)}">
-          Taxi Badge:
-          ${c.badge || "-"}
-          (${dateText(c.badge)})
-        </p>
-
-        <h3>📂 Documents</h3>
-
-        <div class="doc-grid">
-          ${docBox(i,"vehiclePhoto","Vehicle Photo")}
-          ${docBox(i,"driverPhoto","Driver Photo")}
-          ${docBox(i,"driverLicence","Driver Licence")}
-          ${docBox(i,"driverBadge","Driver Taxi Badge")}
-          ${docBox(i,"insuranceCert","Insurance Certificate")}
-          ${docBox(i,"motCert","MOT Certificate")}
-          ${docBox(i,"logbook","V5C Logbook")}
-          ${docBox(i,"taxiLicence","Taxi Licence / Plate")}
-        </div>
-
-        <p class="small">
-          Notes:
-          ${c.notes || "-"}
-        </p>
-
-        <button
-          class="green"
-          onclick="markPaid(${i})">
-          Mark Rent Paid
-        </button>
-
-        <button
-          class="blue"
-          onclick="editVehicle(${i})">
-          Edit
-        </button>
-
-        <button
-          class="blue"
-          onclick="addBalance(${i})">
-          Add Balance
-        </button>
-
-        <button
-          class="blue"
-          onclick="addExpense(${i})">
-          Add Expense
-        </button>
-
-        <button
-          onclick="whatsapp(${i})">
-          WhatsApp Driver + Me
-        </button>
-
-        <button
-          class="danger"
-          onclick="deleteVehicle(${i})">
-          Delete
-        </button>
-
-      </div>
-    `;
-  });
-
-  renderDrivers();
+      )
+      .join("");
 }
 
+
+// ======================================================
+// RENDER DRIVERS
+// ======================================================
+
 function renderDrivers(){
+
   if(!$("driverList")){
     return;
   }
 
+
+  const drivers =
+    fleet.filter(
+      vehicle =>
+        vehicle.driver_name
+    );
+
+
+  if(!drivers.length){
+
+    $("driverList").innerHTML =
+      `
+        <p>
+          No drivers yet.
+        </p>
+      `;
+
+    return;
+  }
+
+
   $("driverList").innerHTML =
-    fleet
-      .filter(c => c.driver)
-      .map(c => `
-        <div class="card">
-          <h3>${c.driver}</h3>
+    drivers
+      .map(
+        vehicle => `
 
-          <p>
-            Vehicle:
-            ${c.plate || "-"}
-          </p>
+          <div class="card">
 
-          <p>
-            Phone:
-            ${c.phone || "-"}
-          </p>
+            <h3>
+              ${
+                vehicle.driver_name
+              }
+            </h3>
 
-          <p class="${statusClass(c.licence,30)}">
-            Licence:
-            ${dateText(c.licence)}
-          </p>
 
-          <p class="${statusClass(c.badge,30)}">
-            Badge:
-            ${dateText(c.badge)}
-          </p>
-        </div>
-      `)
-      .join("")
-      ||
-      "<p>No drivers yet</p>";
+            <p>
+              Vehicle:
+              ${
+                vehicle.registration ||
+                "-"
+              }
+            </p>
+
+
+            <p>
+              Phone:
+              ${
+                vehicle.driver_phone ||
+                "-"
+              }
+            </p>
+
+
+            <p class="${
+              statusClass(
+                vehicle.licence_expiry,
+                30
+              )
+            }">
+
+              Licence:
+              ${
+                dateText(
+                  vehicle.licence_expiry
+                )
+              }
+
+            </p>
+
+
+            <p class="${
+              statusClass(
+                vehicle.badge_expiry,
+                30
+              )
+            }">
+
+              Badge:
+              ${
+                dateText(
+                  vehicle.badge_expiry
+                )
+              }
+
+            </p>
+
+          </div>
+
+        `
+      )
+      .join("");
 }
 
+
+// ======================================================
+// REPORTS
+// ======================================================
+
 function report(){
-  let income =
+
+  if(!$("reportBox")){
+    return;
+  }
+
+
+  const monthlyIncome =
     fleet.reduce(
-      (s,c) =>
-        s +
+      (
+        sum,
+        vehicle
+      ) => {
+
+        if(
+          vehicle.status !==
+          "Rented"
+        ){
+
+          return sum;
+
+        }
+
+        return (
+
+          sum
+
+          +
+
+          (
+            Number(
+              vehicle.weekly_rent ||
+              0
+            )
+
+            *
+
+            52
+
+            /
+
+            12
+          )
+
+        );
+
+      },
+      0
+    );
+
+
+  const totalExpenses =
+    Object
+      .values(
+        expenses
+      )
+      .flat()
+      .reduce(
         (
-          c.status === "Rented"
-          ? Number(c.rent || 0) * 4
-          : 0
+          sum,
+          expense
+        ) =>
+          sum +
+          Number(
+            expense.amount ||
+            0
+          ),
+        0
+      );
+
+
+  const outstanding =
+    fleet.reduce(
+      (
+        sum,
+        vehicle
+      ) =>
+        sum +
+        Number(
+          vehicle.outstanding ||
+          0
         ),
       0
     );
 
-  let exp =
-    fleet.reduce(
-      (s,c) =>
-        s +
-        Number(c.expenses || 0),
-      0
-    );
 
-  let bal =
-    fleet.reduce(
-      (s,c) =>
-        s +
-        Number(c.balance || 0),
-      0
-    );
+  $("reportBox").innerHTML = `
 
-  if($("reportBox")){
-    $("reportBox").innerHTML =
-      `Monthly Income:
-       <b>£${income}</b><br>
+    Estimated Monthly Rent:
 
-       Expenses:
-       <b>£${exp}</b><br>
-
-       Outstanding:
-       <b>£${bal}</b><br>
-
-       Estimated Profit:
-       <b>£${income-exp}</b>`;
-  }
-}
-
-function exportBackup(){
-  let blob =
-    new Blob(
-      [JSON.stringify(fleet,null,2)],
-      {
-        type:"application/json"
+    <b>
+      ${
+        money(
+          monthlyIncome
+        )
       }
-    );
+    </b>
 
-  let a =
-    document.createElement("a");
+    <br><br>
 
-  a.href =
-    URL.createObjectURL(blob);
 
-  a.download =
-    "car4u-fleet-backup.json";
+    Recorded Expenses:
 
-  a.click();
+    <b>
+      ${
+        money(
+          totalExpenses
+        )
+      }
+    </b>
+
+    <br><br>
+
+
+    Outstanding:
+
+    <b>
+      ${
+        money(
+          outstanding
+        )
+      }
+    </b>
+
+    <br><br>
+
+
+    Estimated Profit:
+
+    <b>
+      ${
+        money(
+          monthlyIncome -
+          totalExpenses
+        )
+      }
+    </b>
+
+  `;
+
 }
 
-function importBackup(e){
-  let f =
-    e.target.files[0];
 
-  if(!f){
+// ======================================================
+// WHATSAPP
+// ======================================================
+
+function whatsapp(vehicleId){
+
+  const vehicle =
+    fleet.find(
+      item =>
+        item.id ===
+        vehicleId
+    );
+
+
+  if(!vehicle){
     return;
   }
 
-  let r =
-    new FileReader();
 
-  r.onload = () => {
-    try{
-      let imported =
-        JSON.parse(r.result);
-
-      if(!Array.isArray(imported)){
-        alert("Invalid backup file");
-        return;
-      }
-
-      fleet = imported;
-
-      save();
-      render();
-
-      alert("Backup restored");
-    } catch(err){
-      alert("Could not restore backup");
-    }
-  };
-
-  r.readAsText(f);
-}
-
-function changePin(){
-  if(
-    $("newPin") &&
-    $("newPin").value
-  ){
-    pin =
-      $("newPin").value;
-
-    localStorage.setItem(
-      "car4uPin",
-      pin
-    );
-
-    alert(
-      "PIN changed successfully."
-    );
-  }
-}
-
-function clearAll(){
-  if(
-    confirm(
-      "Delete all fleet data? This cannot be undone."
+  const driverPhone =
+    (
+      vehicle.driver_phone ||
+      ""
     )
-  ){
-    fleet = [];
+    .replace(
+      /[^0-9]/g,
+      ""
+    );
 
-    save();
-    render();
+
+  const driverMessage =
+
+`Hi ${vehicle.driver_name || ""},
+
+Reminder from Car 4 U 1 Ltd.
+
+Vehicle: ${vehicle.registration || "-"}
+Weekly rent: ${money(vehicle.weekly_rent)}
+Outstanding: ${money(vehicle.outstanding)}
+
+Thank you.`;
+
+
+  if(driverPhone){
+
+    window.open(
+
+      "https://wa.me/"
+      +
+      driverPhone
+      +
+      "?text="
+      +
+      encodeURIComponent(
+        driverMessage
+      ),
+
+      "_blank"
+
+    );
+
   }
+
+
+  setTimeout(
+    () => {
+
+      const ownerMessage =
+
+`Hi ${OWNER_NAME},
+
+Car 4 U 1 Fleet Manager
+
+Vehicle: ${vehicle.registration || "-"}
+Driver: ${vehicle.driver_name || "-"}
+Driver phone: ${vehicle.driver_phone || "-"}
+Weekly rent: ${money(vehicle.weekly_rent)}
+Outstanding: ${money(vehicle.outstanding)}
+Status: ${vehicle.status || "-"}`;
+
+
+      window.open(
+
+        "https://wa.me/"
+        +
+        OWNER_PHONE
+        +
+        "?text="
+        +
+        encodeURIComponent(
+          ownerMessage
+        ),
+
+        "_blank"
+
+      );
+
+    },
+    800
+  );
+
 }
 
-// Initial render
-render();
+
+// ======================================================
+// AUTH STATE
+// ======================================================
+
+sb.auth.onAuthStateChange(
+
+  async (
+    event,
+    session
+  ) => {
+
+    if(
+      event ===
+      "SIGNED_OUT"
+    ){
+
+      currentUser =
+        null;
+
+      currentProfile =
+        null;
+
+      fleet =
+        [];
+
+      expenses =
+        {};
+
+      documents =
+        {};
+
+      showLogin();
+
+      return;
+
+    }
+
+
+    if(
+      session &&
+      session.user
+    ){
+
+      currentUser =
+        session.user;
+
+    }
+
+  }
+
+);
+
+
+// ======================================================
+// END OF V8 app.js
+// ======================================================
