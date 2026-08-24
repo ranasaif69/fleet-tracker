@@ -18,45 +18,44 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
         Roboto, Arial, sans-serif;
       background: #f4f6f8;
-      color: #17202a;
+      color: #111827;
     }
 
     .header {
       background: #111827;
       color: white;
-      padding: 28px 20px;
       text-align: center;
+      padding: 30px 20px;
     }
 
     .header h1 {
-      margin: 0 0 6px;
-      font-size: 28px;
+      margin: 0 0 8px;
+      font-size: 30px;
     }
 
     .header p {
       margin: 0;
-      opacity: 0.8;
+      font-size: 17px;
+      opacity: .85;
     }
 
     .container {
       max-width: 760px;
-      margin: 25px auto;
+      margin: 20px auto;
       padding: 0 15px 40px;
     }
 
     .card {
       background: white;
-      border-radius: 14px;
+      border-radius: 15px;
       padding: 22px;
       margin-bottom: 18px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
     }
 
     h2 {
-      font-size: 20px;
-      margin-top: 0;
-      margin-bottom: 18px;
-      color: #111827;
+      margin: 0 0 20px;
+      font-size: 22px;
     }
 
     .row {
@@ -66,29 +65,30 @@
     }
 
     .field {
-      margin-bottom: 16px;
+      margin-bottom: 17px;
     }
 
     label {
       display: block;
-      font-weight: 600;
       margin-bottom: 7px;
-      font-size: 14px;
+      font-weight: 650;
+      font-size: 15px;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: 13px;
       border: 1px solid #d1d5db;
-      border-radius: 8px;
+      border-radius: 9px;
+      padding: 13px;
       font-size: 16px;
       background: white;
+      color: #111827;
     }
 
     textarea {
-      min-height: 95px;
+      min-height: 100px;
       resize: vertical;
     }
 
@@ -99,20 +99,6 @@
       border-color: #2563eb;
     }
 
-    .upload {
-      border: 2px dashed #d1d5db;
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 14px;
-      background: #fafafa;
-    }
-
-    .small {
-      font-size: 12px;
-      color: #6b7280;
-      margin-top: 6px;
-    }
-
     .required {
       color: #dc2626;
     }
@@ -120,68 +106,80 @@
     .notice {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
-      padding: 14px;
-      border-radius: 9px;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .submit-btn {
-      width: 100%;
-      border: 0;
-      border-radius: 10px;
-      padding: 16px;
-      background: #16a34a;
-      color: white;
-      font-size: 18px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .submit-btn:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-    }
-
-    #message {
-      display: none;
-      margin-top: 18px;
       padding: 15px;
-      border-radius: 9px;
-      font-weight: 600;
-      line-height: 1.5;
+      border-radius: 10px;
+      line-height: 1.55;
     }
 
-    .success {
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #86efac;
+    .upload {
+      padding: 15px;
+      border: 2px dashed #d1d5db;
+      border-radius: 11px;
+      margin-bottom: 15px;
+      background: #fafafa;
     }
 
-    .error {
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fca5a5;
-    }
-
-    .progress {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
+    .small {
+      margin-top: 8px;
+      color: #6b7280;
+      font-size: 12px;
     }
 
     .conditional {
       display: none;
     }
 
+    .submit-btn {
+      width: 100%;
+      padding: 17px;
+      border: 0;
+      border-radius: 11px;
+      background: #16a34a;
+      color: white;
+      font-weight: 750;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .submit-btn:disabled {
+      background: #9ca3af;
+      cursor: wait;
+    }
+
+    #message {
+      display: none;
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 10px;
+      font-weight: 650;
+      line-height: 1.5;
+    }
+
+    .progress {
+      display: block !important;
+      color: #1d4ed8;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+
+    .success {
+      display: block !important;
+      color: #166534;
+      background: #dcfce7;
+      border: 1px solid #86efac;
+    }
+
+    .error {
+      display: block !important;
+      color: #991b1b;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+    }
+
     @media (max-width: 600px) {
       .row {
         grid-template-columns: 1fr;
         gap: 0;
-      }
-
-      .container {
-        margin-top: 15px;
       }
 
       .card {
@@ -193,373 +191,402 @@
 
 <body>
 
-  <div class="header">
-    <h1>Car 4 U 1 Ltd</h1>
-    <p>Private Hire Driver Application</p>
+<div class="header">
+  <h1>Car 4 U 1 Ltd</h1>
+  <p>Private Hire Driver Application</p>
+</div>
+
+<div class="container">
+
+  <div class="notice" style="margin-bottom:18px;">
+    Please complete all required information accurately and upload
+    clear copies of your documents.
   </div>
 
-  <div class="container">
+  <form id="driverForm">
 
-    <div class="notice" style="margin-bottom:18px;">
-      Please complete all required information accurately and upload
-      clear copies of your documents. Your information will be used
-      to process your driver application.
+    <div class="card">
+      <h2>Personal Details</h2>
+
+      <div class="field">
+        <label>
+          Full Name <span class="required">*</span>
+        </label>
+        <input name="full_name" type="text" required>
+      </div>
+
+      <div class="row">
+
+        <div class="field">
+          <label>
+            Date of Birth <span class="required">*</span>
+          </label>
+          <input name="date_of_birth" type="date" required>
+        </div>
+
+        <div class="field">
+          <label>
+            National Insurance Number
+            <span class="required">*</span>
+          </label>
+          <input
+            name="national_insurance_number"
+            type="text"
+            autocomplete="off"
+            required
+          >
+        </div>
+
+      </div>
+
+      <div class="row">
+
+        <div class="field">
+          <label>
+            Phone Number <span class="required">*</span>
+          </label>
+          <input name="phone" type="tel" required>
+        </div>
+
+        <div class="field">
+          <label>
+            Email Address <span class="required">*</span>
+          </label>
+          <input name="email" type="email" required>
+        </div>
+
+      </div>
     </div>
 
-    <form id="driverForm">
 
-      <div class="card">
-        <h2>Personal Details</h2>
+    <div class="card">
+      <h2>Home Address</h2>
 
-        <div class="field">
-          <label>Full Name <span class="required">*</span></label>
-          <input type="text" name="full_name" required>
-        </div>
-
-        <div class="row">
-
-          <div class="field">
-            <label>Date of Birth <span class="required">*</span></label>
-            <input type="date" name="date_of_birth" required>
-          </div>
-
-          <div class="field">
-            <label>
-              National Insurance Number
-              <span class="required">*</span>
-            </label>
-            <input
-              type="text"
-              name="national_insurance_number"
-              autocomplete="off"
-              required
-            >
-          </div>
-
-        </div>
-
-        <div class="row">
-
-          <div class="field">
-            <label>Phone Number <span class="required">*</span></label>
-            <input type="tel" name="phone" required>
-          </div>
-
-          <div class="field">
-            <label>Email Address <span class="required">*</span></label>
-            <input type="email" name="email" required>
-          </div>
-
-        </div>
+      <div class="field">
+        <label>
+          Address Line 1 <span class="required">*</span>
+        </label>
+        <input name="address_line_1" type="text" required>
       </div>
 
-
-      <div class="card">
-        <h2>Home Address</h2>
-
-        <div class="field">
-          <label>Address Line 1 <span class="required">*</span></label>
-          <input type="text" name="address_line_1" required>
-        </div>
-
-        <div class="field">
-          <label>Address Line 2</label>
-          <input type="text" name="address_line_2">
-        </div>
-
-        <div class="row">
-
-          <div class="field">
-            <label>City <span class="required">*</span></label>
-            <input type="text" name="city" value="Glasgow" required>
-          </div>
-
-          <div class="field">
-            <label>Postcode <span class="required">*</span></label>
-            <input type="text" name="postcode" required>
-          </div>
-
-        </div>
+      <div class="field">
+        <label>Address Line 2</label>
+        <input name="address_line_2" type="text">
       </div>
 
-
-      <div class="card">
-        <h2>Driving Licence</h2>
-
-        <div class="row">
-
-          <div class="field">
-            <label>
-              Driving Licence Number
-              <span class="required">*</span>
-            </label>
-
-            <input
-              type="text"
-              name="driving_licence_number"
-              required
-            >
-          </div>
-
-          <div class="field">
-            <label>
-              Licence Expiry Date
-              <span class="required">*</span>
-            </label>
-
-            <input
-              type="date"
-              name="driving_licence_expiry"
-              required
-            >
-          </div>
-
-        </div>
+      <div class="row">
 
         <div class="field">
           <label>
-            How many penalty points are currently on your licence?
-            <span class="required">*</span>
+            City <span class="required">*</span>
           </label>
-
           <input
-            type="number"
-            id="licencePoints"
-            name="licence_points"
-            min="0"
-            max="99"
+            name="city"
+            type="text"
+            value="Glasgow"
             required
           >
         </div>
 
-        <div class="field conditional" id="pointsDetailsBox">
-          <label>Please give details of your penalty points</label>
-
-          <textarea
-            name="licence_points_details"
-            placeholder="Offence code, number of points and date"
-          ></textarea>
+        <div class="field">
+          <label>
+            Postcode <span class="required">*</span>
+          </label>
+          <input name="postcode" type="text" required>
         </div>
+
       </div>
+    </div>
 
 
-      <div class="card">
-        <h2>Taxi / Private Hire Licence</h2>
+    <div class="card">
+      <h2>Driving Licence</h2>
 
-        <div class="row">
-
-          <div class="field">
-            <label>
-              Taxi Badge Number
-              <span class="required">*</span>
-            </label>
-
-            <input
-              type="text"
-              name="taxi_badge_number"
-              required
-            >
-          </div>
-
-          <div class="field">
-            <label>
-              Taxi Badge Expiry Date
-              <span class="required">*</span>
-            </label>
-
-            <input
-              type="date"
-              name="taxi_badge_expiry"
-              required
-            >
-          </div>
-
-        </div>
-      </div>
-
-
-      <div class="card">
-        <h2>Accident History</h2>
+      <div class="row">
 
         <div class="field">
           <label>
-            Have you been involved in any accidents in the last 5 years?
+            Driving Licence Number
             <span class="required">*</span>
           </label>
-
-          <select
-            name="accidents_last_5_years"
-            id="accidentAnswer"
-            required
-          >
-            <option value="">Select an answer</option>
-            <option value="No">No</option>
-            <option value="Yes">Yes</option>
-          </select>
-        </div>
-
-        <div class="conditional" id="accidentDetailsBox">
-
-          <div class="field">
-            <label>Number of accidents</label>
-
-            <input
-              type="number"
-              name="accident_count"
-              min="1"
-              max="99"
-            >
-          </div>
-
-          <div class="field">
-            <label>Accident Details</label>
-
-            <textarea
-              name="accident_details"
-              placeholder="Include the date and whether each accident was fault or non-fault."
-            ></textarea>
-          </div>
-
-        </div>
-      </div>
-
-
-      <div class="card">
-        <h2>Emergency Contact</h2>
-
-        <div class="row">
-
-          <div class="field">
-            <label>Emergency Contact Name</label>
-            <input type="text" name="emergency_contact_name">
-          </div>
-
-          <div class="field">
-            <label>Emergency Contact Phone</label>
-            <input type="tel" name="emergency_contact_phone">
-          </div>
-
-        </div>
-      </div>
-
-
-      <div class="card">
-        <h2>Required Documents</h2>
-
-        <div class="upload">
-          <label>
-            Driving Licence — Front
-            <span class="required">*</span>
-          </label>
-
           <input
-            type="file"
-            name="driving_licence_front"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            required
-          >
-
-          <div class="small">
-            JPG, PNG, WEBP or PDF. Maximum 10MB.
-          </div>
-        </div>
-
-
-        <div class="upload">
-          <label>
-            Driving Licence — Back
-            <span class="required">*</span>
-          </label>
-
-          <input
-            type="file"
-            name="driving_licence_back"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
+            name="driving_licence_number"
+            type="text"
             required
           >
         </div>
-
-
-        <div class="upload">
-          <label>
-            Taxi / Private Hire Badge
-            <span class="required">*</span>
-          </label>
-
-          <input
-            type="file"
-            name="taxi_badge"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            required
-          >
-        </div>
-
-
-        <div class="upload">
-          <label>
-            Taxi / Private Hire Paper Licence
-            <span class="required">*</span>
-          </label>
-
-          <input
-            type="file"
-            name="taxi_paper_licence"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            required
-          >
-        </div>
-
-
-        <div class="upload">
-          <label>Proof of Address</label>
-
-          <input
-            type="file"
-            name="proof_of_address"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-          >
-        </div>
-
-      </div>
-
-
-      <div class="card">
-        <h2>Additional Information</h2>
 
         <div class="field">
-          <label>Anything else we should know?</label>
-
-          <textarea
-            name="notes"
-            placeholder="Optional"
-          ></textarea>
+          <label>
+            Licence Expiry Date
+            <span class="required">*</span>
+          </label>
+          <input
+            name="driving_licence_expiry"
+            type="date"
+            required
+          >
         </div>
+
       </div>
 
+      <div class="field">
+        <label>
+          How many penalty points are currently on your licence?
+          <span class="required">*</span>
+        </label>
 
-      <div class="card">
-
-        <div class="notice" style="margin-bottom:18px;">
-          By submitting this application, you confirm that the
-          information provided is accurate and that the documents
-          supplied relate to you.
-        </div>
-
-        <button
-          type="submit"
-          class="submit-btn"
-          id="submitButton"
+        <input
+          id="licencePoints"
+          name="licence_points"
+          type="number"
+          min="0"
+          max="99"
+          required
         >
-          Submit Driver Application
-        </button>
-
-        <div id="message"></div>
-
       </div>
 
-    </form>
+      <div
+        class="field conditional"
+        id="pointsDetailsBox"
+      >
+        <label>Penalty Point Details</label>
 
-  </div>
+        <textarea
+          name="licence_points_details"
+          placeholder="Please include offence code, points and date."
+        ></textarea>
+      </div>
+    </div>
+
+
+    <div class="card">
+      <h2>Taxi / Private Hire Licence</h2>
+
+      <div class="row">
+
+        <div class="field">
+          <label>
+            Taxi Badge Number
+            <span class="required">*</span>
+          </label>
+          <input
+            name="taxi_badge_number"
+            type="text"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label>
+            Badge Expiry Date
+            <span class="required">*</span>
+          </label>
+          <input
+            name="taxi_badge_expiry"
+            type="date"
+            required
+          >
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="card">
+      <h2>Accident History</h2>
+
+      <div class="field">
+        <label>
+          Have you been involved in any accidents in the last 5 years?
+          <span class="required">*</span>
+        </label>
+
+        <select
+          id="accidentAnswer"
+          name="accidents_last_5_years"
+          required
+        >
+          <option value="">Select an answer</option>
+          <option value="No">No</option>
+          <option value="Yes">Yes</option>
+        </select>
+      </div>
+
+      <div
+        id="accidentDetailsBox"
+        class="conditional"
+      >
+
+        <div class="field">
+          <label>Number of Accidents</label>
+
+          <input
+            name="accident_count"
+            type="number"
+            min="1"
+            max="99"
+          >
+        </div>
+
+        <div class="field">
+          <label>Accident Details</label>
+
+          <textarea
+            name="accident_details"
+            placeholder="Include dates and whether each accident was fault or non-fault."
+          ></textarea>
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="card">
+      <h2>Emergency Contact</h2>
+
+      <div class="row">
+
+        <div class="field">
+          <label>Emergency Contact Name</label>
+          <input
+            name="emergency_contact_name"
+            type="text"
+          >
+        </div>
+
+        <div class="field">
+          <label>Emergency Contact Phone</label>
+          <input
+            name="emergency_contact_phone"
+            type="tel"
+          >
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="card">
+      <h2>Required Documents</h2>
+
+      <div class="upload">
+        <label>
+          Driving Licence — Front
+          <span class="required">*</span>
+        </label>
+
+        <input
+          name="driving_licence_front"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          required
+        >
+
+        <div class="small">
+          JPG, PNG, WEBP or PDF. Maximum 10MB.
+        </div>
+      </div>
+
+
+      <div class="upload">
+        <label>
+          Driving Licence — Back
+          <span class="required">*</span>
+        </label>
+
+        <input
+          name="driving_licence_back"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          required
+        >
+      </div>
+
+
+      <div class="upload">
+        <label>
+          Taxi / Private Hire Badge
+          <span class="required">*</span>
+        </label>
+
+        <input
+          name="taxi_badge"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          required
+        >
+      </div>
+
+
+      <div class="upload">
+        <label>
+          Taxi / Private Hire Paper Licence
+          <span class="required">*</span>
+        </label>
+
+        <input
+          name="taxi_paper_licence"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          required
+        >
+      </div>
+
+
+      <div class="upload">
+        <label>Proof of Address</label>
+
+        <input
+          name="proof_of_address"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+        >
+      </div>
+
+    </div>
+
+
+    <div class="card">
+      <h2>Additional Information</h2>
+
+      <div class="field">
+        <label>Anything else we should know?</label>
+
+        <textarea
+          name="notes"
+          placeholder="Optional"
+        ></textarea>
+      </div>
+    </div>
+
+
+    <div class="card">
+
+      <div
+        class="notice"
+        style="margin-bottom:18px;"
+      >
+        By submitting this application, you confirm that the
+        information provided is accurate and that the documents
+        supplied relate to you.
+      </div>
+
+      <button
+        id="submitButton"
+        class="submit-btn"
+        type="submit"
+      >
+        Submit Driver Application
+      </button>
+
+      <div id="message"></div>
+
+    </div>
+
+  </form>
+
+</div>
 
 
 <script>
@@ -578,7 +605,6 @@ const supabaseClient =
     SUPABASE_URL,
     SUPABASE_ANON_KEY
   );
-
 
 const form =
   document.getElementById("driverForm");
@@ -602,32 +628,36 @@ const accidentDetailsBox =
   document.getElementById("accidentDetailsBox");
 
 
-licencePoints.addEventListener("input", function () {
+licencePoints.addEventListener(
+  "input",
+  function () {
 
-  pointsDetailsBox.style.display =
-    Number(this.value) > 0
-      ? "block"
-      : "none";
+    pointsDetailsBox.style.display =
+      Number(this.value) > 0
+        ? "block"
+        : "none";
 
-});
+  }
+);
 
 
-accidentAnswer.addEventListener("change", function () {
+accidentAnswer.addEventListener(
+  "change",
+  function () {
 
-  accidentDetailsBox.style.display =
-    this.value === "Yes"
-      ? "block"
-      : "none";
+    accidentDetailsBox.style.display =
+      this.value === "Yes"
+        ? "block"
+        : "none";
 
-});
+  }
+);
 
 
 function showMessage(text, type) {
 
   message.textContent = text;
-
   message.className = type;
-
   message.style.display = "block";
 
   message.scrollIntoView({
@@ -638,22 +668,26 @@ function showMessage(text, type) {
 }
 
 
-async function callFunction(body) {
+async function callFunction(payload) {
 
-  const response = await fetch(
-    FUNCTION_URL,
-    {
-      method: "POST",
+  const response =
+    await fetch(
+      FUNCTION_URL,
+      {
+        method: "POST",
 
-      headers: {
-        "Content-Type":
-          "application/json"
-      },
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-      body:
-        JSON.stringify(body)
-    }
-  );
+        body:
+          JSON.stringify(payload)
+      }
+    );
+
+
+  const rawText =
+    await response.text();
 
 
   let result;
@@ -661,12 +695,13 @@ async function callFunction(body) {
   try {
 
     result =
-      await response.json();
+      JSON.parse(rawText);
 
   } catch {
 
     throw new Error(
-      "The server returned an invalid response."
+      "Server response was not valid JSON: " +
+      rawText.substring(0, 150)
     );
 
   }
@@ -674,24 +709,25 @@ async function callFunction(body) {
 
   if (
     !response.ok ||
-    !result.success
+    result.success !== true
   ) {
 
     throw new Error(
       result.error ||
-      "The request failed."
+      "Request failed"
     );
 
   }
 
 
   return result;
+
 }
 
 
-function checkFile(file) {
+function validateFile(file) {
 
-  if (!file) {
+  if (!file || file.size === 0) {
     return;
   }
 
@@ -703,7 +739,8 @@ function checkFile(file) {
   if (file.size > maxSize) {
 
     throw new Error(
-      `${file.name} is larger than 10MB.`
+      file.name +
+      " is larger than 10MB."
     );
 
   }
@@ -724,30 +761,33 @@ function checkFile(file) {
   ) {
 
     throw new Error(
-      `${file.name} must be JPG, PNG, WEBP or PDF.`
+      file.name +
+      " must be JPG, PNG, WEBP or PDF."
     );
 
   }
+
 }
 
 
-async function uploadDocument(
+async function uploadOneDocument(
   token,
   documentType,
   file
 ) {
 
-  checkFile(file);
+  validateFile(file);
 
 
   showMessage(
-    `Preparing ${file.name}...`,
+    "Preparing " + file.name + "...",
     "progress"
   );
 
 
-  const uploadDetails =
+  const uploadInfo =
     await callFunction({
+
       action:
         "create-upload",
 
@@ -759,17 +799,18 @@ async function uploadDocument(
 
       file_name:
         file.name
+
     });
 
 
   showMessage(
-    `Uploading ${file.name}...`,
+    "Uploading " + file.name + "...",
     "progress"
   );
 
 
   const {
-    error: uploadError
+    error: storageError
   } =
     await supabaseClient
       .storage
@@ -777,8 +818,8 @@ async function uploadDocument(
         "driver-onboarding"
       )
       .uploadToSignedUrl(
-        uploadDetails.path,
-        uploadDetails.upload_token,
+        uploadInfo.path,
+        uploadInfo.upload_token,
         file,
         {
           contentType:
@@ -787,19 +828,26 @@ async function uploadDocument(
       );
 
 
-  if (uploadError) {
+  if (storageError) {
 
     throw new Error(
-      "Upload failed for " +
+      "Could not upload " +
       file.name +
       ": " +
-      uploadError.message
+      storageError.message
     );
 
   }
 
 
+  showMessage(
+    "Saving " + file.name + "...",
+    "progress"
+  );
+
+
   await callFunction({
+
     action:
       "register-document",
 
@@ -813,7 +861,8 @@ async function uploadDocument(
       file.name,
 
     file_path:
-      uploadDetails.path
+      uploadInfo.path
+
   });
 
 }
@@ -839,15 +888,17 @@ form.addEventListener(
     if (!token) {
 
       showMessage(
-        "This onboarding link is invalid. Please request a new link.",
+        "Invalid application link. Please request a new driver invitation.",
         "error"
       );
 
       return;
+
     }
 
 
-    submitButton.disabled = true;
+    submitButton.disabled =
+      true;
 
     submitButton.textContent =
       "Saving Details...";
@@ -855,22 +906,21 @@ form.addEventListener(
 
     try {
 
-      const formData =
+      const data =
         new FormData(form);
 
-
-      /*
-      ======================================
-      STEP 1
-      SAVE DRIVER DETAILS
-      ======================================
-      */
 
       showMessage(
         "Saving your application details...",
         "progress"
       );
 
+
+      /*
+        IMPORTANT:
+        This request is JSON.
+        It does NOT send FormData to the Edge Function.
+      */
 
       await callFunction({
 
@@ -881,153 +931,132 @@ form.addEventListener(
           token,
 
         full_name:
-          formData.get(
-            "full_name"
-          ),
+          data.get("full_name"),
 
         date_of_birth:
-          formData.get(
-            "date_of_birth"
-          ),
+          data.get("date_of_birth"),
 
         national_insurance_number:
-          formData.get(
+          data.get(
             "national_insurance_number"
           ),
 
         phone:
-          formData.get(
-            "phone"
-          ),
+          data.get("phone"),
 
         email:
-          formData.get(
-            "email"
-          ),
+          data.get("email"),
 
         address_line_1:
-          formData.get(
+          data.get(
             "address_line_1"
           ),
 
         address_line_2:
-          formData.get(
+          data.get(
             "address_line_2"
           ),
 
         city:
-          formData.get(
-            "city"
-          ),
+          data.get("city"),
 
         postcode:
-          formData.get(
-            "postcode"
-          ),
+          data.get("postcode"),
 
         driving_licence_number:
-          formData.get(
+          data.get(
             "driving_licence_number"
           ),
 
         driving_licence_expiry:
-          formData.get(
+          data.get(
             "driving_licence_expiry"
           ),
 
         taxi_badge_number:
-          formData.get(
+          data.get(
             "taxi_badge_number"
           ),
 
         taxi_badge_expiry:
-          formData.get(
+          data.get(
             "taxi_badge_expiry"
           ),
 
         licence_points:
-          formData.get(
+          data.get(
             "licence_points"
           ),
 
         licence_points_details:
-          formData.get(
+          data.get(
             "licence_points_details"
           ),
 
         accidents_last_5_years:
-          formData.get(
+          data.get(
             "accidents_last_5_years"
           ),
 
         accident_count:
-          formData.get(
+          data.get(
             "accident_count"
           ),
 
         accident_details:
-          formData.get(
+          data.get(
             "accident_details"
           ),
 
         emergency_contact_name:
-          formData.get(
+          data.get(
             "emergency_contact_name"
           ),
 
         emergency_contact_phone:
-          formData.get(
+          data.get(
             "emergency_contact_phone"
           ),
 
         notes:
-          formData.get(
-            "notes"
-          )
+          data.get("notes")
 
       });
 
-
-      /*
-      ======================================
-      STEP 2
-      DOCUMENTS
-      ======================================
-      */
 
       const documents = [
 
         [
           "driving_licence_front",
-          formData.get(
+          data.get(
             "driving_licence_front"
           )
         ],
 
         [
           "driving_licence_back",
-          formData.get(
+          data.get(
             "driving_licence_back"
           )
         ],
 
         [
           "taxi_badge",
-          formData.get(
+          data.get(
             "taxi_badge"
           )
         ],
 
         [
           "taxi_paper_licence",
-          formData.get(
+          data.get(
             "taxi_paper_licence"
           )
         ],
 
         [
           "proof_of_address",
-          formData.get(
+          data.get(
             "proof_of_address"
           )
         ]
@@ -1051,7 +1080,7 @@ form.addEventListener(
           file.size > 0
         ) {
 
-          await uploadDocument(
+          await uploadOneDocument(
             token,
             documentType,
             file
@@ -1061,12 +1090,6 @@ form.addEventListener(
 
       }
 
-
-      /*
-      ======================================
-      SUCCESS
-      ======================================
-      */
 
       showMessage(
         "Thank you. Your driver application and documents have been submitted successfully.",
@@ -1087,8 +1110,9 @@ form.addEventListener(
 
 
       showMessage(
-        error.message ||
-        "Something went wrong. Please try again.",
+        error instanceof Error
+          ? error.message
+          : "Something went wrong.",
         "error"
       );
 
