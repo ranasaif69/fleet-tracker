@@ -4399,3 +4399,574 @@ async function confirmDriverVehicleAssignment(
 assignApprovedDriverToVehicle = function(applicationId) {
   return assignDriverToVehicle(applicationId);
 };
+// ======================================================
+// SEND VEHICLE DOCUMENTS AFTER ASSIGNMENT
+// ======================================================
+
+let lastAssignedVehicleId = null;
+let lastAssignedDriverApplicationId = null;
+
+
+// ======================================================
+// OVERRIDE ASSIGN CONFIRMATION
+// ======================================================
+
+const originalConfirmDriverVehicleAssignment =
+  confirmDriverVehicleAssignment;
+
+
+confirmDriverVehicleAssignment =
+  async function(driver, vehicle){
+
+    let message =
+      `Assign ${driver.full_name || "this driver"} to ` +
+      `${vehicle.registration || "this vehicle"}?`;
+
+    if(vehicle.driver_name){
+
+      message +=
+        `\n\nWARNING: ${vehicle.registration} is currently assigned to ` +
+        `${vehicle.driver_name}. This will replace that driver.`;
+    }
+
+    const confirmed =
+      confirm(message);
+
+    if(!confirmed){
+      return;
+    }
+
+    try{
+
+      const {
+        error
+      } =
+        await sb
+          .from("vehicles")
+          .update({
+
+            driver_name:
+              driver.full_name || "",
+
+            driver_phone:
+              driver.phone || "",
+
+            badge_expiry:
+              driver.taxi_badge_expiry || null,
+
+            status:
+              "Rented"
+
+          })
+          .eq(
+            "id",
+            vehicle.id
+          );
+
+      if(error){
+        throw error;
+      }
+
+
+      lastAssignedVehicleId =
+        vehicle.id;
+
+      lastAssignedDriverApplicationId =
+        driver.id;
+
+
+      await loadVehicles();
+
+      await loadDriverApplications();
+
+      render();
+
+
+      showVehicleDocumentSendBox(
+        driver,
+        vehicle
+      );
+
+
+    } catch(error){
+
+      console.error(error);
+
+      alert(
+        "Could not assign driver to vehicle: " +
+        error.message
+      );
+
+    }
+
+  };
+
+
+// ======================================================
+// SHOW SEND DOCUMENTS BOX
+// ======================================================
+
+function showVehicleDocumentSendBox(
+  driver,
+  vehicle
+){
+
+  let modal =
+    document.getElementById(
+      "vehicleDocumentSendModal"
+    );
+
+  if(!modal){
+
+    modal =
+      document.createElement(
+        "div"
+      );
+
+    modal.id =
+      "vehicleDocumentSendModal";
+
+    modal.style.cssText =
+      `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.55);
+        z-index:9999;
+        padding:20px;
+        overflow:auto;
+      `;
+
+    modal.innerHTML = `
+
+      <div
+        style="
+          max-width:600px;
+          margin:60px auto;
+          background:white;
+          border-radius:18px;
+          padding:20px;
+        "
+      >
+
+        <h2>
+          Vehicle Assigned Successfully
+        </h2>
+
+        <p id="vehicleDocumentSendMessage"></p>
+
+        <button
+          class="blue"
+          onclick="sendAssignedVehicleDocumentsByEmail()"
+        >
+          Email Vehicle Documents
+        </button>
+
+        <button
+          class="green"
+          onclick="sendAssignedVehicleDocumentsByWhatsApp()"
+        >
+          WhatsApp Vehicle Documents
+        </button>
+
+        <button
+          class="secondary"
+          onclick="closeVehicleDocumentSendModal()"
+        >
+          Close
+        </button>
+
+      </div>
+    `;
+
+    document.body.appendChild(
+      modal
+    );
+
+  }
+
+
+  document.getElementById(
+    "vehicleDocumentSendMessage"
+  ).innerHTML =
+    `
+      <b>${escapeHtml(driver.full_name || "Driver")}</b>
+      has been assigned to
+      <b>${escapeHtml(vehicle.registration || "")}</b>.
+
+      <br><br>
+
+      You can now send the vehicle documents.
+    `;
+
+
+  modal.style.display =
+    "block";
+
+}
+
+
+// ======================================================
+// CLOSE BOX
+// ======================================================
+
+function closeVehicleDocumentSendModal(){
+
+  const modal =
+    document.getElementById(
+      "vehicleDocumentSendModal"
+    );
+
+  if(modal){
+
+    modal.style.display =
+      "none";
+
+  }
+
+}
+
+
+// ======================================================
+// GET ASSIGNED DRIVER
+// ======================================================
+
+function getLastAssignedDriver(){
+
+  return driverApplications.find(
+    item =>
+      item.id ===
+      lastAssignedDriverApplicationId
+  );
+
+}
+
+
+// ======================================================
+// GET ASSIGNED VEHICLE
+// ======================================================
+
+function getLastAssignedVehicle(){
+
+  return fleet.find(
+    item =>
+      item.id ===
+      lastAssignedVehicleId
+  );
+
+}
+
+
+// ======================================================
+// BUILD SECURE VEHICLE DOCUMENT LINKS
+// ======================================================
+
+async function getVehicleDocumentLinks(
+  vehicleId
+){
+
+  const vehicleDocs =
+    documents[
+      vehicleId
+    ] || [];
+
+
+  const wantedTypes = [
+    "mot",
+    "v5",
+    "logbook",
+    "taxi_licence",
+    "taxi_license",
+    "private_hire_licence",
+    "private_hire_license"
+  ];
+
+
+  const matchingDocs =
+    vehicleDocs.filter(
+      document => {
+
+        const type =
+          String(
+            document.document_type ||
+            document.type ||
+            ""
+          )
+            .toLowerCase();
+
+        return wantedTypes.some(
+          wanted =>
+            type.includes(wanted)
+        );
+
+      }
+    );
+
+
+  const links = [];
+
+
+  for(const document of matchingDocs){
+
+    const bucket =
+      document.bucket_name ||
+      document.bucket ||
+      "vehicle-documents";
+
+
+    const path =
+      document.file_path ||
+      document.path;
+
+
+    if(!path){
+      continue;
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await sb.storage
+        .from(bucket)
+        .createSignedUrl(
+          path,
+          3600
+        );
+
+
+    if(
+      error ||
+      !data?.signedUrl
+    ){
+
+      console.warn(
+        "Could not create document link:",
+        error
+      );
+
+      continue;
+    }
+
+
+    const label =
+      document.document_type ||
+      document.type ||
+      document.file_name ||
+      "Vehicle Document";
+
+
+    links.push({
+
+      label,
+      url:
+        data.signedUrl
+
+    });
+
+  }
+
+
+  return links;
+
+}
+
+
+// ======================================================
+// EMAIL VEHICLE DOCUMENTS
+// ======================================================
+
+async function sendAssignedVehicleDocumentsByEmail(){
+
+  const driver =
+    getLastAssignedDriver();
+
+  const vehicle =
+    getLastAssignedVehicle();
+
+
+  if(
+    !driver ||
+    !vehicle
+  ){
+
+    alert(
+      "Assigned driver or vehicle could not be found."
+    );
+
+    return;
+  }
+
+
+  if(
+    !driver.email
+  ){
+
+    alert(
+      "This driver does not have an email address."
+    );
+
+    return;
+  }
+
+
+  const links =
+    await getVehicleDocumentLinks(
+      vehicle.id
+    );
+
+
+  if(!links.length){
+
+    alert(
+      "No MOT, V5 or taxi licence documents were found for this vehicle."
+    );
+
+    return;
+  }
+
+
+  const documentText =
+    links
+      .map(
+        item =>
+          `${item.label}: ${item.url}`
+      )
+      .join("\n\n");
+
+
+  const subject =
+    encodeURIComponent(
+      `Vehicle Documents - ${vehicle.registration}`
+    );
+
+
+  const body =
+    encodeURIComponent(
+`Hi ${driver.full_name || ""},
+
+You have been assigned vehicle ${vehicle.registration}.
+
+Please find your vehicle documents below:
+
+${documentText}
+
+These links are temporary and will expire.
+
+Thank you,
+Car 4 U 1 Ltd`
+    );
+
+
+  window.location.href =
+    `mailto:${driver.email}?subject=${subject}&body=${body}`;
+
+}
+
+
+// ======================================================
+// WHATSAPP VEHICLE DOCUMENTS
+// ======================================================
+
+async function sendAssignedVehicleDocumentsByWhatsApp(){
+
+  const driver =
+    getLastAssignedDriver();
+
+  const vehicle =
+    getLastAssignedVehicle();
+
+
+  if(
+    !driver ||
+    !vehicle
+  ){
+
+    alert(
+      "Assigned driver or vehicle could not be found."
+    );
+
+    return;
+  }
+
+
+  let phone =
+    String(
+      driver.phone ||
+      ""
+    )
+      .replace(
+        /[^0-9]/g,
+        ""
+      );
+
+
+  if(
+    phone.startsWith("0")
+  ){
+
+    phone =
+      "44" +
+      phone.substring(1);
+
+  }
+
+
+  if(!phone){
+
+    alert(
+      "This driver does not have a phone number."
+    );
+
+    return;
+  }
+
+
+  const links =
+    await getVehicleDocumentLinks(
+      vehicle.id
+    );
+
+
+  if(!links.length){
+
+    alert(
+      "No MOT, V5 or taxi licence documents were found for this vehicle."
+    );
+
+    return;
+  }
+
+
+  const documentText =
+    links
+      .map(
+        item =>
+          `${item.label}:\n${item.url}`
+      )
+      .join("\n\n");
+
+
+  const message =
+    encodeURIComponent(
+`Hi ${driver.full_name || ""},
+
+You have been assigned vehicle ${vehicle.registration}.
+
+Please find your vehicle documents below:
+
+${documentText}
+
+These secure links are temporary and will expire.
+
+Thank you,
+Car 4 U 1 Ltd`
+    );
+
+
+  window.open(
+    `https://wa.me/${phone}?text=${message}`,
+    "_blank"
+  );
+
+}
