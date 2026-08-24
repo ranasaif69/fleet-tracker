@@ -4761,339 +4761,203 @@ async function rejectDriverApplication(
 
 
 // ======================================================
-// DELETE APPROVED DRIVER
+// SAFE DELETE DRIVER - EXACT ID ONLY
 // ======================================================
 
-async function deleteApprovedDriver(
-  applicationId
-) {
+async function deleteApprovedDriver(applicationId) {
 
-  const driver =
-    driverApplications.find(
-      item =>
-        item.id ===
-        applicationId
-    );
-
-  if (
-    !driver
-  ) {
-
-    alert(
-      "Driver could not be found."
-    );
-
-    return;
-  }
-
-  const name =
-    driver.full_name ||
-    "this driver";
-
-  const confirmed =
-    confirm(
-      `Permanently delete ${name}?\n\n` +
-      `This will remove the driver, their uploaded documents and their vehicle assignment.\n\n` +
-      `The vehicle itself will NOT be deleted.`
-    );
-
-  if (
-    !confirmed
-  ) {
-    return;
-  }
-
-  const finalCheck =
-    confirm(
-      `Are you absolutely sure you want to delete ${name}?`
-    );
-
-  if (
-    !finalCheck
-  ) {
+  if (!applicationId) {
+    alert("Driver ID is missing.");
     return;
   }
 
   try {
 
     // ----------------------------------------------
-    // CLEAR ASSIGNED VEHICLE
+    // 1. FETCH EXACT DRIVER BY PRIMARY KEY
     // ----------------------------------------------
 
-    if (
-      driver.assigned_vehicle_id
-    ) {
+    const {
+      data: driver,
+      error: fetchError
+    } =
+      await sb
+        .from("driver_applications")
+        .select("*")
+        .eq("id", applicationId)
+        .maybeSingle();
+
+    if (fetchError) {
+      throw fetchError;
+    }
+
+    if (!driver) {
+      alert("This driver could not be found.");
+      return;
+    }
+
+    const driverName =
+      driver.full_name ||
+      "this driver";
+
+
+    // ----------------------------------------------
+    // 2. CONFIRM EXACT DRIVER
+    // ----------------------------------------------
+
+    const firstConfirm =
+      confirm(
+        `Delete ${driverName}?\n\n` +
+        `Only this exact driver will be deleted.\n\n` +
+        `Their assigned vehicle will be cleared, but the vehicle itself will stay in the fleet.`
+      );
+
+    if (!firstConfirm) {
+      return;
+    }
+
+    const secondConfirm =
+      confirm(
+        `FINAL CONFIRMATION\n\n` +
+        `Delete ${driverName} permanently?`
+      );
+
+    if (!secondConfirm) {
+      return;
+    }
+
+
+    // ----------------------------------------------
+    // 3. CLEAR ONLY THIS DRIVER'S ASSIGNED VEHICLE
+    // ----------------------------------------------
+
+    if (driver.assigned_vehicle_id) {
 
       const {
-        error:
-          vehicleError
+        error: vehicleError
       } =
         await sb
-          .from(
-            "vehicles"
-          )
+          .from("vehicles")
           .update({
-
-            driver_name:
-              "",
-
-            driver_phone:
-              "",
-
-            licence_expiry:
-              null,
-
-            badge_expiry:
-              null,
-
-            status:
-              "Available"
-
+            driver_name: "",
+            driver_phone: "",
+            licence_expiry: null,
+            badge_expiry: null,
+            status: "Available"
           })
           .eq(
             "id",
             driver.assigned_vehicle_id
           );
 
-      if (
-        vehicleError
-      ) {
+      if (vehicleError) {
         throw vehicleError;
       }
-
-    } else {
-
-      const driverPhone =
-        String(
-          driver.phone ||
-          ""
-        )
-          .replace(
-            /[^0-9]/g,
-            ""
-          );
-
-      const driverName =
-        String(
-          driver.full_name ||
-          ""
-        )
-          .trim()
-          .toLowerCase();
-
-      const matchingCars =
-        fleet.filter(
-          car => {
-
-            const carPhone =
-              String(
-                car.driver_phone ||
-                ""
-              )
-                .replace(
-                  /[^0-9]/g,
-                  ""
-                );
-
-            const carName =
-              String(
-                car.driver_name ||
-                ""
-              )
-                .trim()
-                .toLowerCase();
-
-            return (
-              (
-                driverPhone &&
-                carPhone &&
-                driverPhone ===
-                carPhone
-              ) ||
-              (
-                driverName &&
-                carName &&
-                driverName ===
-                carName
-              )
-            );
-
-          }
-        );
-
-      for (
-        const car
-        of matchingCars
-      ) {
-
-        const {
-          error:
-            vehicleError
-        } =
-          await sb
-            .from(
-              "vehicles"
-            )
-            .update({
-
-              driver_name:
-                "",
-
-              driver_phone:
-                "",
-
-              licence_expiry:
-                null,
-
-              badge_expiry:
-                null,
-
-              status:
-                "Available"
-
-            })
-            .eq(
-              "id",
-              car.id
-            );
-
-        if (
-          vehicleError
-        ) {
-          throw vehicleError;
-        }
-
-      }
-
     }
 
 
     // ----------------------------------------------
-    // GET DRIVER DOCUMENTS
-    // ----------------------------------------------
-
-    let driverDocs =
-      driverApplicationDocuments[
-        applicationId
-      ] || [];
-
-    if (
-      !driverDocs.length
-    ) {
-
-      const {
-        data,
-        error
-      } =
-        await sb
-          .from(
-            "driver_application_documents"
-          )
-          .select("*")
-          .eq(
-            "application_id",
-            applicationId
-          );
-
-      if (
-        error
-      ) {
-        throw error;
-      }
-
-      driverDocs =
-        data || [];
-
-    }
-
-
-    // ----------------------------------------------
-    // DELETE STORAGE FILES
-    // ----------------------------------------------
-
-    const paths =
-      driverDocs
-        .map(
-          document =>
-            document.file_path
-        )
-        .filter(
-          Boolean
-        );
-
-    if (
-      paths.length
-    ) {
-
-      const {
-        error:
-          storageError
-      } =
-        await sb.storage
-          .from(
-            "driver-onboarding"
-          )
-          .remove(
-            paths
-          );
-
-      if (
-        storageError
-      ) {
-        throw storageError;
-      }
-
-    }
-
-
-    // ----------------------------------------------
-    // DELETE DOCUMENT DATABASE ROWS
+    // 4. GET ONLY THIS DRIVER'S DOCUMENTS
     // ----------------------------------------------
 
     const {
-      error:
-        documentError
+      data: driverDocs,
+      error: docsFetchError
     } =
       await sb
-        .from(
-          "driver_application_documents"
+        .from("driver_application_documents")
+        .select("id,file_path")
+        .eq(
+          "application_id",
+          applicationId
+        );
+
+    if (docsFetchError) {
+      throw docsFetchError;
+    }
+
+
+    // ----------------------------------------------
+    // 5. DELETE ONLY THIS DRIVER'S STORAGE FILES
+    // ----------------------------------------------
+
+    const filePaths =
+      (driverDocs || [])
+        .map(
+          item => item.file_path
         )
+        .filter(Boolean);
+
+    if (filePaths.length > 0) {
+
+      const {
+        error: storageError
+      } =
+        await sb.storage
+          .from("driver-onboarding")
+          .remove(filePaths);
+
+      if (storageError) {
+        throw storageError;
+      }
+    }
+
+
+    // ----------------------------------------------
+    // 6. DELETE ONLY THIS DRIVER'S DOCUMENT ROWS
+    // ----------------------------------------------
+
+    const {
+      error: docsDeleteError
+    } =
+      await sb
+        .from("driver_application_documents")
         .delete()
         .eq(
           "application_id",
           applicationId
         );
 
-    if (
-      documentError
-    ) {
-      throw documentError;
+    if (docsDeleteError) {
+      throw docsDeleteError;
     }
 
 
     // ----------------------------------------------
-    // DELETE DRIVER
+    // 7. DELETE EXACTLY ONE DRIVER ROW BY ID
     // ----------------------------------------------
 
     const {
-      error:
-        driverError
+      data: deletedDriver,
+      error: driverDeleteError
     } =
       await sb
-        .from(
-          "driver_applications"
-        )
+        .from("driver_applications")
         .delete()
         .eq(
           "id",
           applicationId
-        );
+        )
+        .select("id,full_name");
+
+    if (driverDeleteError) {
+      throw driverDeleteError;
+    }
 
     if (
-      driverError
+      !deletedDriver ||
+      deletedDriver.length !== 1
     ) {
-      throw driverError;
+
+      throw new Error(
+        "Safety stop: expected exactly one driver to be deleted."
+      );
     }
+
+
+    // ----------------------------------------------
+    // 8. REFRESH
+    // ----------------------------------------------
 
     selectedDriverApplicationId =
       null;
@@ -5108,29 +4972,26 @@ async function deleteApprovedDriver(
     render();
 
     alert(
-      `${name} has been deleted successfully.`
+      `${driverName} has been deleted successfully.`
     );
 
-    showTab(
-      "drivers"
-    );
+    showTab("drivers");
+
 
   } catch (error) {
 
     console.error(
-      "Delete driver error:",
+      "Safe delete driver error:",
       error
     );
 
     alert(
-      "Could not delete driver: " +
+      "Driver was NOT deleted safely: " +
       error.message
     );
 
   }
 }
-
-
 // ======================================================
 // DRIVER WHATSAPP
 // ======================================================
