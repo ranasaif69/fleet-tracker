@@ -4972,190 +4972,10 @@ Car 4 U 1 Ltd`
 }
 // ======================================================
 // VEHICLE DOCUMENT MANAGEMENT
-// MOT / V5 / TAXI LICENCE
+// MOT / V5 / INSURANCE / TAXI LICENCE
 // ======================================================
 
 let selectedVehicleDocumentVehicleId = null;
-
-
-// ======================================================
-// OVERRIDE VEHICLE LIST
-// ADD DOCUMENT BUTTON
-// ======================================================
-
-renderVehicles = function(){
-
-  const container =
-    $("vehicleList");
-
-  if(!container){
-    return;
-  }
-
-  const search =
-    (
-      $("vehicleSearch")
-        ?.value ||
-      ""
-    )
-      .trim()
-      .toLowerCase();
-
-  const filtered =
-    fleet.filter(
-      car =>
-        [
-          car.registration,
-          car.make_model,
-          car.driver_name,
-          car.driver_phone,
-          car.status
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(search)
-    );
-
-  if(!filtered.length){
-
-    container.innerHTML =
-      `
-        <div class="card">
-          No vehicles found.
-        </div>
-      `;
-
-    return;
-  }
-
-  container.innerHTML =
-    filtered.map(
-      car => `
-
-        <div class="vehicle-card">
-
-          <div class="row">
-
-            <div>
-
-              <h3>
-                ${escapeHtml(
-                  car.registration ||
-                  ""
-                )}
-              </h3>
-
-              <div class="small">
-                ${escapeHtml(
-                  car.make_model ||
-                  ""
-                )}
-              </div>
-
-            </div>
-
-            <span class="badge">
-              ${escapeHtml(
-                car.status ||
-                ""
-              )}
-            </span>
-
-          </div>
-
-          <hr>
-
-          <p>
-            <b>Driver:</b>
-            ${escapeHtml(
-              car.driver_name ||
-              "No driver"
-            )}
-          </p>
-
-          <p>
-            <b>Phone:</b>
-            ${escapeHtml(
-              car.driver_phone ||
-              "-"
-            )}
-          </p>
-
-          <p>
-            <b>Weekly Rent:</b>
-            £${Number(
-              car.weekly_rent ||
-              0
-            ).toFixed(2)}
-          </p>
-
-          <p>
-            <b>Outstanding:</b>
-            £${Number(
-              car.outstanding ||
-              0
-            ).toFixed(2)}
-          </p>
-
-          <p>
-            <b>Expenses:</b>
-            £${vehicleExpenseTotal(
-              car.id
-            ).toFixed(2)}
-          </p>
-
-          <p>
-            <b>Vehicle Documents:</b>
-            ${
-              (
-                documents[
-                  car.id
-                ] || []
-              ).length
-            }
-          </p>
-
-          <div class="actions">
-
-            <button
-              onclick="editVehicle('${car.id}')"
-            >
-              Edit
-            </button>
-
-            <button
-              class="blue"
-              onclick="openVehicleDocuments('${car.id}')"
-            >
-              📂 Vehicle Documents
-            </button>
-
-            <button
-              onclick="openExpenses('${car.id}')"
-            >
-              Expenses
-            </button>
-
-            <button
-              class="blue"
-              onclick="sendWhatsApp('${car.id}')"
-            >
-              WhatsApp
-            </button>
-
-            <button
-              class="danger"
-              onclick="deleteVehicle('${car.id}')"
-            >
-              Delete
-            </button>
-
-          </div>
-
-        </div>
-      `
-    ).join("");
-};
 
 
 // ======================================================
@@ -5249,6 +5069,10 @@ function openVehicleDocuments(
             V5 / Logbook
           </option>
 
+          <option value="insurance">
+            Insurance Certificate
+          </option>
+
           <option value="taxi_licence">
             Taxi / Private Hire Licence
           </option>
@@ -5335,7 +5159,7 @@ function closeVehicleDocumentsModal(){
 
 
 // ======================================================
-// VEHICLE DOCUMENT NAME
+// VEHICLE DOCUMENT LABELS
 // ======================================================
 
 function vehicleDocumentLabel(
@@ -5349,6 +5173,9 @@ function vehicleDocumentLabel(
 
     v5:
       "V5 / Logbook",
+
+    insurance:
+      "Insurance Certificate",
 
     taxi_licence:
       "Taxi / Private Hire Licence"
@@ -5786,335 +5613,105 @@ async function deleteVehicleDocument(
 
 
 // ======================================================
-// FIX ASSIGNED VEHICLE DISPLAY
+// BUILD SECURE VEHICLE DOCUMENT LINKS
+// NOW INCLUDES INSURANCE
 // ======================================================
 
-renderDrivers = function(){
+async function getVehicleDocumentLinks(
+  vehicleId
+){
 
-  const container =
-    $("driverList");
+  const vehicleDocs =
+    documents[
+      vehicleId
+    ] || [];
 
-  if(!container){
-    return;
-  }
+  const wantedTypes = [
+    "mot",
+    "v5",
+    "logbook",
+    "insurance",
+    "insurance_certificate",
+    "taxi_licence",
+    "taxi_license",
+    "private_hire_licence",
+    "private_hire_license"
+  ];
 
-  const approvedDrivers =
-    driverApplications.filter(
-      application =>
-        application.status ===
-        "approved"
-    );
+  const matchingDocs =
+    vehicleDocs.filter(
+      document => {
 
-  const oldFleetDrivers =
-    fleet.filter(
-      car =>
-        car.driver_name
-    );
+        const type =
+          String(
+            document.document_type ||
+            document.type ||
+            ""
+          )
+            .toLowerCase();
 
-  if(
-    !approvedDrivers.length &&
-    !oldFleetDrivers.length
-  ){
-
-    container.innerHTML =
-      `
-        <div class="card">
-          No approved drivers yet.
-        </div>
-      `;
-
-    return;
-  }
-
-  let html = "";
-
-  approvedDrivers.forEach(
-    driver => {
-
-      let assignedCar = null;
-
-      if(
-        driver.assigned_vehicle_id
-      ){
-
-        assignedCar =
-          fleet.find(
-            car =>
-              car.id ===
-              driver.assigned_vehicle_id
-          );
-
-      }
-
-      if(!assignedCar){
-
-        assignedCar =
-          fleet.find(
-            car => {
-
-              const appPhone =
-                String(
-                  driver.phone ||
-                  ""
-                ).replace(
-                  /[^0-9]/g,
-                  ""
-                );
-
-              const carPhone =
-                String(
-                  car.driver_phone ||
-                  ""
-                ).replace(
-                  /[^0-9]/g,
-                  ""
-                );
-
-              return (
-                appPhone &&
-                carPhone &&
-                appPhone ===
-                carPhone
-              );
-
-            }
-          );
-
-      }
-
-      const docs =
-        driverApplicationDocuments[
-          driver.id
-        ] || [];
-
-      html += `
-
-        <div class="vehicle-card">
-
-          <div class="row">
-
-            <div>
-
-              <h3>
-                ${escapeHtml(
-                  driver.full_name ||
-                  "Approved Driver"
-                )}
-              </h3>
-
-              <p class="small">
-                Approved Driver
-              </p>
-
-            </div>
-
-            <span class="badge greenText">
-              Approved
-            </span>
-
-          </div>
-
-          <hr>
-
-          <p>
-            <b>Phone:</b>
-            ${escapeHtml(
-              driver.phone ||
-              "-"
-            )}
-          </p>
-
-          <p>
-            <b>Email:</b>
-            ${escapeHtml(
-              driver.email ||
-              "-"
-            )}
-          </p>
-
-          <p>
-            <b>Postcode:</b>
-            ${escapeHtml(
-              driver.postcode ||
-              "-"
-            )}
-          </p>
-
-          <p>
-            <b>Driving Licence:</b>
-            ${escapeHtml(
-              driver.driving_licence_number ||
-              "-"
-            )}
-          </p>
-
-          <p>
-            <b>Licence Expiry:</b>
-            ${escapeHtml(
-              formatDate(
-                driver.driving_licence_expiry
-              )
-            )}
-          </p>
-
-          <p>
-            <b>Taxi Badge:</b>
-            ${escapeHtml(
-              driver.taxi_badge_number ||
-              "-"
-            )}
-          </p>
-
-          <p>
-            <b>Badge Expiry:</b>
-            ${escapeHtml(
-              formatDate(
-                driver.taxi_badge_expiry
-              )
-            )}
-          </p>
-
-          <p>
-            <b>Licence Points:</b>
-            ${driver.licence_points ?? "-"}
-          </p>
-
-          <p>
-            <b>Accidents Last 5 Years:</b>
-            ${escapeHtml(
-              driver.accidents_last_5_years ||
-              "-"
-            )}
-          </p>
-
-          <p>
-            <b>Uploaded Documents:</b>
-            ${docs.length}
-          </p>
-
-          <p>
-            <b>Vehicle:</b>
-            ${
-              assignedCar
-                ? escapeHtml(
-                    assignedCar.registration
-                  )
-                : "Not assigned"
-            }
-          </p>
-
-          <button
-            class="blue"
-            onclick="viewDriverApplication('${driver.id}')"
-          >
-            View Driver Profile & Documents
-          </button>
-
-          <button
-            class="green"
-            onclick="assignApprovedDriverToVehicle('${driver.id}')"
-          >
-            Assign to Vehicle
-          </button>
-
-          <button
-            onclick="whatsappApplicationDriver('${driver.id}')"
-          >
-            WhatsApp Driver
-          </button>
-
-        </div>
-      `;
-
-    }
-  );
-
-  oldFleetDrivers.forEach(
-    car => {
-
-      const alreadyShown =
-        approvedDrivers.some(
-          driver => {
-
-            if(
-              driver.assigned_vehicle_id ===
-              car.id
-            ){
-              return true;
-            }
-
-            const appPhone =
-              String(
-                driver.phone ||
-                ""
-              ).replace(
-                /[^0-9]/g,
-                ""
-              );
-
-            const carPhone =
-              String(
-                car.driver_phone ||
-                ""
-              ).replace(
-                /[^0-9]/g,
-                ""
-              );
-
-            return (
-              appPhone &&
-              carPhone &&
-              appPhone ===
-              carPhone
-            );
-
-          }
+        return wantedTypes.some(
+          wanted =>
+            type.includes(wanted)
         );
 
-      if(alreadyShown){
-        return;
       }
+    );
 
-      html += `
+  const links = [];
 
-        <div class="card">
+  for(const document of matchingDocs){
 
-          <h3>
-            ${escapeHtml(
-              car.driver_name
-            )}
-          </h3>
+    const bucket =
+      document.bucket_name ||
+      document.bucket ||
+      "vehicle-documents";
 
-          <p>
-            Vehicle:
-            <b>
-              ${escapeHtml(
-                car.registration ||
-                ""
-              )}
-            </b>
-          </p>
+    const path =
+      document.file_path ||
+      document.path;
 
-          <p>
-            ${escapeHtml(
-              car.driver_phone ||
-              ""
-            )}
-          </p>
-
-          <button
-            class="blue"
-            onclick="sendWhatsApp('${car.id}')"
-          >
-            WhatsApp Driver
-          </button>
-
-        </div>
-      `;
-
+    if(!path){
+      continue;
     }
-  );
 
-  container.innerHTML =
-    html;
-};
+    const {
+      data,
+      error
+    } =
+      await sb.storage
+        .from(bucket)
+        .createSignedUrl(
+          path,
+          86400
+        );
+
+    if(
+      error ||
+      !data?.signedUrl
+    ){
+
+      console.warn(
+        "Could not create document link:",
+        error
+      );
+
+      continue;
+    }
+
+    links.push({
+
+      label:
+        vehicleDocumentLabel(
+          document.document_type
+        ),
+
+      url:
+        data.signedUrl
+
+    });
+
+  }
+
+  return links;
+}
