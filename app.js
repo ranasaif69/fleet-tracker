@@ -4392,3 +4392,10 @@ async function confirmDriverVehicleAssignment(
     );
   }
 }
+// ======================================================
+// CONNECT EXISTING ASSIGN BUTTON
+// ======================================================
+
+assignApprovedDriverToVehicle = function(applicationId) {
+  return assignDriverToVehicle(applicationId);
+};
