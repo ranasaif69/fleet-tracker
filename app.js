@@ -4224,3 +4224,171 @@ window.addEventListener(
 // ======================================================
 // END OF CAR 4 U 1 LTD - FLEET MANAGER V8
 // ======================================================
+// ======================================================
+// ASSIGN APPROVED DRIVER TO VEHICLE
+// ======================================================
+
+function assignDriverToVehicle(applicationId) {
+
+  const driver = driverApplications.find(
+    item => item.id === applicationId
+  );
+
+  if (!driver) {
+    alert("Driver could not be found.");
+    return;
+  }
+
+  if (fleet.length === 0) {
+    alert("There are no vehicles in your fleet.");
+    return;
+  }
+
+  let vehicleList = "Choose a vehicle:\n\n";
+
+  fleet.forEach((car, index) => {
+
+    vehicleList +=
+      `${index + 1}. ${car.registration || ""} - ${car.make_model || ""}`;
+
+    if (car.driver_name) {
+      vehicleList += ` (Current driver: ${car.driver_name})`;
+    }
+
+    vehicleList += "\n";
+  });
+
+  const choice = prompt(vehicleList);
+
+  if (!choice) {
+    return;
+  }
+
+  const vehicleIndex = Number(choice) - 1;
+
+  if (
+    !Number.isInteger(vehicleIndex) ||
+    vehicleIndex < 0 ||
+    vehicleIndex >= fleet.length
+  ) {
+    alert("Please enter a valid vehicle number.");
+    return;
+  }
+
+  const vehicle = fleet[vehicleIndex];
+
+  confirmDriverVehicleAssignment(
+    driver,
+    vehicle
+  );
+}
+
+
+// ======================================================
+// CONFIRM + SAVE ASSIGNMENT
+// ======================================================
+
+async function confirmDriverVehicleAssignment(
+  driver,
+  vehicle
+) {
+
+  let message =
+    `Assign ${driver.full_name || "this driver"} to ` +
+    `${vehicle.registration || "this vehicle"}?`;
+
+  if (vehicle.driver_name) {
+
+    message +=
+      `\n\nWARNING: ${vehicle.registration} is currently assigned to ` +
+      `${vehicle.driver_name}. This will replace that driver.`;
+  }
+
+  const confirmed = confirm(message);
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+
+    const {
+      error
+    } = await sb
+      .from("vehicles")
+      .update({
+
+        driver_name:
+          driver.full_name || "",
+
+        driver_phone:
+          driver.phone || "",
+
+        badge_expiry:
+          driver.taxi_badge_expiry || null,
+
+        status:
+          "Rented"
+
+      })
+      .eq(
+        "id",
+        vehicle.id
+      );
+
+    if (error) {
+      throw error;
+    }
+
+
+    // Save assigned vehicle on driver application
+    const {
+      error: driverError
+    } = await sb
+      .from("driver_applications")
+      .update({
+
+        assigned_vehicle_id:
+          vehicle.id,
+
+        updated_at:
+          new Date().toISOString()
+
+      })
+      .eq(
+        "id",
+        driver.id
+      );
+
+    if (driverError) {
+
+      console.warn(
+        "Vehicle assigned but driver application could not store vehicle ID:",
+        driverError.message
+      );
+    }
+
+
+    await loadVehicles();
+
+    await loadDriverApplications();
+
+    render();
+
+    alert(
+      `${driver.full_name || "Driver"} has been assigned to ` +
+      `${vehicle.registration}.`
+    );
+
+    showTab("drivers");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Could not assign driver to vehicle: " +
+      error.message
+    );
+  }
+}
