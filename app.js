@@ -6077,4 +6077,191 @@ window.addEventListener(
 // ======================================================
 // END PART 4B
 // END OF CAR 4 U 1 LTD - FLEET MANAGER V8
+// ======================================================// ======================================================
+// V8 PERFORMANCE / STUCK APP FIX
+// ======================================================
+
+let refreshInProgress = false;
+let lastRefreshTime = 0;
+
+
+// ======================================================
+// SAFER + FASTER REFRESH
+// ======================================================
+
+async function fastRefreshAll(force = false) {
+
+  if (!currentUser) {
+    return;
+  }
+
+  // Prevent two refreshes running together
+  if (refreshInProgress) {
+    console.log("Refresh already running...");
+    return;
+  }
+
+  // Prevent unnecessary repeated refreshes
+  const now = Date.now();
+
+  if (
+    !force &&
+    now - lastRefreshTime < 3000
+  ) {
+    return;
+  }
+
+  refreshInProgress = true;
+
+  try {
+
+    // Load these together instead of one after another
+    await Promise.all([
+      loadVehicles(),
+      loadExpenses()
+    ]);
+
+    // Render immediately
+    render();
+
+    lastRefreshTime = Date.now();
+
+    // Documents can load afterwards
+    // so they don't hold up the main screen
+    loadDocuments()
+      .catch(error => {
+        console.warn(
+          "Background document load:",
+          error
+        );
+      });
+
+  } catch (error) {
+
+    console.error(
+      "Refresh error:",
+      error
+    );
+
+  } finally {
+
+    refreshInProgress = false;
+
+  }
+}
+
+
+// ======================================================
+// LOAD DRIVERS ONLY WHEN NEEDED
+// ======================================================
+
+async function fastOpenDriverApplications() {
+
+  ensureDriverApplicationsUI();
+
+  showTab(
+    "driverApplications"
+  );
+
+  try {
+
+    await loadDriverApplications();
+
+    addDriverInvitationButton();
+
+    updateDriverApplicationsNavCount();
+
+  } catch (error) {
+
+    console.error(
+      "Driver load error:",
+      error
+    );
+
+  }
+}
+
+
+// Replace driver application opener
+openDriverApplications =
+  fastOpenDriverApplications;
+
+
+// ======================================================
+// STOP DOUBLE TAPS
+// ======================================================
+
+let lastButtonTap = 0;
+
+document.addEventListener(
+  "click",
+  function(event) {
+
+    const button =
+      event.target.closest(
+        "button"
+      );
+
+    if (!button) {
+      return;
+    }
+
+    const now =
+      Date.now();
+
+    if (
+      now - lastButtonTap < 250
+    ) {
+
+      event.preventDefault();
+
+      event.stopPropagation();
+
+      return;
+    }
+
+    lastButtonTap =
+      now;
+
+  },
+  true
+);
+
+
+// ======================================================
+// REFRESH WHEN APP RETURNS FROM BACKGROUND
+// BUT NOT EVERY SINGLE TIME
+// ======================================================
+
+document.addEventListener(
+  "visibilitychange",
+  function() {
+
+    if (
+      document.visibilityState ===
+      "visible"
+    ) {
+
+      const timeAway =
+        Date.now() -
+        lastRefreshTime;
+
+      // Only refresh if data is more than 1 minute old
+      if (
+        timeAway >
+        60000
+      ) {
+
+        fastRefreshAll();
+
+      }
+
+    }
+
+  }
+);
+
+
+// ======================================================
+// PERFORMANCE FIX COMPLETE
 // ======================================================
