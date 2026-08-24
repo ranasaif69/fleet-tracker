@@ -6,6 +6,8 @@
 
   <title>Driver Application | Car 4 U 1 Ltd</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -105,10 +107,6 @@
       background: #fafafa;
     }
 
-    .upload label {
-      margin-bottom: 10px;
-    }
-
     .small {
       font-size: 12px;
       color: #6b7280;
@@ -166,6 +164,12 @@
       border: 1px solid #fca5a5;
     }
 
+    .progress {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
     .conditional {
       display: none;
     }
@@ -208,18 +212,14 @@
         <h2>Personal Details</h2>
 
         <div class="field">
-          <label>
-            Full Name <span class="required">*</span>
-          </label>
+          <label>Full Name <span class="required">*</span></label>
           <input type="text" name="full_name" required>
         </div>
 
         <div class="row">
 
           <div class="field">
-            <label>
-              Date of Birth <span class="required">*</span>
-            </label>
+            <label>Date of Birth <span class="required">*</span></label>
             <input type="date" name="date_of_birth" required>
           </div>
 
@@ -241,27 +241,13 @@
         <div class="row">
 
           <div class="field">
-            <label>
-              Phone Number <span class="required">*</span>
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              autocomplete="tel"
-              required
-            >
+            <label>Phone Number <span class="required">*</span></label>
+            <input type="tel" name="phone" required>
           </div>
 
           <div class="field">
-            <label>
-              Email Address <span class="required">*</span>
-            </label>
-            <input
-              type="email"
-              name="email"
-              autocomplete="email"
-              required
-            >
+            <label>Email Address <span class="required">*</span></label>
+            <input type="email" name="email" required>
           </div>
 
         </div>
@@ -272,51 +258,25 @@
         <h2>Home Address</h2>
 
         <div class="field">
-          <label>
-            Address Line 1 <span class="required">*</span>
-          </label>
-          <input
-            type="text"
-            name="address_line_1"
-            autocomplete="address-line1"
-            required
-          >
+          <label>Address Line 1 <span class="required">*</span></label>
+          <input type="text" name="address_line_1" required>
         </div>
 
         <div class="field">
           <label>Address Line 2</label>
-          <input
-            type="text"
-            name="address_line_2"
-            autocomplete="address-line2"
-          >
+          <input type="text" name="address_line_2">
         </div>
 
         <div class="row">
 
           <div class="field">
-            <label>
-              City <span class="required">*</span>
-            </label>
-            <input
-              type="text"
-              name="city"
-              value="Glasgow"
-              autocomplete="address-level2"
-              required
-            >
+            <label>City <span class="required">*</span></label>
+            <input type="text" name="city" value="Glasgow" required>
           </div>
 
           <div class="field">
-            <label>
-              Postcode <span class="required">*</span>
-            </label>
-            <input
-              type="text"
-              name="postcode"
-              autocomplete="postal-code"
-              required
-            >
+            <label>Postcode <span class="required">*</span></label>
+            <input type="text" name="postcode" required>
           </div>
 
         </div>
@@ -333,6 +293,7 @@
               Driving Licence Number
               <span class="required">*</span>
             </label>
+
             <input
               type="text"
               name="driving_licence_number"
@@ -345,6 +306,7 @@
               Licence Expiry Date
               <span class="required">*</span>
             </label>
+
             <input
               type="date"
               name="driving_licence_expiry"
@@ -362,25 +324,20 @@
 
           <input
             type="number"
-            name="licence_points"
             id="licencePoints"
+            name="licence_points"
             min="0"
             max="99"
             required
           >
         </div>
 
-        <div
-          class="field conditional"
-          id="pointsDetailsBox"
-        >
-          <label>
-            Please give details of your penalty points
-          </label>
+        <div class="field conditional" id="pointsDetailsBox">
+          <label>Please give details of your penalty points</label>
 
           <textarea
             name="licence_points_details"
-            placeholder="For example: offence code, number of points and date"
+            placeholder="Offence code, number of points and date"
           ></textarea>
         </div>
       </div>
@@ -396,6 +353,7 @@
               Taxi Badge Number
               <span class="required">*</span>
             </label>
+
             <input
               type="text"
               name="taxi_badge_number"
@@ -408,6 +366,7 @@
               Taxi Badge Expiry Date
               <span class="required">*</span>
             </label>
+
             <input
               type="date"
               name="taxi_badge_expiry"
@@ -424,8 +383,7 @@
 
         <div class="field">
           <label>
-            Have you been involved in any accidents in the
-            last 5 years?
+            Have you been involved in any accidents in the last 5 years?
             <span class="required">*</span>
           </label>
 
@@ -440,10 +398,7 @@
           </select>
         </div>
 
-        <div
-          class="conditional"
-          id="accidentDetailsBox"
-        >
+        <div class="conditional" id="accidentDetailsBox">
 
           <div class="field">
             <label>Number of accidents</label>
@@ -457,13 +412,11 @@
           </div>
 
           <div class="field">
-            <label>
-              Accident details
-            </label>
+            <label>Accident Details</label>
 
             <textarea
               name="accident_details"
-              placeholder="Please include date, what happened and whether the accident was fault or non-fault."
+              placeholder="Include the date and whether each accident was fault or non-fault."
             ></textarea>
           </div>
 
@@ -478,18 +431,12 @@
 
           <div class="field">
             <label>Emergency Contact Name</label>
-            <input
-              type="text"
-              name="emergency_contact_name"
-            >
+            <input type="text" name="emergency_contact_name">
           </div>
 
           <div class="field">
             <label>Emergency Contact Phone</label>
-            <input
-              type="tel"
-              name="emergency_contact_phone"
-            >
+            <input type="tel" name="emergency_contact_phone">
           </div>
 
         </div>
@@ -530,10 +477,6 @@
             accept="image/jpeg,image/png,image/webp,application/pdf"
             required
           >
-
-          <div class="small">
-            JPG, PNG, WEBP or PDF. Maximum 10MB.
-          </div>
         </div>
 
 
@@ -549,10 +492,6 @@
             accept="image/jpeg,image/png,image/webp,application/pdf"
             required
           >
-
-          <div class="small">
-            Upload a clear photo or scan of the badge.
-          </div>
         </div>
 
 
@@ -568,10 +507,6 @@
             accept="image/jpeg,image/png,image/webp,application/pdf"
             required
           >
-
-          <div class="small">
-            Upload the paper licence issued by the licensing authority.
-          </div>
         </div>
 
 
@@ -583,10 +518,6 @@
             name="proof_of_address"
             accept="image/jpeg,image/png,image/webp,application/pdf"
           >
-
-          <div class="small">
-            For example: recent utility bill or bank statement.
-          </div>
         </div>
 
       </div>
@@ -631,203 +562,549 @@
   </div>
 
 
-  <script>
+<script>
 
-    const FUNCTION_URL =
-      "https://ugsxnraeivhluhpzuful.supabase.co/functions/v1/driver-onboarding";
+const FUNCTION_URL =
+  "https://ugsxnraeivhluhpzuful.supabase.co/functions/v1/driver-onboarding";
 
-    const form =
-      document.getElementById("driverForm");
+const SUPABASE_URL =
+  "https://ugsxnraeivhluhpzuful.supabase.co";
 
-    const submitButton =
-      document.getElementById("submitButton");
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnc3hucmFlaXZobHVocHp1ZnVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NjkzODUsImV4cCI6MjA5ODE0NTM4NX0.A7-9Qt6Mm63jYip8BbvK4OIpcs_GHEbZW1iLK6UC7m0";
 
-    const message =
-      document.getElementById("message");
-
-    const licencePoints =
-      document.getElementById("licencePoints");
-
-    const pointsDetailsBox =
-      document.getElementById("pointsDetailsBox");
-
-    const accidentAnswer =
-      document.getElementById("accidentAnswer");
-
-    const accidentDetailsBox =
-      document.getElementById("accidentDetailsBox");
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 
 
-    licencePoints.addEventListener(
-      "input",
-      function () {
+const form =
+  document.getElementById("driverForm");
 
-        const points =
-          Number(this.value);
+const submitButton =
+  document.getElementById("submitButton");
 
-        pointsDetailsBox.style.display =
-          points > 0 ? "block" : "none";
+const message =
+  document.getElementById("message");
 
-      }
+const licencePoints =
+  document.getElementById("licencePoints");
+
+const pointsDetailsBox =
+  document.getElementById("pointsDetailsBox");
+
+const accidentAnswer =
+  document.getElementById("accidentAnswer");
+
+const accidentDetailsBox =
+  document.getElementById("accidentDetailsBox");
+
+
+licencePoints.addEventListener("input", function () {
+
+  pointsDetailsBox.style.display =
+    Number(this.value) > 0
+      ? "block"
+      : "none";
+
+});
+
+
+accidentAnswer.addEventListener("change", function () {
+
+  accidentDetailsBox.style.display =
+    this.value === "Yes"
+      ? "block"
+      : "none";
+
+});
+
+
+function showMessage(text, type) {
+
+  message.textContent = text;
+
+  message.className = type;
+
+  message.style.display = "block";
+
+  message.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+}
+
+
+async function callFunction(body) {
+
+  const response = await fetch(
+    FUNCTION_URL,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+
+      body:
+        JSON.stringify(body)
+    }
+  );
+
+
+  let result;
+
+  try {
+
+    result =
+      await response.json();
+
+  } catch {
+
+    throw new Error(
+      "The server returned an invalid response."
     );
 
+  }
 
-    accidentAnswer.addEventListener(
-      "change",
-      function () {
 
-        accidentDetailsBox.style.display =
-          this.value === "Yes"
-            ? "block"
-            : "none";
+  if (
+    !response.ok ||
+    !result.success
+  ) {
 
-      }
+    throw new Error(
+      result.error ||
+      "The request failed."
     );
 
+  }
 
-    function showMessage(text, type) {
 
-      message.textContent = text;
+  return result;
+}
 
-      message.className =
-        type === "success"
-          ? "success"
-          : "error";
 
-      message.style.display = "block";
+function checkFile(file) {
 
-      message.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
+  if (!file) {
+    return;
+  }
 
+
+  const maxSize =
+    10 * 1024 * 1024;
+
+
+  if (file.size > maxSize) {
+
+    throw new Error(
+      `${file.name} is larger than 10MB.`
+    );
+
+  }
+
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/pdf"
+  ];
+
+
+  if (
+    !allowedTypes.includes(
+      file.type
+    )
+  ) {
+
+    throw new Error(
+      `${file.name} must be JPG, PNG, WEBP or PDF.`
+    );
+
+  }
+}
+
+
+async function uploadDocument(
+  token,
+  documentType,
+  file
+) {
+
+  checkFile(file);
+
+
+  showMessage(
+    `Preparing ${file.name}...`,
+    "progress"
+  );
+
+
+  const uploadDetails =
+    await callFunction({
+      action:
+        "create-upload",
+
+      token:
+        token,
+
+      document_type:
+        documentType,
+
+      file_name:
+        file.name
+    });
+
+
+  showMessage(
+    `Uploading ${file.name}...`,
+    "progress"
+  );
+
+
+  const {
+    error: uploadError
+  } =
+    await supabaseClient
+      .storage
+      .from(
+        "driver-onboarding"
+      )
+      .uploadToSignedUrl(
+        uploadDetails.path,
+        uploadDetails.upload_token,
+        file,
+        {
+          contentType:
+            file.type
+        }
+      );
+
+
+  if (uploadError) {
+
+    throw new Error(
+      "Upload failed for " +
+      file.name +
+      ": " +
+      uploadError.message
+    );
+
+  }
+
+
+  await callFunction({
+    action:
+      "register-document",
+
+    token:
+      token,
+
+    document_type:
+      documentType,
+
+    file_name:
+      file.name,
+
+    file_path:
+      uploadDetails.path
+  });
+
+}
+
+
+form.addEventListener(
+  "submit",
+  async function (event) {
+
+    event.preventDefault();
+
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    const token =
+      params.get("token");
+
+
+    if (!token) {
+
+      showMessage(
+        "This onboarding link is invalid. Please request a new link.",
+        "error"
+      );
+
+      return;
     }
 
 
-    form.addEventListener(
-      "submit",
-      async function (event) {
+    submitButton.disabled = true;
 
-        event.preventDefault();
-
-        message.style.display = "none";
+    submitButton.textContent =
+      "Saving Details...";
 
 
-        const params =
-          new URLSearchParams(
-            window.location.search
+    try {
+
+      const formData =
+        new FormData(form);
+
+
+      /*
+      ======================================
+      STEP 1
+      SAVE DRIVER DETAILS
+      ======================================
+      */
+
+      showMessage(
+        "Saving your application details...",
+        "progress"
+      );
+
+
+      await callFunction({
+
+        action:
+          "submit",
+
+        token:
+          token,
+
+        full_name:
+          formData.get(
+            "full_name"
+          ),
+
+        date_of_birth:
+          formData.get(
+            "date_of_birth"
+          ),
+
+        national_insurance_number:
+          formData.get(
+            "national_insurance_number"
+          ),
+
+        phone:
+          formData.get(
+            "phone"
+          ),
+
+        email:
+          formData.get(
+            "email"
+          ),
+
+        address_line_1:
+          formData.get(
+            "address_line_1"
+          ),
+
+        address_line_2:
+          formData.get(
+            "address_line_2"
+          ),
+
+        city:
+          formData.get(
+            "city"
+          ),
+
+        postcode:
+          formData.get(
+            "postcode"
+          ),
+
+        driving_licence_number:
+          formData.get(
+            "driving_licence_number"
+          ),
+
+        driving_licence_expiry:
+          formData.get(
+            "driving_licence_expiry"
+          ),
+
+        taxi_badge_number:
+          formData.get(
+            "taxi_badge_number"
+          ),
+
+        taxi_badge_expiry:
+          formData.get(
+            "taxi_badge_expiry"
+          ),
+
+        licence_points:
+          formData.get(
+            "licence_points"
+          ),
+
+        licence_points_details:
+          formData.get(
+            "licence_points_details"
+          ),
+
+        accidents_last_5_years:
+          formData.get(
+            "accidents_last_5_years"
+          ),
+
+        accident_count:
+          formData.get(
+            "accident_count"
+          ),
+
+        accident_details:
+          formData.get(
+            "accident_details"
+          ),
+
+        emergency_contact_name:
+          formData.get(
+            "emergency_contact_name"
+          ),
+
+        emergency_contact_phone:
+          formData.get(
+            "emergency_contact_phone"
+          ),
+
+        notes:
+          formData.get(
+            "notes"
+          )
+
+      });
+
+
+      /*
+      ======================================
+      STEP 2
+      DOCUMENTS
+      ======================================
+      */
+
+      const documents = [
+
+        [
+          "driving_licence_front",
+          formData.get(
+            "driving_licence_front"
+          )
+        ],
+
+        [
+          "driving_licence_back",
+          formData.get(
+            "driving_licence_back"
+          )
+        ],
+
+        [
+          "taxi_badge",
+          formData.get(
+            "taxi_badge"
+          )
+        ],
+
+        [
+          "taxi_paper_licence",
+          formData.get(
+            "taxi_paper_licence"
+          )
+        ],
+
+        [
+          "proof_of_address",
+          formData.get(
+            "proof_of_address"
+          )
+        ]
+
+      ];
+
+
+      submitButton.textContent =
+        "Uploading Documents...";
+
+
+      for (
+        const [
+          documentType,
+          file
+        ] of documents
+      ) {
+
+        if (
+          file instanceof File &&
+          file.size > 0
+        ) {
+
+          await uploadDocument(
+            token,
+            documentType,
+            file
           );
-
-        const token =
-          params.get("token");
-
-
-        if (!token) {
-
-          showMessage(
-            "This onboarding link is invalid. Please request a new link.",
-            "error"
-          );
-
-          return;
-        }
-
-
-        const data =
-          new FormData(form);
-
-        data.append(
-          "token",
-          token
-        );
-
-
-        submitButton.disabled = true;
-
-        submitButton.textContent =
-          "Uploading & Submitting...";
-
-
-        try {
-
-          const response =
-            await fetch(
-              FUNCTION_URL,
-              {
-                method: "POST",
-                body: data
-              }
-            );
-
-
-          let result;
-
-          try {
-
-            result =
-              await response.json();
-
-          } catch {
-
-            result = {
-              success: false,
-              error:
-                "The server returned an unexpected response."
-            };
-
-          }
-
-
-          if (
-            !response.ok ||
-            !result.success
-          ) {
-
-            throw new Error(
-              result.error ||
-              "Application could not be submitted."
-            );
-
-          }
-
-
-          showMessage(
-            "Thank you. Your driver application and documents have been submitted successfully.",
-            "success"
-          );
-
-
-          form.reset();
-
-          pointsDetailsBox.style.display =
-            "none";
-
-          accidentDetailsBox.style.display =
-            "none";
-
-          submitButton.textContent =
-            "Application Submitted";
-
-
-        } catch (error) {
-
-          showMessage(
-            error.message ||
-            "Something went wrong. Please try again.",
-            "error"
-          );
-
-          submitButton.disabled = false;
-
-          submitButton.textContent =
-            "Submit Driver Application";
 
         }
 
       }
-    );
 
-  </script>
+
+      /*
+      ======================================
+      SUCCESS
+      ======================================
+      */
+
+      showMessage(
+        "Thank you. Your driver application and documents have been submitted successfully.",
+        "success"
+      );
+
+
+      submitButton.textContent =
+        "Application Submitted";
+
+      submitButton.disabled =
+        true;
+
+
+    } catch (error) {
+
+      console.error(error);
+
+
+      showMessage(
+        error.message ||
+        "Something went wrong. Please try again.",
+        "error"
+      );
+
+
+      submitButton.disabled =
+        false;
+
+      submitButton.textContent =
+        "Submit Driver Application";
+
+    }
+
+  }
+);
+
+</script>
 
 </body>
 </html>
