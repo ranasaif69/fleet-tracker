@@ -1,6 +1,7 @@
 // ======================================================
 // CAR 4 U 1 LTD - FLEET MANAGER V8
-// CLOUD VERSION - SUPABASE
+// CLEAN CLOUD VERSION - SUPABASE
+// PART 1 OF 4
 // ======================================================
 
 const SUPABASE_URL =
@@ -9,16 +10,26 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_tBBhN_wybueoX75Copcd2w_f5s9w4b7";
 
-const OWNER_PHONE = "447426053788";
-const OWNER_NAME = "Sufyan";
+const OWNER_PHONE =
+  "447426053788";
 
-const sb = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+const OWNER_NAME =
+  "Sufyan";
 
-const $ = id =>
-  document.getElementById(id);
+const sb =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+const $ =
+  id =>
+    document.getElementById(id);
+
+
+// ======================================================
+// GLOBAL DATA
+// ======================================================
 
 let currentUser = null;
 let currentProfile = null;
@@ -30,18 +41,23 @@ let documents = {};
 let driverApplications = [];
 let driverApplicationDocuments = {};
 
-let selectedDriverApplicationId = null;
 let editVehicleId = null;
 let expenseVehicleId = null;
 
+let selectedDriverApplicationId = null;
+let selectedVehicleDocumentVehicleId = null;
+
+let lastAssignedVehicleId = null;
+let lastAssignedDriverApplicationId = null;
+
 
 // ======================================================
-// START
+// START APPLICATION
 // ======================================================
 
 document.addEventListener(
   "DOMContentLoaded",
-  async () => {
+  async function () {
 
     addCreateAccountButton();
 
@@ -54,25 +70,25 @@ document.addEventListener(
 
 
 // ======================================================
-// LOGIN BUTTON
+// CREATE ADMIN ACCOUNT BUTTON
 // ======================================================
 
-function addCreateAccountButton(){
+function addCreateAccountButton() {
 
   const loginButton =
     document.querySelector(
       "#loginScreen button"
     );
 
-  if(!loginButton){
+  if (!loginButton) {
     return;
   }
 
-  if(
+  if (
     document.getElementById(
       "createAccountBtn"
     )
-  ){
+  ) {
     return;
   }
 
@@ -101,12 +117,12 @@ function addCreateAccountButton(){
 
 
 // ======================================================
-// SESSION
+// CHECK SESSION
 // ======================================================
 
-async function checkSession(){
+async function checkSession() {
 
-  try{
+  try {
 
     const {
       data,
@@ -114,11 +130,11 @@ async function checkSession(){
     } =
       await sb.auth.getSession();
 
-    if(error){
+    if (error) {
       throw error;
     }
 
-    if(!data.session){
+    if (!data.session) {
 
       showLogin();
 
@@ -138,15 +154,17 @@ async function checkSession(){
       "dashboard"
     );
 
-  } catch(error){
+  } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     showLogin();
 
-    if(
+    if (
       $("loginMessage")
-    ){
+    ) {
 
       $("loginMessage").innerText =
         error.message;
@@ -161,7 +179,7 @@ async function checkSession(){
 // LOGIN
 // ======================================================
 
-async function login(){
+async function login() {
 
   const email =
     $("loginEmail")
@@ -172,14 +190,14 @@ async function login(){
     $("loginPassword")
       ?.value;
 
-  if(
+  if (
     !email ||
     !password
-  ){
+  ) {
 
-    if(
+    if (
       $("loginMessage")
-    ){
+    ) {
 
       $("loginMessage").innerText =
         "Please enter your email and password.";
@@ -192,20 +210,24 @@ async function login(){
   $("loginMessage").innerText =
     "Signing in...";
 
-  try{
+  try {
 
     const {
       data,
       error
     } =
-      await sb.auth.signInWithPassword({
+      await sb.auth
+        .signInWithPassword({
 
-        email,
-        password
+          email:
+            email,
 
-      });
+          password:
+            password
 
-    if(error){
+        });
+
+    if (error) {
       throw error;
     }
 
@@ -225,9 +247,11 @@ async function login(){
     $("loginMessage").innerText =
       "";
 
-  } catch(error){
+  } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     $("loginMessage").innerText =
       error.message;
@@ -237,10 +261,10 @@ async function login(){
 
 
 // ======================================================
-// CREATE ADMIN
+// CREATE ADMIN ACCOUNT
 // ======================================================
 
-async function createAccount(){
+async function createAccount() {
 
   const email =
     $("loginEmail")
@@ -251,7 +275,7 @@ async function createAccount(){
     $("loginPassword")
       ?.value;
 
-  if(!email){
+  if (!email) {
 
     alert(
       "Enter your email address first."
@@ -260,10 +284,10 @@ async function createAccount(){
     return;
   }
 
-  if(
+  if (
     !password ||
     password.length < 6
-  ){
+  ) {
 
     alert(
       "Choose a password with at least 6 characters."
@@ -272,18 +296,19 @@ async function createAccount(){
     return;
   }
 
-  if(
-    !confirm(
+  const confirmed =
+    confirm(
       "Create this as your Car 4 U 1 Fleet Manager account?"
-    )
-  ){
+    );
+
+  if (!confirmed) {
     return;
   }
 
   $("loginMessage").innerText =
     "Creating account...";
 
-  try{
+  try {
 
     const {
       data,
@@ -291,25 +316,32 @@ async function createAccount(){
     } =
       await sb.auth.signUp({
 
-        email,
+        email:
+          email,
 
-        password,
+        password:
+          password,
 
         options: {
 
           data: {
-            name: OWNER_NAME
+
+            name:
+              OWNER_NAME
+
           }
 
         }
 
       });
 
-    if(error){
+    if (error) {
       throw error;
     }
 
-    if(data.session){
+    if (
+      data.session
+    ) {
 
       currentUser =
         data.user;
@@ -330,9 +362,11 @@ async function createAccount(){
     $("loginMessage").innerText =
       "Account created. Check your email, confirm it, then return and log in.";
 
-  } catch(error){
+  } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     $("loginMessage").innerText =
       error.message;
@@ -342,10 +376,10 @@ async function createAccount(){
 
 
 // ======================================================
-// LOGIN / APP DISPLAY
+// SHOW LOGIN
 // ======================================================
 
-function showLogin(){
+function showLogin() {
 
   $("loginScreen")
     ?.classList
@@ -361,7 +395,11 @@ function showLogin(){
 }
 
 
-function showApp(){
+// ======================================================
+// SHOW APP
+// ======================================================
+
+function showApp() {
 
   $("loginScreen")
     ?.classList
@@ -381,39 +419,52 @@ function showApp(){
 // LOGOUT
 // ======================================================
 
-async function logout(){
+async function logout() {
 
   await sb.auth.signOut();
 
-  currentUser = null;
-  currentProfile = null;
+  currentUser =
+    null;
 
-  fleet = [];
-  expenses = {};
-  documents = {};
+  currentProfile =
+    null;
 
-  driverApplications = [];
-  driverApplicationDocuments = {};
+  fleet =
+    [];
+
+  expenses =
+    {};
+
+  documents =
+    {};
+
+  driverApplications =
+    [];
+
+  driverApplicationDocuments =
+    {};
 
   showLogin();
 }
 
 
 // ======================================================
-// PROFILE
+// LOAD PROFILE
 // ======================================================
 
-async function loadProfile(){
+async function loadProfile() {
 
-  if(!currentUser){
+  if (
+    !currentUser
+  ) {
     return;
   }
 
-  for(
+  for (
     let attempt = 0;
     attempt < 6;
     attempt++
-  ){
+  ) {
 
     const {
       data,
@@ -430,15 +481,18 @@ async function loadProfile(){
         )
         .maybeSingle();
 
-    if(error){
+    if (error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
     }
 
-    if(data){
+    if (data) {
 
-      currentProfile = data;
+      currentProfile =
+        data;
 
       return;
     }
@@ -458,41 +512,48 @@ async function loadProfile(){
 // TABS
 // ======================================================
 
-function showTab(name){
+function showTab(name) {
 
   document
     .querySelectorAll(
       ".tab"
     )
     .forEach(
-      tab =>
+      tab => {
+
         tab.classList.add(
           "hidden"
-        )
+        );
+
+      }
     );
 
   const selected =
     $(name);
 
-  if(selected){
+  if (selected) {
 
-    selected.classList.remove(
-      "hidden"
-    );
+    selected
+      .classList
+      .remove(
+        "hidden"
+      );
 
   }
 
-  if(
-    name === "reports"
-  ){
+  if (
+    name ===
+    "reports"
+  ) {
 
     report();
 
   }
 
-  if(
-    name === "drivers"
-  ){
+  if (
+    name ===
+    "drivers"
+  ) {
 
     renderDrivers();
 
@@ -501,16 +562,18 @@ function showTab(name){
 
 
 // ======================================================
-// REFRESH
+// REFRESH EVERYTHING
 // ======================================================
 
-async function refreshAll(){
+async function refreshAll() {
 
-  if(!currentUser){
+  if (
+    !currentUser
+  ) {
     return;
   }
 
-  try{
+  try {
 
     await loadVehicles();
 
@@ -525,9 +588,11 @@ async function refreshAll(){
 
     render();
 
-  } catch(error){
+  } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     alert(
       "Could not refresh cloud data: " +
@@ -539,10 +604,10 @@ async function refreshAll(){
 
 
 // ======================================================
-// VEHICLES
+// LOAD VEHICLES
 // ======================================================
 
-async function loadVehicles(){
+async function loadVehicles() {
 
   const {
     data,
@@ -556,11 +621,12 @@ async function loadVehicles(){
       .order(
         "registration",
         {
-          ascending: true
+          ascending:
+            true
         }
       );
 
-  if(error){
+  if (error) {
     throw error;
   }
 
@@ -573,21 +639,22 @@ async function loadVehicles(){
 // NEW VEHICLE
 // ======================================================
 
-function newCar(){
+function newCar() {
 
   editVehicleId =
     null;
 
-  if(
+  if (
     $("vehicleFormTitle")
-  ){
+  ) {
 
     $("vehicleFormTitle").innerText =
       "Add Vehicle";
 
   }
 
-  [
+  const fields = [
+
     "plate",
     "model",
     "year",
@@ -605,21 +672,25 @@ function newCar(){
     "licence",
     "badge",
     "notes"
-  ].forEach(
+
+  ];
+
+  fields.forEach(
     id => {
 
-      if($(id)){
+      if ($(id)) {
 
-        $(id).value = "";
+        $(id).value =
+          "";
 
       }
 
     }
   );
 
-  if(
+  if (
     $("status")
-  ){
+  ) {
 
     $("status").value =
       "Rented";
@@ -636,9 +707,11 @@ function newCar(){
 // SAVE VEHICLE
 // ======================================================
 
-async function saveVehicle(){
+async function saveVehicle() {
 
-  if(!currentUser){
+  if (
+    !currentUser
+  ) {
 
     alert(
       "Please login first."
@@ -653,7 +726,9 @@ async function saveVehicle(){
       .trim()
       .toUpperCase();
 
-  if(!registration){
+  if (
+    !registration
+  ) {
 
     alert(
       "Please enter the vehicle registration."
@@ -667,7 +742,8 @@ async function saveVehicle(){
     manager_id:
       currentUser.id,
 
-    registration,
+    registration:
+      registration,
 
     make_model:
       $("model")
@@ -753,11 +829,13 @@ async function saveVehicle(){
 
   };
 
-  try{
+  try {
 
     let result;
 
-    if(editVehicleId){
+    if (
+      editVehicleId
+    ) {
 
       result =
         await sb
@@ -785,8 +863,12 @@ async function saveVehicle(){
 
     }
 
-    if(result.error){
+    if (
+      result.error
+    ) {
+
       throw result.error;
+
     }
 
     editVehicleId =
@@ -802,9 +884,11 @@ async function saveVehicle(){
       "Vehicle saved to cloud."
     );
 
-  } catch(error){
+  } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     alert(
       "Could not save vehicle: " +
@@ -819,76 +903,98 @@ async function saveVehicle(){
 // EDIT VEHICLE
 // ======================================================
 
-function editVehicle(id){
+function editVehicle(id) {
 
   const car =
     fleet.find(
-      item =>
-        item.id === id
+      vehicle =>
+        vehicle.id ===
+        id
     );
 
-  if(!car){
+  if (
+    !car
+  ) {
     return;
   }
 
-  editVehicleId = id;
+  editVehicleId =
+    id;
 
   $("vehicleFormTitle").innerText =
     "Edit Vehicle";
 
   $("plate").value =
-    car.registration || "";
+    car.registration ||
+    "";
 
   $("model").value =
-    car.make_model || "";
+    car.make_model ||
+    "";
 
   $("year").value =
-    car.year || "";
+    car.year ||
+    "";
 
   $("mileage").value =
-    car.mileage || "";
+    car.mileage ||
+    "";
 
   $("driver").value =
-    car.driver_name || "";
+    car.driver_name ||
+    "";
 
   $("phone").value =
-    car.driver_phone || "";
+    car.driver_phone ||
+    "";
 
   $("rent").value =
-    car.weekly_rent || "";
+    car.weekly_rent ||
+    "";
 
   $("deposit").value =
-    car.deposit || "";
+    car.deposit ||
+    "";
 
   $("balance").value =
-    car.outstanding || "";
+    car.outstanding ||
+    "";
 
   $("mot").value =
-    car.mot_expiry || "";
+    car.mot_expiry ||
+    "";
 
   $("tax").value =
-    car.tax_expiry || "";
+    car.tax_expiry ||
+    "";
 
   $("insurance").value =
-    car.insurance_expiry || "";
+    car.insurance_expiry ||
+    "";
 
   $("inspection").value =
-    car.inspection_expiry || "";
+    car.inspection_expiry ||
+    "";
 
   $("service").value =
-    car.service_due || "";
+    car.service_due ||
+    "";
 
   $("licence").value =
-    car.licence_expiry || "";
+    car.licence_expiry ||
+    "";
 
   $("badge").value =
-    car.badge_expiry || "";
+    car.badge_expiry ||
+    "";
 
   $("status").value =
-    car.status || "Rented";
+    car.status ||
+    "Rented";
 
   $("notes").value =
-    car.notes || "";
+    car.notes ||
+    "";
 
   showTab(
     "addVehicle"
@@ -900,17 +1006,20 @@ function editVehicle(id){
 // DELETE VEHICLE
 // ======================================================
 
-async function deleteVehicle(id){
+async function deleteVehicle(id) {
 
-  if(
-    !confirm(
+  const confirmed =
+    confirm(
       "Delete this vehicle?"
-    )
-  ){
+    );
+
+  if (
+    !confirmed
+  ) {
     return;
   }
 
-  try{
+  try {
 
     const {
       error
@@ -925,13 +1034,13 @@ async function deleteVehicle(id){
           id
         );
 
-    if(error){
+    if (error) {
       throw error;
     }
 
     await refreshAll();
 
-  } catch(error){
+  } catch (error) {
 
     alert(
       "Could not delete vehicle: " +
@@ -948,7 +1057,7 @@ async function deleteVehicle(id){
 // ======================================================
 // CAR 4 U 1 LTD - FLEET MANAGER V8
 // PART 2 OF 4
-// EXPENSES + HELPERS + DASHBOARD + VEHICLES
+// EXPENSES + VEHICLE DOCUMENTS + DASHBOARD + VEHICLES
 // ======================================================
 
 
@@ -956,7 +1065,7 @@ async function deleteVehicle(id){
 // EXPENSES
 // ======================================================
 
-async function loadExpenses(){
+async function loadExpenses() {
 
   const {
     data,
@@ -974,7 +1083,7 @@ async function loadExpenses(){
         }
       );
 
-  if(error){
+  if (error) {
     throw error;
   }
 
@@ -987,7 +1096,7 @@ async function loadExpenses(){
         item.vehicle_id ||
         "general";
 
-      if(!expenses[id]){
+      if (!expenses[id]) {
 
         expenses[id] = [];
 
@@ -1002,9 +1111,7 @@ async function loadExpenses(){
 }
 
 
-function openExpenses(
-  vehicleId
-){
+function openExpenses(vehicleId) {
 
   expenseVehicleId =
     vehicleId;
@@ -1016,9 +1123,9 @@ function openExpenses(
         vehicleId
     );
 
-  if(
+  if (
     $("expenseVehicleName")
-  ){
+  ) {
 
     $("expenseVehicleName").innerText =
       car
@@ -1027,18 +1134,18 @@ function openExpenses(
 
   }
 
-  if(
+  if (
     $("expenseAmount")
-  ){
+  ) {
 
     $("expenseAmount").value =
       "";
 
   }
 
-  if(
+  if (
     $("expenseDescription")
-  ){
+  ) {
 
     $("expenseDescription").value =
       "";
@@ -1053,9 +1160,11 @@ function openExpenses(
 }
 
 
-async function addExpense(){
+async function addExpense() {
 
-  if(!expenseVehicleId){
+  if (
+    !expenseVehicleId
+  ) {
 
     alert(
       "Select a vehicle first."
@@ -1077,7 +1186,9 @@ async function addExpense(){
       .trim() ||
     "";
 
-  if(amount <= 0){
+  if (
+    amount <= 0
+  ) {
 
     alert(
       "Enter the expense amount."
@@ -1086,7 +1197,9 @@ async function addExpense(){
     return;
   }
 
-  if(!description){
+  if (
+    !description
+  ) {
 
     alert(
       "Enter an expense description."
@@ -1095,7 +1208,7 @@ async function addExpense(){
     return;
   }
 
-  try{
+  try {
 
     const {
       error
@@ -1112,13 +1225,15 @@ async function addExpense(){
           manager_id:
             currentUser.id,
 
-          amount,
+          amount:
+            amount,
 
-          description
+          description:
+            description
 
         });
 
-    if(error){
+    if (error) {
       throw error;
     }
 
@@ -1131,9 +1246,14 @@ async function addExpense(){
     await loadExpenses();
 
     renderExpenses();
+
     render();
 
-  } catch(error){
+  } catch (error) {
+
+    console.error(
+      error
+    );
 
     alert(
       "Could not add expense: " +
@@ -1144,19 +1264,20 @@ async function addExpense(){
 }
 
 
-async function deleteExpense(
-  id
-){
+async function deleteExpense(id) {
 
-  if(
-    !confirm(
+  const confirmed =
+    confirm(
       "Delete this expense?"
-    )
-  ){
+    );
+
+  if (
+    !confirmed
+  ) {
     return;
   }
 
-  try{
+  try {
 
     const {
       error
@@ -1171,16 +1292,17 @@ async function deleteExpense(
           id
         );
 
-    if(error){
+    if (error) {
       throw error;
     }
 
     await loadExpenses();
 
     renderExpenses();
+
     render();
 
-  } catch(error){
+  } catch (error) {
 
     alert(
       "Could not delete expense: " +
@@ -1191,12 +1313,14 @@ async function deleteExpense(
 }
 
 
-function renderExpenses(){
+function renderExpenses() {
 
   const container =
     $("expenseList");
 
-  if(!container){
+  if (
+    !container
+  ) {
     return;
   }
 
@@ -1205,10 +1329,16 @@ function renderExpenses(){
       expenseVehicleId
     ] || [];
 
-  if(!list.length){
+  if (
+    !list.length
+  ) {
 
     container.innerHTML =
-      "<p>No expenses recorded.</p>";
+      `
+        <div class="card">
+          No expenses recorded.
+        </div>
+      `;
 
     return;
   }
@@ -1216,50 +1346,52 @@ function renderExpenses(){
   let total = 0;
 
   container.innerHTML =
-    list.map(
-      item => {
+    list
+      .map(
+        item => {
 
-        total +=
-          Number(
-            item.amount ||
-            0
-          );
+          total +=
+            Number(
+              item.amount ||
+              0
+            );
 
-        return `
-          <div class="card">
+          return `
+            <div class="card">
 
-            <b>
-              £${Number(
-                item.amount ||
-                0
-              ).toFixed(2)}
-            </b>
+              <b>
+                £${Number(
+                  item.amount ||
+                  0
+                ).toFixed(2)}
+              </b>
 
-            <p>
-              ${escapeHtml(
-                item.description ||
-                ""
-              )}
-            </p>
+              <p>
+                ${escapeHtml(
+                  item.description ||
+                  ""
+                )}
+              </p>
 
-            <button
-              class="danger"
-              onclick="deleteExpense('${item.id}')"
-            >
-              Delete
-            </button>
+              <button
+                class="danger"
+                onclick="deleteExpense('${item.id}')"
+              >
+                Delete
+              </button>
 
-          </div>
-        `;
+            </div>
+          `;
 
-      }
-    ).join("") +
+        }
+      )
+      .join("") +
 
     `
       <div class="card">
 
         <b>
-          Total:
+          Total Expenses:
           £${total.toFixed(2)}
         </b>
 
@@ -1272,7 +1404,7 @@ function renderExpenses(){
 // VEHICLE DOCUMENTS
 // ======================================================
 
-async function loadDocuments(){
+async function loadDocuments() {
 
   const {
     data,
@@ -1290,7 +1422,11 @@ async function loadDocuments(){
         }
       );
 
-  if(error){
+  if (error) {
+
+    console.warn(
+      error
+    );
 
     documents = {};
 
@@ -1302,11 +1438,11 @@ async function loadDocuments(){
   (data || []).forEach(
     item => {
 
-      if(
+      if (
         !documents[
           item.vehicle_id
         ]
-      ){
+      ) {
 
         documents[
           item.vehicle_id
@@ -1326,19 +1462,690 @@ async function loadDocuments(){
 
 
 // ======================================================
+// DOCUMENT LABELS
+// ======================================================
+
+function vehicleDocumentLabel(type) {
+
+  const labels = {
+
+    mot:
+      "MOT Certificate",
+
+    v5:
+      "V5 / Logbook",
+
+    insurance:
+      "Insurance Certificate",
+
+    insurance_certificate:
+      "Insurance Certificate",
+
+    taxi_licence:
+      "Taxi / Private Hire Licence",
+
+    taxi_license:
+      "Taxi / Private Hire Licence",
+
+    private_hire_licence:
+      "Taxi / Private Hire Licence",
+
+    private_hire_license:
+      "Taxi / Private Hire Licence"
+
+  };
+
+  return (
+    labels[type] ||
+    type ||
+    "Vehicle Document"
+  );
+}
+
+
+// ======================================================
+// SAFE FILE NAME
+// ======================================================
+
+function safeVehicleDocumentFileName(name) {
+
+  return String(
+    name ||
+    "document"
+  )
+    .replace(
+      /[^a-zA-Z0-9._-]/g,
+      "_"
+    );
+}
+
+
+// ======================================================
+// OPEN VEHICLE DOCUMENT MANAGER
+// ======================================================
+
+function openVehicleDocuments(vehicleId) {
+
+  selectedVehicleDocumentVehicleId =
+    vehicleId;
+
+  const vehicle =
+    fleet.find(
+      item =>
+        item.id ===
+        vehicleId
+    );
+
+  if (
+    !vehicle
+  ) {
+
+    alert(
+      "Vehicle could not be found."
+    );
+
+    return;
+  }
+
+  let modal =
+    $("vehicleDocumentsModal");
+
+  if (
+    !modal
+  ) {
+
+    modal =
+      document.createElement(
+        "div"
+      );
+
+    modal.id =
+      "vehicleDocumentsModal";
+
+    modal.style.cssText =
+      `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.60);
+        z-index:10000;
+        padding:20px;
+        overflow:auto;
+      `;
+
+    modal.innerHTML = `
+
+      <div
+        style="
+          max-width:650px;
+          margin:40px auto;
+          background:white;
+          border-radius:20px;
+          padding:22px;
+        "
+      >
+
+        <h2 id="vehicleDocumentsTitle">
+          Vehicle Documents
+        </h2>
+
+        <p>
+          Upload the documents that should be available for the assigned driver.
+        </p>
+
+        <label>
+          <b>Document Type</b>
+        </label>
+
+        <select
+          id="vehicleDocumentType"
+          style="
+            width:100%;
+            margin-top:8px;
+            margin-bottom:15px;
+          "
+        >
+
+          <option value="mot">
+            MOT Certificate
+          </option>
+
+          <option value="v5">
+            V5 / Logbook
+          </option>
+
+          <option value="insurance">
+            Insurance Certificate
+          </option>
+
+          <option value="taxi_licence">
+            Taxi / Private Hire Licence
+          </option>
+
+        </select>
+
+        <label>
+          <b>Choose Document</b>
+        </label>
+
+        <input
+          id="vehicleDocumentFile"
+          type="file"
+          accept="image/*,.pdf"
+          style="
+            width:100%;
+            margin-top:8px;
+            margin-bottom:15px;
+          "
+        >
+
+        <button
+          id="uploadVehicleDocumentButton"
+          class="green"
+          onclick="uploadVehicleDocument()"
+        >
+          Upload Document
+        </button>
+
+        <hr>
+
+        <h3>
+          Uploaded Documents
+        </h3>
+
+        <div
+          id="vehicleDocumentsList"
+        ></div>
+
+        <button
+          class="secondary"
+          onclick="closeVehicleDocumentsModal()"
+        >
+          Close
+        </button>
+
+      </div>
+    `;
+
+    document.body.appendChild(
+      modal
+    );
+  }
+
+  $("vehicleDocumentsTitle").innerText =
+    `Documents - ${vehicle.registration}`;
+
+  $("vehicleDocumentFile").value =
+    "";
+
+  renderVehicleDocumentsList();
+
+  modal.style.display =
+    "block";
+}
+
+
+function closeVehicleDocumentsModal() {
+
+  const modal =
+    $("vehicleDocumentsModal");
+
+  if (
+    modal
+  ) {
+
+    modal.style.display =
+      "none";
+
+  }
+}
+
+
+// ======================================================
+// UPLOAD VEHICLE DOCUMENT
+// ======================================================
+
+async function uploadVehicleDocument() {
+
+  if (
+    !selectedVehicleDocumentVehicleId
+  ) {
+
+    alert(
+      "No vehicle selected."
+    );
+
+    return;
+  }
+
+  if (
+    !currentUser
+  ) {
+
+    alert(
+      "Please login first."
+    );
+
+    return;
+  }
+
+  const fileInput =
+    $("vehicleDocumentFile");
+
+  const file =
+    fileInput
+      ?.files?.[0];
+
+  const documentType =
+    $("vehicleDocumentType")
+      ?.value;
+
+  if (
+    !file
+  ) {
+
+    alert(
+      "Please choose a document first."
+    );
+
+    return;
+  }
+
+  const button =
+    $("uploadVehicleDocumentButton");
+
+  if (
+    button
+  ) {
+
+    button.disabled =
+      true;
+
+    button.innerText =
+      "Uploading...";
+
+  }
+
+  try {
+
+    const safeName =
+      safeVehicleDocumentFileName(
+        file.name
+      );
+
+    const filePath =
+      `${currentUser.id}/${selectedVehicleDocumentVehicleId}/${Date.now()}-${safeName}`;
+
+    const {
+      error:
+        uploadError
+    } =
+      await sb.storage
+        .from(
+          "vehicle-documents"
+        )
+        .upload(
+          filePath,
+          file,
+          {
+            upsert:
+              false
+          }
+        );
+
+    if (
+      uploadError
+    ) {
+      throw uploadError;
+    }
+
+    const {
+      error:
+        insertError
+    } =
+      await sb
+        .from(
+          "vehicle_documents"
+        )
+        .insert({
+
+          vehicle_id:
+            selectedVehicleDocumentVehicleId,
+
+          manager_id:
+            currentUser.id,
+
+          document_type:
+            documentType,
+
+          file_name:
+            file.name,
+
+          file_path:
+            filePath
+
+        });
+
+    if (
+      insertError
+    ) {
+
+      await sb.storage
+        .from(
+          "vehicle-documents"
+        )
+        .remove([
+          filePath
+        ]);
+
+      throw insertError;
+    }
+
+    await loadDocuments();
+
+    fileInput.value =
+      "";
+
+    renderVehicleDocumentsList();
+
+    renderVehicles();
+
+    alert(
+      `${vehicleDocumentLabel(documentType)} uploaded successfully.`
+    );
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+    alert(
+      "Could not upload document: " +
+      error.message
+    );
+
+  } finally {
+
+    if (
+      button
+    ) {
+
+      button.disabled =
+        false;
+
+      button.innerText =
+        "Upload Document";
+
+    }
+
+  }
+}
+
+
+// ======================================================
+// RENDER VEHICLE DOCUMENT LIST
+// ======================================================
+
+function renderVehicleDocumentsList() {
+
+  const container =
+    $("vehicleDocumentsList");
+
+  if (
+    !container
+  ) {
+    return;
+  }
+
+  const list =
+    documents[
+      selectedVehicleDocumentVehicleId
+    ] || [];
+
+  if (
+    !list.length
+  ) {
+
+    container.innerHTML =
+      `
+        <div class="card">
+          No vehicle documents uploaded yet.
+        </div>
+      `;
+
+    return;
+  }
+
+  container.innerHTML =
+    list
+      .map(
+        document => `
+
+          <div class="card">
+
+            <h3>
+              ${escapeHtml(
+                vehicleDocumentLabel(
+                  document.document_type
+                )
+              )}
+            </h3>
+
+            <p class="small">
+              ${escapeHtml(
+                document.file_name ||
+                ""
+              )}
+            </p>
+
+            <button
+              class="blue"
+              onclick="viewVehicleDocument('${document.id}')"
+            >
+              View Document
+            </button>
+
+            <button
+              class="danger"
+              onclick="deleteVehicleDocument('${document.id}')"
+            >
+              Delete Document
+            </button>
+
+          </div>
+        `
+      )
+      .join("");
+}
+
+
+// ======================================================
+// VIEW VEHICLE DOCUMENT
+// ======================================================
+
+async function viewVehicleDocument(documentId) {
+
+  const document =
+    Object
+      .values(
+        documents
+      )
+      .flat()
+      .find(
+        item =>
+          item.id ===
+          documentId
+      );
+
+  if (
+    !document
+  ) {
+
+    alert(
+      "Document could not be found."
+    );
+
+    return;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await sb.storage
+        .from(
+          "vehicle-documents"
+        )
+        .createSignedUrl(
+          document.file_path,
+          300
+        );
+
+    if (
+      error
+    ) {
+      throw error;
+    }
+
+    if (
+      !data ||
+      !data.signedUrl
+    ) {
+
+      throw new Error(
+        "Could not create document link."
+      );
+
+    }
+
+    window.open(
+      data.signedUrl,
+      "_blank"
+    );
+
+  } catch (error) {
+
+    alert(
+      "Could not open document: " +
+      error.message
+    );
+
+  }
+}
+
+
+// ======================================================
+// DELETE VEHICLE DOCUMENT
+// ======================================================
+
+async function deleteVehicleDocument(documentId) {
+
+  const document =
+    Object
+      .values(
+        documents
+      )
+      .flat()
+      .find(
+        item =>
+          item.id ===
+          documentId
+      );
+
+  if (
+    !document
+  ) {
+    return;
+  }
+
+  const confirmed =
+    confirm(
+      `Delete ${vehicleDocumentLabel(document.document_type)}?`
+    );
+
+  if (
+    !confirmed
+  ) {
+    return;
+  }
+
+  try {
+
+    const {
+      error:
+        storageError
+    } =
+      await sb.storage
+        .from(
+          "vehicle-documents"
+        )
+        .remove([
+          document.file_path
+        ]);
+
+    if (
+      storageError
+    ) {
+
+      console.warn(
+        storageError
+      );
+
+    }
+
+    const {
+      error
+    } =
+      await sb
+        .from(
+          "vehicle_documents"
+        )
+        .delete()
+        .eq(
+          "id",
+          documentId
+        );
+
+    if (
+      error
+    ) {
+      throw error;
+    }
+
+    await loadDocuments();
+
+    renderVehicleDocumentsList();
+
+    renderVehicles();
+
+  } catch (error) {
+
+    alert(
+      "Could not delete document: " +
+      error.message
+    );
+
+  }
+}
+
+
+// ======================================================
 // HELPERS
 // ======================================================
 
-function vehicleExpenseTotal(
-  vehicleId
-){
+function vehicleExpenseTotal(vehicleId) {
 
   return (
     expenses[
       vehicleId
     ] || []
   ).reduce(
-    (total,item) =>
+    (
+      total,
+      item
+    ) =>
       total +
       Number(
         item.amount ||
@@ -1349,11 +2156,11 @@ function vehicleExpenseTotal(
 }
 
 
-function daysUntil(
-  value
-){
+function daysUntil(value) {
 
-  if(!value){
+  if (
+    !value
+  ) {
     return null;
   }
 
@@ -1373,11 +2180,11 @@ function daysUntil(
       "T00:00:00"
     );
 
-  if(
+  if (
     Number.isNaN(
       target.getTime()
     )
-  ){
+  ) {
     return null;
   }
 
@@ -1391,11 +2198,11 @@ function daysUntil(
 }
 
 
-function formatDate(
-  value
-){
+function formatDate(value) {
 
-  if(!value){
+  if (
+    !value
+  ) {
     return "Not set";
   }
 
@@ -1405,11 +2212,11 @@ function formatDate(
       "T00:00:00"
     );
 
-  if(
+  if (
     Number.isNaN(
       date.getTime()
     )
-  ){
+  ) {
     return value;
   }
 
@@ -1419,12 +2226,11 @@ function formatDate(
 }
 
 
-function escapeHtml(
-  value
-){
+function escapeHtml(value) {
 
   return String(
-    value ?? ""
+    value ??
+    ""
   )
     .replaceAll(
       "&",
@@ -1453,42 +2259,78 @@ function escapeHtml(
 // ALERTS
 // ======================================================
 
-function buildAlerts(){
+function buildAlerts() {
 
   const alerts = [];
 
   fleet.forEach(
     car => {
 
-      [
-        ["MOT",car.mot_expiry],
-        ["Road Tax",car.tax_expiry],
-        ["Insurance",car.insurance_expiry],
-        ["Taxi Inspection",car.inspection_expiry],
-        ["Taxi Licence",car.licence_expiry],
-        ["Badge",car.badge_expiry]
+      const checks = [
 
-      ].forEach(
-        ([label,date]) => {
+        [
+          "MOT",
+          car.mot_expiry
+        ],
+
+        [
+          "Road Tax",
+          car.tax_expiry
+        ],
+
+        [
+          "Insurance",
+          car.insurance_expiry
+        ],
+
+        [
+          "Taxi Inspection",
+          car.inspection_expiry
+        ],
+
+        [
+          "Taxi Licence",
+          car.licence_expiry
+        ],
+
+        [
+          "Badge",
+          car.badge_expiry
+        ]
+
+      ];
+
+      checks.forEach(
+        (
+          [
+            label,
+            date
+          ]
+        ) => {
 
           const days =
-            daysUntil(date);
+            daysUntil(
+              date
+            );
 
-          if(
+          if (
             days !== null &&
             days <= 30
-          ){
+          ) {
 
             alerts.push({
 
               registration:
                 car.registration,
 
-              label,
+              label:
+                label,
 
-              date,
+              date:
+                date,
 
-              days
+              days:
+                days
 
             });
 
@@ -1501,7 +2343,10 @@ function buildAlerts(){
   );
 
   alerts.sort(
-    (a,b) =>
+    (
+      a,
+      b
+    ) =>
       a.days -
       b.days
   );
@@ -1514,10 +2359,12 @@ function buildAlerts(){
 // RENDER
 // ======================================================
 
-function render(){
+function render() {
 
   renderDashboard();
+
   renderVehicles();
+
   renderDrivers();
 
   ensureDriverApplicationsUI();
@@ -1528,14 +2375,17 @@ function render(){
 // DASHBOARD
 // ======================================================
 
-function renderDashboard(){
+function renderDashboard() {
 
   const alerts =
     buildAlerts();
 
   const weekly =
     fleet.reduce(
-      (total,car) =>
+      (
+        total,
+        car
+      ) =>
         total +
         Number(
           car.weekly_rent ||
@@ -1546,7 +2396,10 @@ function renderDashboard(){
 
   const outstanding =
     fleet.reduce(
-      (total,car) =>
+      (
+        total,
+        car
+      ) =>
         total +
         Number(
           car.outstanding ||
@@ -1555,14 +2408,18 @@ function renderDashboard(){
       0
     );
 
-  if($("statTotal")){
+  if (
+    $("statTotal")
+  ) {
 
     $("statTotal").innerText =
       fleet.length;
 
   }
 
-  if($("statRented")){
+  if (
+    $("statRented")
+  ) {
 
     $("statRented").innerText =
       fleet.filter(
@@ -1570,13 +2427,16 @@ function renderDashboard(){
           String(
             car.status ||
             ""
-          ).toLowerCase() ===
+          )
+            .toLowerCase() ===
           "rented"
       ).length;
 
   }
 
-  if($("statAvailable")){
+  if (
+    $("statAvailable")
+  ) {
 
     $("statAvailable").innerText =
       fleet.filter(
@@ -1584,13 +2444,16 @@ function renderDashboard(){
           String(
             car.status ||
             ""
-          ).toLowerCase() ===
+          )
+            .toLowerCase() ===
           "available"
       ).length;
 
   }
 
-  if($("statWeekly")){
+  if (
+    $("statWeekly")
+  ) {
 
     $("statWeekly").innerText =
       "£" +
@@ -1598,7 +2461,9 @@ function renderDashboard(){
 
   }
 
-  if($("statOutstanding")){
+  if (
+    $("statOutstanding")
+  ) {
 
     $("statOutstanding").innerText =
       "£" +
@@ -1606,7 +2471,9 @@ function renderDashboard(){
 
   }
 
-  if($("statAlerts")){
+  if (
+    $("statAlerts")
+  ) {
 
     $("statAlerts").innerText =
       alerts.length;
@@ -1616,11 +2483,15 @@ function renderDashboard(){
   const container =
     $("urgentAlerts");
 
-  if(!container){
+  if (
+    !container
+  ) {
     return;
   }
 
-  if(!alerts.length){
+  if (
+    !alerts.length
+  ) {
 
     container.innerHTML =
       `
@@ -1633,31 +2504,34 @@ function renderDashboard(){
   }
 
   container.innerHTML =
-    alerts.map(
-      alert => `
-        <div class="card">
+    alerts
+      .map(
+        alert => `
 
-          <b>
-            ${escapeHtml(
-              alert.registration
-            )}
-          </b>
+          <div class="card">
 
-          <p>
-            ${escapeHtml(
-              alert.label
-            )}
-          </p>
+            <b>
+              ${escapeHtml(
+                alert.registration
+              )}
+            </b>
 
-          <p>
-            ${formatDate(
-              alert.date
-            )}
-          </p>
+            <p>
+              ${escapeHtml(
+                alert.label
+              )}
+            </p>
 
-        </div>
-      `
-    ).join("");
+            <p>
+              ${formatDate(
+                alert.date
+              )}
+            </p>
+
+          </div>
+        `
+      )
+      .join("");
 }
 
 
@@ -1665,12 +2539,14 @@ function renderDashboard(){
 // VEHICLE LIST
 // ======================================================
 
-function renderVehicles(){
+function renderVehicles() {
 
   const container =
     $("vehicleList");
 
-  if(!container){
+  if (
+    !container
+  ) {
     return;
   }
 
@@ -1685,20 +2561,29 @@ function renderVehicles(){
 
   const filtered =
     fleet.filter(
-      car =>
-        [
-          car.registration,
-          car.make_model,
-          car.driver_name,
-          car.driver_phone,
-          car.status
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(search)
+      car => {
+
+        const text =
+          [
+            car.registration,
+            car.make_model,
+            car.driver_name,
+            car.driver_phone,
+            car.status
+          ]
+            .join(" ")
+            .toLowerCase();
+
+        return text.includes(
+          search
+        );
+
+      }
     );
 
-  if(!filtered.length){
+  if (
+    !filtered.length
+  ) {
 
     container.innerHTML =
       `
@@ -1711,124 +2596,142 @@ function renderVehicles(){
   }
 
   container.innerHTML =
-    filtered.map(
-      car => `
+    filtered
+      .map(
+        car => `
 
-        <div class="vehicle-card">
+          <div class="vehicle-card">
 
-          <div class="row">
+            <div class="row">
 
-            <div>
+              <div>
 
-              <h3>
-                ${escapeHtml(
-                  car.registration ||
-                  ""
-                )}
-              </h3>
+                <h3>
+                  ${escapeHtml(
+                    car.registration ||
+                    ""
+                  )}
+                </h3>
 
-              <div class="small">
-                ${escapeHtml(
-                  car.make_model ||
-                  ""
-                )}
+                <div class="small">
+                  ${escapeHtml(
+                    car.make_model ||
+                    ""
+                  )}
+                </div>
+
               </div>
+
+              <span class="badge">
+                ${escapeHtml(
+                  car.status ||
+                  ""
+                )}
+              </span>
 
             </div>
 
-            <span class="badge">
+            <hr>
+
+            <p>
+              <b>Driver:</b>
               ${escapeHtml(
-                car.status ||
-                ""
+                car.driver_name ||
+                "No driver"
               )}
-            </span>
+            </p>
+
+            <p>
+              <b>Phone:</b>
+              ${escapeHtml(
+                car.driver_phone ||
+                "-"
+              )}
+            </p>
+
+            <p>
+              <b>Weekly Rent:</b>
+              £${Number(
+                car.weekly_rent ||
+                0
+              ).toFixed(2)}
+            </p>
+
+            <p>
+              <b>Outstanding:</b>
+              £${Number(
+                car.outstanding ||
+                0
+              ).toFixed(2)}
+            </p>
+
+            <p>
+              <b>Expenses:</b>
+              £${vehicleExpenseTotal(
+                car.id
+              ).toFixed(2)}
+            </p>
+
+            <p>
+              <b>Vehicle Documents:</b>
+              ${
+                (
+                  documents[
+                    car.id
+                  ] || []
+                ).length
+              }
+            </p>
+
+            <div class="actions">
+
+              <button
+                onclick="editVehicle('${car.id}')"
+              >
+                Edit
+              </button>
+
+              <button
+                class="blue"
+                onclick="openVehicleDocuments('${car.id}')"
+              >
+                📂 Vehicle Documents
+              </button>
+
+              <button
+                onclick="openExpenses('${car.id}')"
+              >
+                Expenses
+              </button>
+
+              <button
+                class="blue"
+                onclick="sendWhatsApp('${car.id}')"
+              >
+                WhatsApp
+              </button>
+
+              <button
+                class="danger"
+                onclick="deleteVehicle('${car.id}')"
+              >
+                Delete
+              </button>
+
+            </div>
 
           </div>
-
-          <hr>
-
-          <p>
-            <b>Driver:</b>
-            ${escapeHtml(
-              car.driver_name ||
-              "No driver"
-            )}
-          </p>
-
-          <p>
-            <b>Phone:</b>
-            ${escapeHtml(
-              car.driver_phone ||
-              "-"
-            )}
-          </p>
-
-          <p>
-            <b>Weekly Rent:</b>
-            £${Number(
-              car.weekly_rent ||
-              0
-            ).toFixed(2)}
-          </p>
-
-          <p>
-            <b>Outstanding:</b>
-            £${Number(
-              car.outstanding ||
-              0
-            ).toFixed(2)}
-          </p>
-
-          <p>
-            <b>Expenses:</b>
-            £${vehicleExpenseTotal(
-              car.id
-            ).toFixed(2)}
-          </p>
-
-          <div class="actions">
-
-            <button
-              onclick="editVehicle('${car.id}')"
-            >
-              Edit
-            </button>
-
-            <button
-              onclick="openExpenses('${car.id}')"
-            >
-              Expenses
-            </button>
-
-            <button
-              class="blue"
-              onclick="sendWhatsApp('${car.id}')"
-            >
-              WhatsApp
-            </button>
-
-            <button
-              class="danger"
-              onclick="deleteVehicle('${car.id}')"
-            >
-              Delete
-            </button>
-
-          </div>
-
-        </div>
-      `
-    ).join("");
+        `
+      )
+      .join("");
 }
 
 
 // ======================================================
-// VEHICLE WHATSAPP
+// WHATSAPP VEHICLE DRIVER
 // ======================================================
 
-function sendWhatsApp(
-  vehicleId
-){
+function sendWhatsApp(vehicleId) {
 
   const car =
     fleet.find(
@@ -1837,7 +2740,9 @@ function sendWhatsApp(
         vehicleId
     );
 
-  if(!car){
+  if (
+    !car
+  ) {
     return;
   }
 
@@ -1845,16 +2750,17 @@ function sendWhatsApp(
     String(
       car.driver_phone ||
       ""
-    ).replace(
-      /[^0-9]/g,
-      ""
-    );
+    )
+      .replace(
+        /[^0-9]/g,
+        ""
+      );
 
-  if(
+  if (
     phone.startsWith(
       "0"
     )
-  ){
+  ) {
 
     phone =
       "44" +
@@ -1862,7 +2768,9 @@ function sendWhatsApp(
 
   }
 
-  if(!phone){
+  if (
+    !phone
+  ) {
 
     alert(
       "No driver phone number saved."
@@ -1871,118 +2779,15 @@ function sendWhatsApp(
     return;
   }
 
-  const text =
+  const message =
     encodeURIComponent(
       `Hi ${car.driver_name || ""}, this is Car 4 U 1 Ltd regarding vehicle ${car.registration || ""}.`
     );
 
   window.open(
-    `https://wa.me/${phone}?text=${text}`,
+    `https://wa.me/${phone}?text=${message}`,
     "_blank"
   );
-}
-
-
-// ======================================================
-// REPORT
-// ======================================================
-
-function report(){
-
-  const container =
-    $("reportOutput");
-
-  if(!container){
-    return;
-  }
-
-  const totalRent =
-    fleet.reduce(
-      (total,car) =>
-        total +
-        Number(
-          car.weekly_rent ||
-          0
-        ),
-      0
-    );
-
-  const totalOutstanding =
-    fleet.reduce(
-      (total,car) =>
-        total +
-        Number(
-          car.outstanding ||
-          0
-        ),
-      0
-    );
-
-  const totalExpenses =
-    Object
-      .values(expenses)
-      .flat()
-      .reduce(
-        (total,item) =>
-          total +
-          Number(
-            item.amount ||
-            0
-          ),
-        0
-      );
-
-  container.innerHTML =
-    `
-      <div class="card">
-
-        <h3>
-          Fleet Report
-        </h3>
-
-        <p>
-          Total Vehicles:
-          <b>
-            ${fleet.length}
-          </b>
-        </p>
-
-        <p>
-          Approved Drivers:
-          <b>
-            ${
-              driverApplications.filter(
-                item =>
-                  item.status ===
-                  "approved"
-              ).length
-            }
-          </b>
-        </p>
-
-        <p>
-          Weekly Rent:
-          <b>
-            £${totalRent.toFixed(2)}
-          </b>
-        </p>
-
-        <p>
-          Outstanding:
-          <b>
-            £${totalOutstanding.toFixed(2)}
-          </b>
-        </p>
-
-        <p>
-          Expenses:
-          <b>
-            £${totalExpenses.toFixed(2)}
-          </b>
-        </p>
-
-      </div>
-    `;
 }
 
 
@@ -1992,21 +2797,23 @@ function report(){
 // ======================================================
 // CAR 4 U 1 LTD - FLEET MANAGER V8
 // PART 3 OF 4
-// APPROVED DRIVERS + DRIVER APPLICATIONS
+// DRIVERS + DRIVER APPLICATIONS + ASSIGNMENT
 // ======================================================
 
 
 // ======================================================
-// DRIVERS
-// APPROVED APPLICATIONS AUTOMATICALLY APPEAR HERE
+// RENDER DRIVERS
+// APPROVED APPLICATIONS APPEAR AS DRIVERS
 // ======================================================
 
-function renderDrivers(){
+function renderDrivers() {
 
   const container =
     $("driverList");
 
-  if(!container){
+  if (
+    !container
+  ) {
     return;
   }
 
@@ -2017,16 +2824,16 @@ function renderDrivers(){
         "approved"
     );
 
-  const oldFleetDrivers =
+  const legacyDrivers =
     fleet.filter(
       car =>
         car.driver_name
     );
 
-  if(
+  if (
     !approvedDrivers.length &&
-    !oldFleetDrivers.length
-  ){
+    !legacyDrivers.length
+  ) {
 
     container.innerHTML =
       `
@@ -2038,58 +2845,81 @@ function renderDrivers(){
     return;
   }
 
-  let html = "";
+  let html =
+    "";
 
   approvedDrivers.forEach(
     driver => {
 
-      const assignedCar =
-        fleet.find(
-          car => {
+      let assignedCar =
+        null;
 
-            const applicationPhone =
-              String(
-                driver.phone ||
-                ""
-              )
-                .replace(
-                  /[^0-9]/g,
-                  ""
-                );
+      if (
+        driver.assigned_vehicle_id
+      ) {
 
-            const vehiclePhone =
-              String(
-                car.driver_phone ||
-                ""
-              )
-                .replace(
-                  /[^0-9]/g,
-                  ""
-                );
+        assignedCar =
+          fleet.find(
+            car =>
+              car.id ===
+              driver.assigned_vehicle_id
+          ) || null;
 
-            const samePhone =
-              applicationPhone &&
-              vehiclePhone &&
-              applicationPhone ===
-              vehiclePhone;
+      }
 
-            const sameName =
-              driver.full_name &&
-              car.driver_name &&
-              driver.full_name
-                .trim()
-                .toLowerCase() ===
-              car.driver_name
-                .trim()
-                .toLowerCase();
+      if (
+        !assignedCar
+      ) {
 
-            return (
-              samePhone ||
-              sameName
+        const driverPhone =
+          String(
+            driver.phone ||
+            ""
+          )
+            .replace(
+              /[^0-9]/g,
+              ""
             );
 
-          }
-        );
+        assignedCar =
+          fleet.find(
+            car => {
+
+              const vehiclePhone =
+                String(
+                  car.driver_phone ||
+                  ""
+                )
+                  .replace(
+                    /[^0-9]/g,
+                    ""
+                  );
+
+              const samePhone =
+                driverPhone &&
+                vehiclePhone &&
+                driverPhone ===
+                vehiclePhone;
+
+              const sameName =
+                driver.full_name &&
+                car.driver_name &&
+                driver.full_name
+                  .trim()
+                  .toLowerCase() ===
+                car.driver_name
+                  .trim()
+                  .toLowerCase();
+
+              return (
+                samePhone ||
+                sameName
+              );
+
+            }
+          ) || null;
+
+      }
 
       const docs =
         driverApplicationDocuments[
@@ -2232,6 +3062,13 @@ function renderDrivers(){
             WhatsApp Driver
           </button>
 
+          <button
+            class="danger"
+            onclick="deleteApprovedDriver('${driver.id}')"
+          >
+            🗑 Delete Driver
+          </button>
+
         </div>
       `;
 
@@ -2239,12 +3076,20 @@ function renderDrivers(){
   );
 
 
-  oldFleetDrivers.forEach(
+  legacyDrivers.forEach(
     car => {
 
       const alreadyShown =
         approvedDrivers.some(
           driver => {
+
+            if (
+              driver.assigned_vehicle_id &&
+              driver.assigned_vehicle_id ===
+              car.id
+            ) {
+              return true;
+            }
 
             const appPhone =
               String(
@@ -2264,27 +3109,33 @@ function renderDrivers(){
                 ""
               );
 
+            const samePhone =
+              appPhone &&
+              carPhone &&
+              appPhone ===
+              carPhone;
+
+            const sameName =
+              driver.full_name &&
+              car.driver_name &&
+              driver.full_name
+                .trim()
+                .toLowerCase() ===
+              car.driver_name
+                .trim()
+                .toLowerCase();
+
             return (
-              (
-                appPhone &&
-                carPhone &&
-                appPhone ===
-                carPhone
-              ) ||
-              (
-                driver.full_name &&
-                car.driver_name &&
-                driver.full_name
-                  .toLowerCase() ===
-                car.driver_name
-                  .toLowerCase()
-              )
+              samePhone ||
+              sameName
             );
 
           }
         );
 
-      if(alreadyShown){
+      if (
+        alreadyShown
+      ) {
         return;
       }
 
@@ -2328,17 +3179,16 @@ function renderDrivers(){
     }
   );
 
-  container.innerHTML = html;
+  container.innerHTML =
+    html;
 }
 
 
 // ======================================================
-// ASSIGN APPROVED DRIVER TO VEHICLE
+// ASSIGN DRIVER TO VEHICLE
 // ======================================================
 
-async function assignApprovedDriverToVehicle(
-  applicationId
-){
+function assignApprovedDriverToVehicle(applicationId) {
 
   const driver =
     driverApplications.find(
@@ -2347,7 +3197,9 @@ async function assignApprovedDriverToVehicle(
         applicationId
     );
 
-  if(!driver){
+  if (
+    !driver
+  ) {
 
     alert(
       "Driver could not be found."
@@ -2356,81 +3208,138 @@ async function assignApprovedDriverToVehicle(
     return;
   }
 
-  const availableCars =
-    fleet.filter(
-      car =>
-        !car.driver_name ||
-        String(
-          car.status ||
-          ""
-        )
-          .toLowerCase() ===
-        "available"
-    );
-
-  if(!availableCars.length){
+  if (
+    fleet.length === 0
+  ) {
 
     alert(
-      "There are no available vehicles to assign."
+      "There are no vehicles in your fleet."
     );
 
     return;
   }
 
-  let message =
-    "Enter the number of the vehicle to assign:\n\n";
+  let vehicleList =
+    "Choose a vehicle:\n\n";
 
-  availableCars.forEach(
-    (car,index) => {
+  fleet.forEach(
+    (
+      car,
+      index
+    ) => {
 
-      message +=
-        `${index + 1}. ${car.registration} - ${car.make_model || ""}\n`;
+      vehicleList +=
+        `${index + 1}. ${car.registration || ""} - ${car.make_model || ""}`;
+
+      if (
+        car.driver_name
+      ) {
+
+        vehicleList +=
+          ` (Current driver: ${car.driver_name})`;
+
+      }
+
+      vehicleList +=
+        "\n";
 
     }
   );
 
-  const answer =
+  const choice =
     prompt(
+      vehicleList
+    );
+
+  if (
+    !choice
+  ) {
+    return;
+  }
+
+  const vehicleIndex =
+    Number(
+      choice
+    ) - 1;
+
+  if (
+    !Number.isInteger(
+      vehicleIndex
+    ) ||
+    vehicleIndex < 0 ||
+    vehicleIndex >=
+      fleet.length
+  ) {
+
+    alert(
+      "Please enter a valid vehicle number."
+    );
+
+    return;
+  }
+
+  const vehicle =
+    fleet[
+      vehicleIndex
+    ];
+
+  confirmDriverVehicleAssignment(
+    driver,
+    vehicle
+  );
+}
+
+
+// ======================================================
+// CONFIRM AND SAVE VEHICLE ASSIGNMENT
+// ======================================================
+
+async function confirmDriverVehicleAssignment(
+  driver,
+  vehicle
+) {
+
+  let message =
+    `Assign ${driver.full_name || "this driver"} to ` +
+    `${vehicle.registration || "this vehicle"}?`;
+
+  if (
+    vehicle.driver_name &&
+    String(
+      vehicle.driver_name
+    )
+      .trim()
+      .toLowerCase() !==
+    String(
+      driver.full_name ||
+      ""
+    )
+      .trim()
+      .toLowerCase()
+  ) {
+
+    message +=
+      `\n\nWARNING: ${vehicle.registration} is currently assigned to ` +
+      `${vehicle.driver_name}. This will replace that driver.`;
+
+  }
+
+  const confirmed =
+    confirm(
       message
     );
 
-  if(!answer){
+  if (
+    !confirmed
+  ) {
     return;
   }
 
-  const selectedIndex =
-    Number(answer) - 1;
-
-  if(
-    selectedIndex < 0 ||
-    selectedIndex >=
-      availableCars.length
-  ){
-
-    alert(
-      "Invalid vehicle selection."
-    );
-
-    return;
-  }
-
-  const car =
-    availableCars[
-      selectedIndex
-    ];
-
-  if(
-    !confirm(
-      `Assign ${driver.full_name} to ${car.registration}?`
-    )
-  ){
-    return;
-  }
-
-  try{
+  try {
 
     const {
-      error
+      error:
+        vehicleError
     } =
       await sb
         .from(
@@ -2460,29 +3369,72 @@ async function assignApprovedDriverToVehicle(
         })
         .eq(
           "id",
-          car.id
+          vehicle.id
         );
 
-    if(error){
-      throw error;
+    if (
+      vehicleError
+    ) {
+      throw vehicleError;
     }
 
-    alert(
-      `${driver.full_name} has been assigned to ${car.registration}.`
+    const {
+      error:
+        driverError
+    } =
+      await sb
+        .from(
+          "driver_applications"
+        )
+        .update({
+
+          assigned_vehicle_id:
+            vehicle.id,
+
+          updated_at:
+            new Date()
+              .toISOString()
+
+        })
+        .eq(
+          "id",
+          driver.id
+        );
+
+    if (
+      driverError
+    ) {
+      throw driverError;
+    }
+
+    lastAssignedVehicleId =
+      vehicle.id;
+
+    lastAssignedDriverApplicationId =
+      driver.id;
+
+    await loadVehicles();
+
+    await loadDriverApplications(
+      false,
+      true
     );
 
-    await refreshAll();
+    render();
 
-    showTab(
-      "drivers"
+    showVehicleDocumentSendBox(
+      driver,
+      vehicle
     );
 
-  } catch(error){
+  } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     alert(
-      "Could not assign driver: " +
+      "Could not assign driver to vehicle: " +
       error.message
     );
 
@@ -2491,22 +3443,22 @@ async function assignApprovedDriverToVehicle(
 
 
 // ======================================================
-// DRIVER APPLICATION UI
+// DRIVER APPLICATIONS UI
 // ======================================================
 
-function ensureDriverApplicationsUI(){
+function ensureDriverApplicationsUI() {
 
   const nav =
     document.querySelector(
       "nav.tabs"
     );
 
-  if(
+  if (
     nav &&
-    !document.getElementById(
+    !$(
       "driverApplicationsNavButton"
     )
-  ){
+  ) {
 
     const button =
       document.createElement(
@@ -2531,10 +3483,12 @@ function ensureDriverApplicationsUI(){
   const app =
     $("app");
 
-  if(
+  if (
     app &&
-    !$("driverApplications")
-  ){
+    !$(
+      "driverApplications"
+    )
+  ) {
 
     const section =
       document.createElement(
@@ -2626,10 +3580,12 @@ function ensureDriverApplicationsUI(){
     );
   }
 
-  if(
+  if (
     app &&
-    !$("driverApplicationDetail")
-  ){
+    !$(
+      "driverApplicationDetail"
+    )
+  ) {
 
     const section =
       document.createElement(
@@ -2667,15 +3623,15 @@ function ensureDriverApplicationsUI(){
 
 
 // ======================================================
-// LOAD APPLICATIONS
+// LOAD DRIVER APPLICATIONS
 // ======================================================
 
 async function loadDriverApplications(
   showMessage = false,
   quiet = false
-){
+) {
 
-  try{
+  try {
 
     const {
       data,
@@ -2689,11 +3645,14 @@ async function loadDriverApplications(
         .order(
           "created_at",
           {
-            ascending: false
+            ascending:
+              false
           }
         );
 
-    if(error){
+    if (
+      error
+    ) {
       throw error;
     }
 
@@ -2703,9 +3662,12 @@ async function loadDriverApplications(
     await loadDriverApplicationDocuments();
 
     renderDriverApplications();
+
     renderDrivers();
 
-    if(showMessage){
+    if (
+      showMessage
+    ) {
 
       alert(
         "Driver applications refreshed."
@@ -2713,18 +3675,23 @@ async function loadDriverApplications(
 
     }
 
-  } catch(error){
+  } catch (error) {
 
     console.error(
+      "Driver applications error:",
       error
     );
 
-    if(!quiet){
+    if (
+      !quiet
+    ) {
 
       const list =
         $("driverApplicationList");
 
-      if(list){
+      if (
+        list
+      ) {
 
         list.innerHTML =
           `
@@ -2744,17 +3711,17 @@ async function loadDriverApplications(
 
 
 // ======================================================
-// DRIVER APPLICATION DOCUMENTS
+// LOAD DRIVER APPLICATION DOCUMENTS
 // ======================================================
 
-async function loadDriverApplicationDocuments(){
+async function loadDriverApplicationDocuments() {
 
   driverApplicationDocuments =
     {};
 
-  if(
+  if (
     !driverApplications.length
-  ){
+  ) {
     return;
   }
 
@@ -2778,9 +3745,13 @@ async function loadDriverApplicationDocuments(){
         ids
       );
 
-  if(error){
+  if (
+    error
+  ) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     return;
   }
@@ -2788,11 +3759,11 @@ async function loadDriverApplicationDocuments(){
   (data || []).forEach(
     document => {
 
-      if(
+      if (
         !driverApplicationDocuments[
           document.application_id
         ]
-      ){
+      ) {
 
         driverApplicationDocuments[
           document.application_id
@@ -2812,10 +3783,10 @@ async function loadDriverApplicationDocuments(){
 
 
 // ======================================================
-// OPEN APPLICATIONS
+// OPEN DRIVER APPLICATIONS
 // ======================================================
 
-async function openDriverApplications(){
+async function openDriverApplications() {
 
   ensureDriverApplicationsUI();
 
@@ -2833,12 +3804,14 @@ async function openDriverApplications(){
 // APPLICATION LIST
 // ======================================================
 
-function renderDriverApplications(){
+function renderDriverApplications() {
 
   const container =
     $("driverApplicationList");
 
-  if(!container){
+  if (
+    !container
+  ) {
     return;
   }
 
@@ -2857,29 +3830,45 @@ function renderDriverApplications(){
         ?.value ||
       ""
     )
+      .trim()
       .toLowerCase();
 
   const filtered =
     driverApplications.filter(
-      item => {
+      application => {
 
-        const text =
+        const searchable =
           [
-            item.full_name,
-            item.phone,
-            item.email,
-            item.postcode,
-            item.status
+            application.full_name,
+            application.phone,
+            application.email,
+            application.postcode,
+            application.taxi_badge_number,
+            application.driving_licence_number,
+            application.status
           ]
-            .join(" ")
+            .join(
+              " "
+            )
             .toLowerCase();
 
-        return (
-          text.includes(search) &&
-          (
-            !filter ||
-            item.status === filter
+        const matchesSearch =
+          searchable.includes(
+            search
+          );
+
+        const matchesFilter =
+          !filter ||
+          String(
+            application.status ||
+            ""
           )
+            .toLowerCase() ===
+          filter;
+
+        return (
+          matchesSearch &&
+          matchesFilter
         );
 
       }
@@ -2913,9 +3902,9 @@ function renderDriverApplications(){
         "invited"
     ).length;
 
-  if(
+  if (
     $("driverApplicationStats")
-  ){
+  ) {
 
     $("driverApplicationStats").innerHTML =
       `
@@ -2944,7 +3933,9 @@ function renderDriverApplications(){
 
   updateDriverApplicationsNavCount();
 
-  if(!filtered.length){
+  if (
+    !filtered.length
+  ) {
 
     container.innerHTML =
       `
@@ -2957,122 +3948,132 @@ function renderDriverApplications(){
   }
 
   container.innerHTML =
-    filtered.map(
-      application => {
+    filtered
+      .map(
+        application => {
 
-        const docs =
-          driverApplicationDocuments[
-            application.id
-          ] || [];
+          const docs =
+            driverApplicationDocuments[
+              application.id
+            ] || [];
 
-        return `
+          return `
 
-          <div class="vehicle-card">
+            <div class="vehicle-card">
 
-            <div class="row">
+              <div class="row">
 
-              <div>
+                <div>
 
-                <h3>
+                  <h3>
+                    ${escapeHtml(
+                      application.full_name ||
+                      "Driver Invitation"
+                    )}
+                  </h3>
+
+                  <p class="small">
+                    ${escapeHtml(
+                      application.email ||
+                      ""
+                    )}
+                  </p>
+
+                </div>
+
+                <span class="badge">
                   ${escapeHtml(
-                    application.full_name ||
-                    "Driver Invitation"
+                    application.status ||
+                    "invited"
                   )}
-                </h3>
-
-                <p class="small">
-                  ${escapeHtml(
-                    application.email ||
-                    ""
-                  )}
-                </p>
+                </span>
 
               </div>
 
-              <span class="badge">
+              <hr>
+
+              <p>
+                <b>Phone:</b>
                 ${escapeHtml(
-                  application.status ||
-                  "invited"
+                  application.phone ||
+                  "-"
                 )}
-              </span>
+              </p>
+
+              <p>
+                <b>Postcode:</b>
+                ${escapeHtml(
+                  application.postcode ||
+                  "-"
+                )}
+              </p>
+
+              <p>
+                <b>Taxi Badge:</b>
+                ${escapeHtml(
+                  application.taxi_badge_number ||
+                  "-"
+                )}
+              </p>
+
+              <p>
+                <b>Licence Points:</b>
+                ${application.licence_points ?? "-"}
+              </p>
+
+              <p>
+                <b>Accidents Last 5 Years:</b>
+                ${escapeHtml(
+                  application.accidents_last_5_years ||
+                  "-"
+                )}
+              </p>
+
+              <p>
+                <b>Documents:</b>
+                ${docs.length}
+              </p>
+
+              <button
+                class="blue"
+                onclick="viewDriverApplication('${application.id}')"
+              >
+                View Full Application
+              </button>
+
+              ${
+                application.status ===
+                "submitted"
+
+                  ? `
+                    <div class="actions">
+
+                      <button
+                        class="green"
+                        onclick="approveDriverApplication('${application.id}')"
+                      >
+                        Approve
+                      </button>
+
+                      <button
+                        class="danger"
+                        onclick="rejectDriverApplication('${application.id}')"
+                      >
+                        Reject
+                      </button>
+
+                    </div>
+                  `
+
+                  : ""
+              }
 
             </div>
+          `;
 
-            <hr>
-
-            <p>
-              <b>Phone:</b>
-              ${escapeHtml(
-                application.phone ||
-                "-"
-              )}
-            </p>
-
-            <p>
-              <b>Postcode:</b>
-              ${escapeHtml(
-                application.postcode ||
-                "-"
-              )}
-            </p>
-
-            <p>
-              <b>Taxi Badge:</b>
-              ${escapeHtml(
-                application.taxi_badge_number ||
-                "-"
-              )}
-            </p>
-
-            <p>
-              <b>Licence Points:</b>
-              ${application.licence_points ?? "-"}
-            </p>
-
-            <p>
-              <b>Documents:</b>
-              ${docs.length}
-            </p>
-
-            <button
-              class="blue"
-              onclick="viewDriverApplication('${application.id}')"
-            >
-              View Full Application
-            </button>
-
-            ${
-              application.status ===
-              "submitted"
-
-                ? `
-                  <div class="actions">
-
-                    <button
-                      class="green"
-                      onclick="approveDriverApplication('${application.id}')"
-                    >
-                      Approve
-                    </button>
-
-                    <button
-                      class="danger"
-                      onclick="rejectDriverApplication('${application.id}')"
-                    >
-                      Reject
-                    </button>
-
-                  </div>
-                `
-
-                : ""
-            }
-
-          </div>
-        `;
-
-      }
-    ).join("");
+        }
+      )
+      .join("");
 }
 
 
@@ -3082,7 +4083,7 @@ function renderDriverApplications(){
 // ======================================================
 // CAR 4 U 1 LTD - FLEET MANAGER V8
 // PART 4 OF 4
-// FULL APPLICATION + APPROVAL + DOCUMENTS + INVITES
+// DRIVER DETAILS + DELETE DRIVER + DOCUMENT SENDING
 // ======================================================
 
 
@@ -3093,7 +4094,21 @@ function renderDriverApplications(){
 function detailRow(
   label,
   value
-){
+) {
+
+  let displayValue =
+    value;
+
+  if (
+    displayValue === null ||
+    displayValue === undefined ||
+    displayValue === ""
+  ) {
+
+    displayValue =
+      "-";
+
+  }
 
   return `
     <p>
@@ -3103,11 +4118,9 @@ function detailRow(
       </b>
 
       ${escapeHtml(
-        value === null ||
-        value === undefined ||
-        value === ""
-          ? "-"
-          : String(value)
+        String(
+          displayValue
+        )
       )}
 
     </p>
@@ -3121,7 +4134,7 @@ function detailRow(
 
 function viewDriverApplication(
   applicationId
-){
+) {
 
   const application =
     driverApplications.find(
@@ -3130,7 +4143,14 @@ function viewDriverApplication(
         applicationId
     );
 
-  if(!application){
+  if (
+    !application
+  ) {
+
+    alert(
+      "Driver application could not be found."
+    );
+
     return;
   }
 
@@ -3149,7 +4169,9 @@ function viewDriverApplication(
   const box =
     $("driverApplicationDetailBox");
 
-  if(!box){
+  if (
+    !box
+  ) {
     return;
   }
 
@@ -3266,7 +4288,7 @@ function viewDriverApplication(
       </h3>
 
       ${detailRow(
-        "Taxi Badge",
+        "Taxi Badge Number",
         application.taxi_badge_number
       )}
 
@@ -3334,14 +4356,20 @@ function viewDriverApplication(
       ${
         docs.length
 
-          ? docs.map(
-              document =>
-                driverDocumentCard(
-                  document
-                )
-            ).join("")
+          ? docs
+              .map(
+                document =>
+                  driverDocumentCard(
+                    document
+                  )
+              )
+              .join("")
 
-          : "<p>No uploaded documents.</p>"
+          : `
+              <p>
+                No uploaded documents.
+              </p>
+            `
       }
 
       <hr>
@@ -3375,11 +4403,28 @@ function viewDriverApplication(
               <b>
                 Current Status:
                 ${escapeHtml(
-                  application.status
+                  application.status ||
+                  ""
                 )}
               </b>
             </p>
           `
+      }
+
+      ${
+        application.status ===
+        "approved"
+
+          ? `
+            <button
+              class="danger"
+              onclick="deleteApprovedDriver('${application.id}')"
+            >
+              🗑 Delete Driver
+            </button>
+          `
+
+          : ""
       }
 
     </div>
@@ -3390,12 +4435,12 @@ function viewDriverApplication(
 
 
 // ======================================================
-// DOCUMENT LABELS
+// DRIVER DOCUMENT LABELS
 // ======================================================
 
 function driverDocumentLabel(
   type
-){
+) {
 
   const labels = {
 
@@ -3425,12 +4470,12 @@ function driverDocumentLabel(
 
 
 // ======================================================
-// DOCUMENT CARD
+// DRIVER DOCUMENT CARD
 // ======================================================
 
 function driverDocumentCard(
   document
-){
+) {
 
   return `
 
@@ -3444,7 +4489,7 @@ function driverDocumentCard(
         )}
       </b>
 
-      <p>
+      <p class="small">
         ${escapeHtml(
           document.file_name ||
           ""
@@ -3464,12 +4509,12 @@ function driverDocumentCard(
 
 
 // ======================================================
-// OPEN PRIVATE DOCUMENT
+// OPEN DRIVER DOCUMENT
 // ======================================================
 
 async function openDriverDocument(
   documentId
-){
+) {
 
   const document =
     Object
@@ -3483,7 +4528,9 @@ async function openDriverDocument(
           documentId
       );
 
-  if(!document){
+  if (
+    !document
+  ) {
 
     alert(
       "Document could not be found."
@@ -3492,7 +4539,7 @@ async function openDriverDocument(
     return;
   }
 
-  try{
+  try {
 
     const {
       data,
@@ -3507,14 +4554,16 @@ async function openDriverDocument(
           300
         );
 
-    if(error){
+    if (
+      error
+    ) {
       throw error;
     }
 
-    if(
+    if (
       !data ||
       !data.signedUrl
-    ){
+    ) {
 
       throw new Error(
         "Could not create document link."
@@ -3527,7 +4576,7 @@ async function openDriverDocument(
       "_blank"
     );
 
-  } catch(error){
+  } catch (error) {
 
     alert(
       "Could not open document: " +
@@ -3540,12 +4589,11 @@ async function openDriverDocument(
 
 // ======================================================
 // APPROVE DRIVER
-// APPROVED APPLICATION AUTOMATICALLY BECOMES A DRIVER
 // ======================================================
 
 async function approveDriverApplication(
   applicationId
-){
+) {
 
   const application =
     driverApplications.find(
@@ -3554,19 +4602,24 @@ async function approveDriverApplication(
         applicationId
     );
 
-  if(!application){
+  if (
+    !application
+  ) {
     return;
   }
 
-  if(
-    !confirm(
+  const confirmed =
+    confirm(
       `Approve ${application.full_name || "this driver"}?`
-    )
-  ){
+    );
+
+  if (
+    !confirmed
+  ) {
     return;
   }
 
-  try{
+  try {
 
     const {
       error
@@ -3590,7 +4643,9 @@ async function approveDriverApplication(
           applicationId
         );
 
-    if(error){
+    if (
+      error
+    ) {
       throw error;
     }
 
@@ -3609,9 +4664,11 @@ async function approveDriverApplication(
       "drivers"
     );
 
-  } catch(error){
+  } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     alert(
       "Could not approve application: " +
@@ -3628,7 +4685,7 @@ async function approveDriverApplication(
 
 async function rejectDriverApplication(
   applicationId
-){
+) {
 
   const application =
     driverApplications.find(
@@ -3637,19 +4694,24 @@ async function rejectDriverApplication(
         applicationId
     );
 
-  if(!application){
+  if (
+    !application
+  ) {
     return;
   }
 
-  if(
-    !confirm(
+  const confirmed =
+    confirm(
       `Reject ${application.full_name || "this application"}?`
-    )
-  ){
+    );
+
+  if (
+    !confirmed
+  ) {
     return;
   }
 
-  try{
+  try {
 
     const {
       error
@@ -3673,7 +4735,9 @@ async function rejectDriverApplication(
           applicationId
         );
 
-    if(error){
+    if (
+      error
+    ) {
       throw error;
     }
 
@@ -3685,7 +4749,7 @@ async function rejectDriverApplication(
 
     openDriverApplications();
 
-  } catch(error){
+  } catch (error) {
 
     alert(
       "Could not reject application: " +
@@ -3697,12 +4761,383 @@ async function rejectDriverApplication(
 
 
 // ======================================================
-// APPLICATION WHATSAPP
+// DELETE APPROVED DRIVER
+// ======================================================
+
+async function deleteApprovedDriver(
+  applicationId
+) {
+
+  const driver =
+    driverApplications.find(
+      item =>
+        item.id ===
+        applicationId
+    );
+
+  if (
+    !driver
+  ) {
+
+    alert(
+      "Driver could not be found."
+    );
+
+    return;
+  }
+
+  const name =
+    driver.full_name ||
+    "this driver";
+
+  const confirmed =
+    confirm(
+      `Permanently delete ${name}?\n\n` +
+      `This will remove the driver, their uploaded documents and their vehicle assignment.\n\n` +
+      `The vehicle itself will NOT be deleted.`
+    );
+
+  if (
+    !confirmed
+  ) {
+    return;
+  }
+
+  const finalCheck =
+    confirm(
+      `Are you absolutely sure you want to delete ${name}?`
+    );
+
+  if (
+    !finalCheck
+  ) {
+    return;
+  }
+
+  try {
+
+    // ----------------------------------------------
+    // CLEAR ASSIGNED VEHICLE
+    // ----------------------------------------------
+
+    if (
+      driver.assigned_vehicle_id
+    ) {
+
+      const {
+        error:
+          vehicleError
+      } =
+        await sb
+          .from(
+            "vehicles"
+          )
+          .update({
+
+            driver_name:
+              "",
+
+            driver_phone:
+              "",
+
+            licence_expiry:
+              null,
+
+            badge_expiry:
+              null,
+
+            status:
+              "Available"
+
+          })
+          .eq(
+            "id",
+            driver.assigned_vehicle_id
+          );
+
+      if (
+        vehicleError
+      ) {
+        throw vehicleError;
+      }
+
+    } else {
+
+      const driverPhone =
+        String(
+          driver.phone ||
+          ""
+        )
+          .replace(
+            /[^0-9]/g,
+            ""
+          );
+
+      const driverName =
+        String(
+          driver.full_name ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+      const matchingCars =
+        fleet.filter(
+          car => {
+
+            const carPhone =
+              String(
+                car.driver_phone ||
+                ""
+              )
+                .replace(
+                  /[^0-9]/g,
+                  ""
+                );
+
+            const carName =
+              String(
+                car.driver_name ||
+                ""
+              )
+                .trim()
+                .toLowerCase();
+
+            return (
+              (
+                driverPhone &&
+                carPhone &&
+                driverPhone ===
+                carPhone
+              ) ||
+              (
+                driverName &&
+                carName &&
+                driverName ===
+                carName
+              )
+            );
+
+          }
+        );
+
+      for (
+        const car
+        of matchingCars
+      ) {
+
+        const {
+          error:
+            vehicleError
+        } =
+          await sb
+            .from(
+              "vehicles"
+            )
+            .update({
+
+              driver_name:
+                "",
+
+              driver_phone:
+                "",
+
+              licence_expiry:
+                null,
+
+              badge_expiry:
+                null,
+
+              status:
+                "Available"
+
+            })
+            .eq(
+              "id",
+              car.id
+            );
+
+        if (
+          vehicleError
+        ) {
+          throw vehicleError;
+        }
+
+      }
+
+    }
+
+
+    // ----------------------------------------------
+    // GET DRIVER DOCUMENTS
+    // ----------------------------------------------
+
+    let driverDocs =
+      driverApplicationDocuments[
+        applicationId
+      ] || [];
+
+    if (
+      !driverDocs.length
+    ) {
+
+      const {
+        data,
+        error
+      } =
+        await sb
+          .from(
+            "driver_application_documents"
+          )
+          .select("*")
+          .eq(
+            "application_id",
+            applicationId
+          );
+
+      if (
+        error
+      ) {
+        throw error;
+      }
+
+      driverDocs =
+        data || [];
+
+    }
+
+
+    // ----------------------------------------------
+    // DELETE STORAGE FILES
+    // ----------------------------------------------
+
+    const paths =
+      driverDocs
+        .map(
+          document =>
+            document.file_path
+        )
+        .filter(
+          Boolean
+        );
+
+    if (
+      paths.length
+    ) {
+
+      const {
+        error:
+          storageError
+      } =
+        await sb.storage
+          .from(
+            "driver-onboarding"
+          )
+          .remove(
+            paths
+          );
+
+      if (
+        storageError
+      ) {
+        throw storageError;
+      }
+
+    }
+
+
+    // ----------------------------------------------
+    // DELETE DOCUMENT DATABASE ROWS
+    // ----------------------------------------------
+
+    const {
+      error:
+        documentError
+    } =
+      await sb
+        .from(
+          "driver_application_documents"
+        )
+        .delete()
+        .eq(
+          "application_id",
+          applicationId
+        );
+
+    if (
+      documentError
+    ) {
+      throw documentError;
+    }
+
+
+    // ----------------------------------------------
+    // DELETE DRIVER
+    // ----------------------------------------------
+
+    const {
+      error:
+        driverError
+    } =
+      await sb
+        .from(
+          "driver_applications"
+        )
+        .delete()
+        .eq(
+          "id",
+          applicationId
+        );
+
+    if (
+      driverError
+    ) {
+      throw driverError;
+    }
+
+    selectedDriverApplicationId =
+      null;
+
+    await loadVehicles();
+
+    await loadDriverApplications(
+      false,
+      true
+    );
+
+    render();
+
+    alert(
+      `${name} has been deleted successfully.`
+    );
+
+    showTab(
+      "drivers"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Delete driver error:",
+      error
+    );
+
+    alert(
+      "Could not delete driver: " +
+      error.message
+    );
+
+  }
+}
+
+
+// ======================================================
+// DRIVER WHATSAPP
 // ======================================================
 
 function whatsappApplicationDriver(
   applicationId
-){
+) {
 
   const application =
     driverApplications.find(
@@ -3711,7 +5146,9 @@ function whatsappApplicationDriver(
         applicationId
     );
 
-  if(!application){
+  if (
+    !application
+  ) {
     return;
   }
 
@@ -3719,16 +5156,17 @@ function whatsappApplicationDriver(
     String(
       application.phone ||
       ""
-    ).replace(
-      /[^0-9]/g,
-      ""
-    );
+    )
+      .replace(
+        /[^0-9]/g,
+        ""
+      );
 
-  if(
+  if (
     phone.startsWith(
       "0"
     )
-  ){
+  ) {
 
     phone =
       "44" +
@@ -3736,7 +5174,9 @@ function whatsappApplicationDriver(
 
   }
 
-  if(!phone){
+  if (
+    !phone
+  ) {
 
     alert(
       "No phone number saved."
@@ -3745,37 +5185,37 @@ function whatsappApplicationDriver(
     return;
   }
 
-  const text =
+  const message =
     encodeURIComponent(
       `Hi ${application.full_name || ""}, this is Car 4 U 1 Ltd regarding your driver application.`
     );
 
   window.open(
-    `https://wa.me/${phone}?text=${text}`,
+    `https://wa.me/${phone}?text=${message}`,
     "_blank"
   );
 }
 
 
 // ======================================================
-// WHATSAPP BUTTON IN FULL APPLICATION
+// WHATSAPP BUTTON ON PROFILE
 // ======================================================
 
-function addApplicationContactButton(){
+function addApplicationContactButton() {
 
   const box =
     $("driverApplicationDetailBox");
 
-  if(
+  if (
     !box ||
     !selectedDriverApplicationId
-  ){
+  ) {
     return;
   }
 
-  if(
+  if (
     $("applicationWhatsAppButton")
-  ){
+  ) {
     return;
   }
 
@@ -3794,10 +5234,13 @@ function addApplicationContactButton(){
     "WhatsApp Driver";
 
   button.onclick =
-    () =>
+    function () {
+
       whatsappApplicationDriver(
         selectedDriverApplicationId
       );
+
+    };
 
   box.prepend(
     button
@@ -3806,7 +5249,461 @@ function addApplicationContactButton(){
 
 
 // ======================================================
-// NEW DRIVER LINK
+// VEHICLE ASSIGNMENT SUCCESS BOX
+// ======================================================
+
+function showVehicleDocumentSendBox(
+  driver,
+  vehicle
+) {
+
+  let modal =
+    $("vehicleDocumentSendModal");
+
+  if (
+    !modal
+  ) {
+
+    modal =
+      document.createElement(
+        "div"
+      );
+
+    modal.id =
+      "vehicleDocumentSendModal";
+
+    modal.style.cssText =
+      `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.55);
+        z-index:10001;
+        padding:20px;
+        overflow:auto;
+      `;
+
+    modal.innerHTML = `
+
+      <div
+        style="
+          max-width:600px;
+          margin:60px auto;
+          background:white;
+          border-radius:18px;
+          padding:20px;
+        "
+      >
+
+        <h2>
+          ✅ Vehicle Assigned Successfully
+        </h2>
+
+        <p
+          id="vehicleDocumentSendMessage"
+        ></p>
+
+        <button
+          class="blue"
+          onclick="sendAssignedVehicleDocumentsByEmail()"
+        >
+          📧 Email Vehicle Documents
+        </button>
+
+        <button
+          class="green"
+          onclick="sendAssignedVehicleDocumentsByWhatsApp()"
+        >
+          💬 WhatsApp Vehicle Documents
+        </button>
+
+        <button
+          class="secondary"
+          onclick="closeVehicleDocumentSendModal()"
+        >
+          Close
+        </button>
+
+      </div>
+    `;
+
+    document.body.appendChild(
+      modal
+    );
+  }
+
+  $("vehicleDocumentSendMessage").innerHTML =
+    `
+      <b>
+        ${escapeHtml(
+          driver.full_name ||
+          "Driver"
+        )}
+      </b>
+
+      has been assigned to
+
+      <b>
+        ${escapeHtml(
+          vehicle.registration ||
+          ""
+        )}
+      </b>.
+
+      <br><br>
+
+      You can now send the vehicle document pack:
+      MOT, V5 / Logbook, Insurance Certificate
+      and Taxi / Private Hire Licence.
+    `;
+
+  modal.style.display =
+    "block";
+}
+
+
+function closeVehicleDocumentSendModal() {
+
+  if (
+    $("vehicleDocumentSendModal")
+  ) {
+
+    $("vehicleDocumentSendModal").style.display =
+      "none";
+
+  }
+}
+
+
+// ======================================================
+// LAST ASSIGNED DRIVER / VEHICLE
+// ======================================================
+
+function getLastAssignedDriver() {
+
+  return driverApplications.find(
+    item =>
+      item.id ===
+      lastAssignedDriverApplicationId
+  );
+}
+
+
+function getLastAssignedVehicle() {
+
+  return fleet.find(
+    item =>
+      item.id ===
+      lastAssignedVehicleId
+  );
+}
+
+
+// ======================================================
+// SECURE VEHICLE DOCUMENT LINKS
+// 24 HOURS
+// ======================================================
+
+async function getVehicleDocumentLinks(
+  vehicleId
+) {
+
+  const vehicleDocs =
+    documents[
+      vehicleId
+    ] || [];
+
+  const wantedTypes = [
+
+    "mot",
+    "v5",
+    "logbook",
+    "insurance",
+    "insurance_certificate",
+    "taxi_licence",
+    "taxi_license",
+    "private_hire_licence",
+    "private_hire_license"
+
+  ];
+
+  const matchingDocs =
+    vehicleDocs.filter(
+      document => {
+
+        const type =
+          String(
+            document.document_type ||
+            document.type ||
+            ""
+          )
+            .toLowerCase();
+
+        return wantedTypes.some(
+          wanted =>
+            type.includes(
+              wanted
+            )
+        );
+
+      }
+    );
+
+  const links =
+    [];
+
+  for (
+    const document
+    of matchingDocs
+  ) {
+
+    const path =
+      document.file_path ||
+      document.path;
+
+    if (
+      !path
+    ) {
+      continue;
+    }
+
+    const {
+      data,
+      error
+    } =
+      await sb.storage
+        .from(
+          "vehicle-documents"
+        )
+        .createSignedUrl(
+          path,
+          86400
+        );
+
+    if (
+      error ||
+      !data?.signedUrl
+    ) {
+
+      console.warn(
+        error
+      );
+
+      continue;
+    }
+
+    links.push({
+
+      label:
+        vehicleDocumentLabel(
+          document.document_type
+        ),
+
+      url:
+        data.signedUrl
+
+    });
+
+  }
+
+  return links;
+}
+
+
+// ======================================================
+// EMAIL VEHICLE DOCUMENTS
+// ======================================================
+
+async function sendAssignedVehicleDocumentsByEmail() {
+
+  const driver =
+    getLastAssignedDriver();
+
+  const vehicle =
+    getLastAssignedVehicle();
+
+  if (
+    !driver ||
+    !vehicle
+  ) {
+
+    alert(
+      "Assigned driver or vehicle could not be found."
+    );
+
+    return;
+  }
+
+  if (
+    !driver.email
+  ) {
+
+    alert(
+      "This driver does not have an email address."
+    );
+
+    return;
+  }
+
+  const links =
+    await getVehicleDocumentLinks(
+      vehicle.id
+    );
+
+  if (
+    !links.length
+  ) {
+
+    alert(
+      "No MOT, V5, Insurance or Taxi Licence documents were found for this vehicle."
+    );
+
+    return;
+  }
+
+  const documentText =
+    links
+      .map(
+        item =>
+          `${item.label}:\n${item.url}`
+      )
+      .join(
+        "\n\n"
+      );
+
+  const subject =
+    encodeURIComponent(
+      `Vehicle Documents - ${vehicle.registration}`
+    );
+
+  const body =
+    encodeURIComponent(
+`Hi ${driver.full_name || ""},
+
+You have been assigned vehicle ${vehicle.registration}.
+
+Please find your vehicle documents below:
+
+${documentText}
+
+The secure links will remain available for 24 hours.
+
+Thank you,
+Car 4 U 1 Ltd`
+    );
+
+  window.location.href =
+    `mailto:${driver.email}?subject=${subject}&body=${body}`;
+}
+
+
+// ======================================================
+// WHATSAPP VEHICLE DOCUMENTS
+// ======================================================
+
+async function sendAssignedVehicleDocumentsByWhatsApp() {
+
+  const driver =
+    getLastAssignedDriver();
+
+  const vehicle =
+    getLastAssignedVehicle();
+
+  if (
+    !driver ||
+    !vehicle
+  ) {
+
+    alert(
+      "Assigned driver or vehicle could not be found."
+    );
+
+    return;
+  }
+
+  let phone =
+    String(
+      driver.phone ||
+      ""
+    )
+      .replace(
+        /[^0-9]/g,
+        ""
+      );
+
+  if (
+    phone.startsWith(
+      "0"
+    )
+  ) {
+
+    phone =
+      "44" +
+      phone.substring(1);
+
+  }
+
+  if (
+    !phone
+  ) {
+
+    alert(
+      "This driver does not have a phone number."
+    );
+
+    return;
+  }
+
+  const links =
+    await getVehicleDocumentLinks(
+      vehicle.id
+    );
+
+  if (
+    !links.length
+  ) {
+
+    alert(
+      "No MOT, V5, Insurance or Taxi Licence documents were found for this vehicle."
+    );
+
+    return;
+  }
+
+  const documentText =
+    links
+      .map(
+        item =>
+          `${item.label}:\n${item.url}`
+      )
+      .join(
+        "\n\n"
+      );
+
+  const message =
+    encodeURIComponent(
+`Hi ${driver.full_name || ""},
+
+You have been assigned vehicle ${vehicle.registration}.
+
+Please find your vehicle documents below:
+
+${documentText}
+
+The secure links will remain available for 24 hours.
+
+Thank you,
+Car 4 U 1 Ltd`
+    );
+
+  window.open(
+    `https://wa.me/${phone}?text=${message}`,
+    "_blank"
+  );
+}
+
+
+// ======================================================
+// NEW DRIVER INVITATION LINK
 // ======================================================
 
 const DRIVER_ONBOARDING_PAGE =
@@ -3814,27 +5711,31 @@ const DRIVER_ONBOARDING_PAGE =
   "/driver-onboarding.html";
 
 
-function addDriverInvitationButton(){
+function addDriverInvitationButton() {
 
   const section =
     $("driverApplications");
 
-  if(!section){
+  if (
+    !section
+  ) {
     return;
   }
 
-  if(
+  if (
     $("createDriverInvitationButton")
-  ){
+  ) {
     return;
   }
 
-  const row =
+  const firstRow =
     section.querySelector(
       ".panel .row"
     );
 
-  if(!row){
+  if (
+    !firstRow
+  ) {
     return;
   }
 
@@ -3858,19 +5759,19 @@ function addDriverInvitationButton(){
   button.onclick =
     createDriverInvitation;
 
-  row.appendChild(
+  firstRow.appendChild(
     button
   );
 }
 
 
 // ======================================================
-// CREATE NEW DRIVER INVITATION
+// CREATE DRIVER INVITATION
 // ======================================================
 
-async function createDriverInvitation(){
+async function createDriverInvitation() {
 
-  try{
+  try {
 
     const {
       data,
@@ -3880,17 +5781,19 @@ async function createDriverInvitation(){
         "create_driver_invitation"
       );
 
-    if(error){
+    if (
+      error
+    ) {
       throw error;
     }
 
-    if(
+    if (
       !data ||
       !data.length
-    ){
+    ) {
 
       throw new Error(
-        "No invitation token returned."
+        "No invitation token was returned."
       );
 
     }
@@ -3899,10 +5802,12 @@ async function createDriverInvitation(){
       data[0]
         .application_token;
 
-    if(!token){
+    if (
+      !token
+    ) {
 
       throw new Error(
-        "Invitation token missing."
+        "Invitation token is missing."
       );
 
     }
@@ -3920,7 +5825,11 @@ async function createDriverInvitation(){
 
     await loadDriverApplications();
 
-  } catch(error){
+  } catch (error) {
+
+    console.error(
+      error
+    );
 
     alert(
       "Could not create driver invitation: " +
@@ -3932,17 +5841,19 @@ async function createDriverInvitation(){
 
 
 // ======================================================
-// DRIVER LINK WINDOW
+// SHOW DRIVER INVITATION
 // ======================================================
 
 function showDriverInvitationLink(
   link
-){
+) {
 
   let modal =
     $("driverInvitationModal");
 
-  if(!modal){
+  if (
+    !modal
+  ) {
 
     modal =
       document.createElement(
@@ -3957,7 +5868,7 @@ function showDriverInvitationLink(
         position:fixed;
         inset:0;
         background:rgba(0,0,0,.55);
-        z-index:9999;
+        z-index:10002;
         padding:20px;
         overflow:auto;
       `;
@@ -3979,7 +5890,7 @@ function showDriverInvitationLink(
         </h2>
 
         <p>
-          Send this private link to the driver.
+          Send this secure private link to the new driver.
         </p>
 
         <textarea
@@ -4006,6 +5917,7 @@ function showDriverInvitationLink(
         </button>
 
         <button
+          class="secondary"
           onclick="closeDriverInvitationModal()"
         >
           Close
@@ -4031,27 +5943,27 @@ function showDriverInvitationLink(
 // COPY DRIVER LINK
 // ======================================================
 
-async function copyDriverInvitationLink(){
+async function copyDriverInvitationLink() {
 
   const input =
     $("driverInvitationLinkText");
 
-  if(!input){
+  if (
+    !input
+  ) {
     return;
   }
 
-  try{
+  try {
 
-    if(
+    if (
       navigator.clipboard &&
       window.isSecureContext
-    ){
+    ) {
 
-      await navigator
-        .clipboard
-        .writeText(
-          input.value
-        );
+      await navigator.clipboard.writeText(
+        input.value
+      );
 
       alert(
         "Driver link copied."
@@ -4060,13 +5972,16 @@ async function copyDriverInvitationLink(){
       return;
     }
 
-  } catch(error){
+  } catch (error) {
 
-    console.warn(error);
+    console.warn(
+      error
+    );
 
   }
 
   input.focus();
+
   input.select();
 
   input.setSelectionRange(
@@ -4075,33 +5990,35 @@ async function copyDriverInvitationLink(){
   );
 
   alert(
-    "Link selected. Tap Copy."
+    "The link is selected. Tap Copy."
   );
 }
 
 
 // ======================================================
-// SHARE DRIVER LINK BY WHATSAPP
+// SHARE DRIVER LINK WHATSAPP
 // ======================================================
 
-function shareDriverInvitationWhatsApp(){
+function shareDriverInvitationWhatsApp() {
 
   const link =
     $("driverInvitationLinkText")
       ?.value;
 
-  if(!link){
+  if (
+    !link
+  ) {
     return;
   }
 
   const message =
 `Hi,
 
-Please complete your Car 4 U 1 Ltd private hire driver application using this secure link:
+Please complete your Car 4 U 1 Ltd private hire driver application using the secure link below.
 
 ${link}
 
-Please provide your details and upload the required documents.
+Please provide your personal details, licence information and upload the required documents.
 
 Thank you,
 Car 4 U 1 Ltd`;
@@ -4116,15 +6033,11 @@ Car 4 U 1 Ltd`;
 }
 
 
-// ======================================================
-// CLOSE DRIVER LINK WINDOW
-// ======================================================
+function closeDriverInvitationModal() {
 
-function closeDriverInvitationModal(){
-
-  if(
+  if (
     $("driverInvitationModal")
-  ){
+  ) {
 
     $("driverInvitationModal").style.display =
       "none";
@@ -4137,12 +6050,14 @@ function closeDriverInvitationModal(){
 // DRIVER APPLICATION NAV COUNT
 // ======================================================
 
-function updateDriverApplicationsNavCount(){
+function updateDriverApplicationsNavCount() {
 
   const button =
     $("driverApplicationsNavButton");
 
-  if(!button){
+  if (
+    !button
+  ) {
     return;
   }
 
@@ -4163,6 +6078,119 @@ function updateDriverApplicationsNavCount(){
 
 
 // ======================================================
+// REPORT
+// ======================================================
+
+function report() {
+
+  const container =
+    $("reportOutput");
+
+  if (
+    !container
+  ) {
+    return;
+  }
+
+  const totalRent =
+    fleet.reduce(
+      (
+        total,
+        car
+      ) =>
+        total +
+        Number(
+          car.weekly_rent ||
+          0
+        ),
+      0
+    );
+
+  const totalOutstanding =
+    fleet.reduce(
+      (
+        total,
+        car
+      ) =>
+        total +
+        Number(
+          car.outstanding ||
+          0
+        ),
+      0
+    );
+
+  const totalExpenses =
+    Object
+      .values(
+        expenses
+      )
+      .flat()
+      .reduce(
+        (
+          total,
+          item
+        ) =>
+          total +
+          Number(
+            item.amount ||
+            0
+          ),
+        0
+      );
+
+  const approvedDrivers =
+    driverApplications.filter(
+      item =>
+        item.status ===
+        "approved"
+    ).length;
+
+  container.innerHTML =
+    `
+      <div class="card">
+
+        <h3>
+          Fleet Report
+        </h3>
+
+        <p>
+          Total Vehicles:
+          <b>${fleet.length}</b>
+        </p>
+
+        <p>
+          Approved Drivers:
+          <b>${approvedDrivers}</b>
+        </p>
+
+        <p>
+          Weekly Rent:
+          <b>
+            £${totalRent.toFixed(2)}
+          </b>
+        </p>
+
+        <p>
+          Outstanding:
+          <b>
+            £${totalOutstanding.toFixed(2)}
+          </b>
+        </p>
+
+        <p>
+          Expenses:
+          <b>
+            £${totalExpenses.toFixed(2)}
+          </b>
+        </p>
+
+      </div>
+    `;
+}
+
+
+// ======================================================
 // AUTH STATE
 // ======================================================
 
@@ -4172,29 +6200,41 @@ sb.auth.onAuthStateChange(
     session
   ) => {
 
-    if(
+    if (
       event ===
       "SIGNED_OUT"
-    ){
+    ) {
 
-      currentUser = null;
-      currentProfile = null;
+      currentUser =
+        null;
 
-      fleet = [];
-      expenses = {};
-      documents = {};
+      currentProfile =
+        null;
 
-      driverApplications = [];
-      driverApplicationDocuments = {};
+      fleet =
+        [];
+
+      expenses =
+        {};
+
+      documents =
+        {};
+
+      driverApplications =
+        [];
+
+      driverApplicationDocuments =
+        {};
 
       showLogin();
 
       return;
     }
 
-    if(
-      session?.user
-    ){
+    if (
+      session &&
+      session.user
+    ) {
 
       currentUser =
         session.user;
@@ -4211,7 +6251,7 @@ sb.auth.onAuthStateChange(
 
 window.addEventListener(
   "load",
-  () => {
+  function () {
 
     ensureDriverApplicationsUI();
 
@@ -4224,1494 +6264,3 @@ window.addEventListener(
 // ======================================================
 // END OF CAR 4 U 1 LTD - FLEET MANAGER V8
 // ======================================================
-// ======================================================
-// ASSIGN APPROVED DRIVER TO VEHICLE
-// ======================================================
-
-function assignDriverToVehicle(applicationId) {
-
-  const driver = driverApplications.find(
-    item => item.id === applicationId
-  );
-
-  if (!driver) {
-    alert("Driver could not be found.");
-    return;
-  }
-
-  if (fleet.length === 0) {
-    alert("There are no vehicles in your fleet.");
-    return;
-  }
-
-  let vehicleList = "Choose a vehicle:\n\n";
-
-  fleet.forEach((car, index) => {
-
-    vehicleList +=
-      `${index + 1}. ${car.registration || ""} - ${car.make_model || ""}`;
-
-    if (car.driver_name) {
-      vehicleList += ` (Current driver: ${car.driver_name})`;
-    }
-
-    vehicleList += "\n";
-  });
-
-  const choice = prompt(vehicleList);
-
-  if (!choice) {
-    return;
-  }
-
-  const vehicleIndex = Number(choice) - 1;
-
-  if (
-    !Number.isInteger(vehicleIndex) ||
-    vehicleIndex < 0 ||
-    vehicleIndex >= fleet.length
-  ) {
-    alert("Please enter a valid vehicle number.");
-    return;
-  }
-
-  const vehicle = fleet[vehicleIndex];
-
-  confirmDriverVehicleAssignment(
-    driver,
-    vehicle
-  );
-}
-
-
-// ======================================================
-// CONFIRM + SAVE ASSIGNMENT
-// ======================================================
-
-async function confirmDriverVehicleAssignment(
-  driver,
-  vehicle
-) {
-
-  let message =
-    `Assign ${driver.full_name || "this driver"} to ` +
-    `${vehicle.registration || "this vehicle"}?`;
-
-  if (vehicle.driver_name) {
-
-    message +=
-      `\n\nWARNING: ${vehicle.registration} is currently assigned to ` +
-      `${vehicle.driver_name}. This will replace that driver.`;
-  }
-
-  const confirmed = confirm(message);
-
-  if (!confirmed) {
-    return;
-  }
-
-  try {
-
-    const {
-      error
-    } = await sb
-      .from("vehicles")
-      .update({
-
-        driver_name:
-          driver.full_name || "",
-
-        driver_phone:
-          driver.phone || "",
-
-        badge_expiry:
-          driver.taxi_badge_expiry || null,
-
-        status:
-          "Rented"
-
-      })
-      .eq(
-        "id",
-        vehicle.id
-      );
-
-    if (error) {
-      throw error;
-    }
-
-
-    // Save assigned vehicle on driver application
-    const {
-      error: driverError
-    } = await sb
-      .from("driver_applications")
-      .update({
-
-        assigned_vehicle_id:
-          vehicle.id,
-
-        updated_at:
-          new Date().toISOString()
-
-      })
-      .eq(
-        "id",
-        driver.id
-      );
-
-    if (driverError) {
-
-      console.warn(
-        "Vehicle assigned but driver application could not store vehicle ID:",
-        driverError.message
-      );
-    }
-
-
-    await loadVehicles();
-
-    await loadDriverApplications();
-
-    render();
-
-    alert(
-      `${driver.full_name || "Driver"} has been assigned to ` +
-      `${vehicle.registration}.`
-    );
-
-    showTab("drivers");
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Could not assign driver to vehicle: " +
-      error.message
-    );
-  }
-}
-// ======================================================
-// CONNECT EXISTING ASSIGN BUTTON
-// ======================================================
-
-assignApprovedDriverToVehicle = function(applicationId) {
-  return assignDriverToVehicle(applicationId);
-};
-// ======================================================
-// SEND VEHICLE DOCUMENTS AFTER ASSIGNMENT
-// ======================================================
-
-let lastAssignedVehicleId = null;
-let lastAssignedDriverApplicationId = null;
-
-
-// ======================================================
-// OVERRIDE ASSIGN CONFIRMATION
-// ======================================================
-
-const originalConfirmDriverVehicleAssignment =
-  confirmDriverVehicleAssignment;
-
-
-confirmDriverVehicleAssignment =
-  async function(driver, vehicle){
-
-    let message =
-      `Assign ${driver.full_name || "this driver"} to ` +
-      `${vehicle.registration || "this vehicle"}?`;
-
-    if(vehicle.driver_name){
-
-      message +=
-        `\n\nWARNING: ${vehicle.registration} is currently assigned to ` +
-        `${vehicle.driver_name}. This will replace that driver.`;
-    }
-
-    const confirmed =
-      confirm(message);
-
-    if(!confirmed){
-      return;
-    }
-
-    try{
-
-      const {
-        error
-      } =
-        await sb
-          .from("vehicles")
-          .update({
-
-            driver_name:
-              driver.full_name || "",
-
-            driver_phone:
-              driver.phone || "",
-
-            badge_expiry:
-              driver.taxi_badge_expiry || null,
-
-            status:
-              "Rented"
-
-          })
-          .eq(
-            "id",
-            vehicle.id
-          );
-
-      if(error){
-        throw error;
-      }
-
-
-      lastAssignedVehicleId =
-        vehicle.id;
-
-      lastAssignedDriverApplicationId =
-        driver.id;
-
-
-      await loadVehicles();
-
-      await loadDriverApplications();
-
-      render();
-
-
-      showVehicleDocumentSendBox(
-        driver,
-        vehicle
-      );
-
-
-    } catch(error){
-
-      console.error(error);
-
-      alert(
-        "Could not assign driver to vehicle: " +
-        error.message
-      );
-
-    }
-
-  };
-
-
-// ======================================================
-// SHOW SEND DOCUMENTS BOX
-// ======================================================
-
-function showVehicleDocumentSendBox(
-  driver,
-  vehicle
-){
-
-  let modal =
-    document.getElementById(
-      "vehicleDocumentSendModal"
-    );
-
-  if(!modal){
-
-    modal =
-      document.createElement(
-        "div"
-      );
-
-    modal.id =
-      "vehicleDocumentSendModal";
-
-    modal.style.cssText =
-      `
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,.55);
-        z-index:9999;
-        padding:20px;
-        overflow:auto;
-      `;
-
-    modal.innerHTML = `
-
-      <div
-        style="
-          max-width:600px;
-          margin:60px auto;
-          background:white;
-          border-radius:18px;
-          padding:20px;
-        "
-      >
-
-        <h2>
-          Vehicle Assigned Successfully
-        </h2>
-
-        <p id="vehicleDocumentSendMessage"></p>
-
-        <button
-          class="blue"
-          onclick="sendAssignedVehicleDocumentsByEmail()"
-        >
-          Email Vehicle Documents
-        </button>
-
-        <button
-          class="green"
-          onclick="sendAssignedVehicleDocumentsByWhatsApp()"
-        >
-          WhatsApp Vehicle Documents
-        </button>
-
-        <button
-          class="secondary"
-          onclick="closeVehicleDocumentSendModal()"
-        >
-          Close
-        </button>
-
-      </div>
-    `;
-
-    document.body.appendChild(
-      modal
-    );
-
-  }
-
-
-  document.getElementById(
-    "vehicleDocumentSendMessage"
-  ).innerHTML =
-    `
-      <b>${escapeHtml(driver.full_name || "Driver")}</b>
-      has been assigned to
-      <b>${escapeHtml(vehicle.registration || "")}</b>.
-
-      <br><br>
-
-      You can now send the vehicle documents.
-    `;
-
-
-  modal.style.display =
-    "block";
-
-}
-
-
-// ======================================================
-// CLOSE BOX
-// ======================================================
-
-function closeVehicleDocumentSendModal(){
-
-  const modal =
-    document.getElementById(
-      "vehicleDocumentSendModal"
-    );
-
-  if(modal){
-
-    modal.style.display =
-      "none";
-
-  }
-
-}
-
-
-// ======================================================
-// GET ASSIGNED DRIVER
-// ======================================================
-
-function getLastAssignedDriver(){
-
-  return driverApplications.find(
-    item =>
-      item.id ===
-      lastAssignedDriverApplicationId
-  );
-
-}
-
-
-// ======================================================
-// GET ASSIGNED VEHICLE
-// ======================================================
-
-function getLastAssignedVehicle(){
-
-  return fleet.find(
-    item =>
-      item.id ===
-      lastAssignedVehicleId
-  );
-
-}
-
-
-// ======================================================
-// BUILD SECURE VEHICLE DOCUMENT LINKS
-// ======================================================
-
-async function getVehicleDocumentLinks(
-  vehicleId
-){
-
-  const vehicleDocs =
-    documents[
-      vehicleId
-    ] || [];
-
-
-  const wantedTypes = [
-    "mot",
-    "v5",
-    "logbook",
-    "taxi_licence",
-    "taxi_license",
-    "private_hire_licence",
-    "private_hire_license"
-  ];
-
-
-  const matchingDocs =
-    vehicleDocs.filter(
-      document => {
-
-        const type =
-          String(
-            document.document_type ||
-            document.type ||
-            ""
-          )
-            .toLowerCase();
-
-        return wantedTypes.some(
-          wanted =>
-            type.includes(wanted)
-        );
-
-      }
-    );
-
-
-  const links = [];
-
-
-  for(const document of matchingDocs){
-
-    const bucket =
-      document.bucket_name ||
-      document.bucket ||
-      "vehicle-documents";
-
-
-    const path =
-      document.file_path ||
-      document.path;
-
-
-    if(!path){
-      continue;
-    }
-
-
-    const {
-      data,
-      error
-    } =
-      await sb.storage
-        .from(bucket)
-        .createSignedUrl(
-          path,
-          3600
-        );
-
-
-    if(
-      error ||
-      !data?.signedUrl
-    ){
-
-      console.warn(
-        "Could not create document link:",
-        error
-      );
-
-      continue;
-    }
-
-
-    const label =
-      document.document_type ||
-      document.type ||
-      document.file_name ||
-      "Vehicle Document";
-
-
-    links.push({
-
-      label,
-      url:
-        data.signedUrl
-
-    });
-
-  }
-
-
-  return links;
-
-}
-
-
-// ======================================================
-// EMAIL VEHICLE DOCUMENTS
-// ======================================================
-
-async function sendAssignedVehicleDocumentsByEmail(){
-
-  const driver =
-    getLastAssignedDriver();
-
-  const vehicle =
-    getLastAssignedVehicle();
-
-
-  if(
-    !driver ||
-    !vehicle
-  ){
-
-    alert(
-      "Assigned driver or vehicle could not be found."
-    );
-
-    return;
-  }
-
-
-  if(
-    !driver.email
-  ){
-
-    alert(
-      "This driver does not have an email address."
-    );
-
-    return;
-  }
-
-
-  const links =
-    await getVehicleDocumentLinks(
-      vehicle.id
-    );
-
-
-  if(!links.length){
-
-    alert(
-      "No MOT, V5 or taxi licence documents were found for this vehicle."
-    );
-
-    return;
-  }
-
-
-  const documentText =
-    links
-      .map(
-        item =>
-          `${item.label}: ${item.url}`
-      )
-      .join("\n\n");
-
-
-  const subject =
-    encodeURIComponent(
-      `Vehicle Documents - ${vehicle.registration}`
-    );
-
-
-  const body =
-    encodeURIComponent(
-`Hi ${driver.full_name || ""},
-
-You have been assigned vehicle ${vehicle.registration}.
-
-Please find your vehicle documents below:
-
-${documentText}
-
-These links are temporary and will expire.
-
-Thank you,
-Car 4 U 1 Ltd`
-    );
-
-
-  window.location.href =
-    `mailto:${driver.email}?subject=${subject}&body=${body}`;
-
-}
-
-
-// ======================================================
-// WHATSAPP VEHICLE DOCUMENTS
-// ======================================================
-
-async function sendAssignedVehicleDocumentsByWhatsApp(){
-
-  const driver =
-    getLastAssignedDriver();
-
-  const vehicle =
-    getLastAssignedVehicle();
-
-
-  if(
-    !driver ||
-    !vehicle
-  ){
-
-    alert(
-      "Assigned driver or vehicle could not be found."
-    );
-
-    return;
-  }
-
-
-  let phone =
-    String(
-      driver.phone ||
-      ""
-    )
-      .replace(
-        /[^0-9]/g,
-        ""
-      );
-
-
-  if(
-    phone.startsWith("0")
-  ){
-
-    phone =
-      "44" +
-      phone.substring(1);
-
-  }
-
-
-  if(!phone){
-
-    alert(
-      "This driver does not have a phone number."
-    );
-
-    return;
-  }
-
-
-  const links =
-    await getVehicleDocumentLinks(
-      vehicle.id
-    );
-
-
-  if(!links.length){
-
-    alert(
-      "No MOT, V5 or taxi licence documents were found for this vehicle."
-    );
-
-    return;
-  }
-
-
-  const documentText =
-    links
-      .map(
-        item =>
-          `${item.label}:\n${item.url}`
-      )
-      .join("\n\n");
-
-
-  const message =
-    encodeURIComponent(
-`Hi ${driver.full_name || ""},
-
-You have been assigned vehicle ${vehicle.registration}.
-
-Please find your vehicle documents below:
-
-${documentText}
-
-These secure links are temporary and will expire.
-
-Thank you,
-Car 4 U 1 Ltd`
-    );
-
-
-  window.open(
-    `https://wa.me/${phone}?text=${message}`,
-    "_blank"
-  );
-
-}
-// ======================================================
-// VEHICLE DOCUMENT MANAGEMENT
-// MOT / V5 / INSURANCE / TAXI LICENCE
-// ======================================================
-
-let selectedVehicleDocumentVehicleId = null;
-
-
-// ======================================================
-// OPEN VEHICLE DOCUMENT MANAGER
-// ======================================================
-
-function openVehicleDocuments(
-  vehicleId
-){
-
-  selectedVehicleDocumentVehicleId =
-    vehicleId;
-
-  const vehicle =
-    fleet.find(
-      item =>
-        item.id === vehicleId
-    );
-
-  if(!vehicle){
-
-    alert(
-      "Vehicle could not be found."
-    );
-
-    return;
-  }
-
-  let modal =
-    $("vehicleDocumentsModal");
-
-  if(!modal){
-
-    modal =
-      document.createElement(
-        "div"
-      );
-
-    modal.id =
-      "vehicleDocumentsModal";
-
-    modal.style.cssText =
-      `
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,.60);
-        z-index:10000;
-        padding:20px;
-        overflow:auto;
-      `;
-
-    modal.innerHTML = `
-
-      <div
-        style="
-          max-width:650px;
-          margin:40px auto;
-          background:white;
-          border-radius:20px;
-          padding:22px;
-        "
-      >
-
-        <h2 id="vehicleDocumentsTitle">
-          Vehicle Documents
-        </h2>
-
-        <p>
-          Upload the documents that should be
-          available for the assigned driver.
-        </p>
-
-        <label>
-          <b>Document Type</b>
-        </label>
-
-        <select
-          id="vehicleDocumentType"
-          style="
-            width:100%;
-            margin-top:8px;
-            margin-bottom:15px;
-          "
-        >
-
-          <option value="mot">
-            MOT Certificate
-          </option>
-
-          <option value="v5">
-            V5 / Logbook
-          </option>
-
-          <option value="insurance">
-            Insurance Certificate
-          </option>
-
-          <option value="taxi_licence">
-            Taxi / Private Hire Licence
-          </option>
-
-        </select>
-
-        <label>
-          <b>Choose Document</b>
-        </label>
-
-        <input
-          id="vehicleDocumentFile"
-          type="file"
-          accept="image/*,.pdf"
-          style="
-            width:100%;
-            margin-top:8px;
-            margin-bottom:15px;
-          "
-        >
-
-        <button
-          id="uploadVehicleDocumentButton"
-          class="green"
-          onclick="uploadVehicleDocument()"
-        >
-          Upload Document
-        </button>
-
-        <hr>
-
-        <h3>
-          Uploaded Documents
-        </h3>
-
-        <div
-          id="vehicleDocumentsList"
-        ></div>
-
-        <button
-          class="secondary"
-          onclick="closeVehicleDocumentsModal()"
-        >
-          Close
-        </button>
-
-      </div>
-    `;
-
-    document.body.appendChild(
-      modal
-    );
-  }
-
-  $("vehicleDocumentsTitle").innerText =
-    `Documents - ${vehicle.registration}`;
-
-  $("vehicleDocumentFile").value =
-    "";
-
-  renderVehicleDocumentsList();
-
-  modal.style.display =
-    "block";
-}
-
-
-// ======================================================
-// CLOSE DOCUMENT MANAGER
-// ======================================================
-
-function closeVehicleDocumentsModal(){
-
-  const modal =
-    $("vehicleDocumentsModal");
-
-  if(modal){
-
-    modal.style.display =
-      "none";
-
-  }
-}
-
-
-// ======================================================
-// VEHICLE DOCUMENT LABELS
-// ======================================================
-
-function vehicleDocumentLabel(
-  type
-){
-
-  const labels = {
-
-    mot:
-      "MOT Certificate",
-
-    v5:
-      "V5 / Logbook",
-
-    insurance:
-      "Insurance Certificate",
-
-    taxi_licence:
-      "Taxi / Private Hire Licence"
-
-  };
-
-  return (
-    labels[type] ||
-    type ||
-    "Vehicle Document"
-  );
-}
-
-
-// ======================================================
-// SAFE FILE NAME
-// ======================================================
-
-function safeVehicleDocumentFileName(
-  name
-){
-
-  return String(
-    name || "document"
-  )
-    .replace(
-      /[^a-zA-Z0-9._-]/g,
-      "_"
-    );
-}
-
-
-// ======================================================
-// UPLOAD VEHICLE DOCUMENT
-// ======================================================
-
-async function uploadVehicleDocument(){
-
-  if(
-    !selectedVehicleDocumentVehicleId
-  ){
-
-    alert(
-      "No vehicle selected."
-    );
-
-    return;
-  }
-
-  if(
-    !currentUser
-  ){
-
-    alert(
-      "Please login first."
-    );
-
-    return;
-  }
-
-  const fileInput =
-    $("vehicleDocumentFile");
-
-  const file =
-    fileInput?.files?.[0];
-
-  const documentType =
-    $("vehicleDocumentType")
-      ?.value;
-
-  if(!file){
-
-    alert(
-      "Please choose a document first."
-    );
-
-    return;
-  }
-
-  const button =
-    $("uploadVehicleDocumentButton");
-
-  if(button){
-
-    button.disabled = true;
-
-    button.innerText =
-      "Uploading...";
-
-  }
-
-  try{
-
-    const safeName =
-      safeVehicleDocumentFileName(
-        file.name
-      );
-
-    const filePath =
-      `${currentUser.id}/${selectedVehicleDocumentVehicleId}/${Date.now()}-${safeName}`;
-
-    const {
-      error: uploadError
-    } =
-      await sb.storage
-        .from(
-          "vehicle-documents"
-        )
-        .upload(
-          filePath,
-          file,
-          {
-            upsert: false
-          }
-        );
-
-    if(uploadError){
-      throw uploadError;
-    }
-
-    const {
-      error: insertError
-    } =
-      await sb
-        .from(
-          "vehicle_documents"
-        )
-        .insert({
-
-          vehicle_id:
-            selectedVehicleDocumentVehicleId,
-
-          manager_id:
-            currentUser.id,
-
-          document_type:
-            documentType,
-
-          file_name:
-            file.name,
-
-          file_path:
-            filePath
-
-        });
-
-    if(insertError){
-
-      await sb.storage
-        .from(
-          "vehicle-documents"
-        )
-        .remove([
-          filePath
-        ]);
-
-      throw insertError;
-    }
-
-    await loadDocuments();
-
-    fileInput.value =
-      "";
-
-    renderVehicleDocumentsList();
-
-    renderVehicles();
-
-    alert(
-      `${vehicleDocumentLabel(documentType)} uploaded successfully.`
-    );
-
-  } catch(error){
-
-    console.error(
-      error
-    );
-
-    alert(
-      "Could not upload document: " +
-      error.message
-    );
-
-  } finally {
-
-    if(button){
-
-      button.disabled = false;
-
-      button.innerText =
-        "Upload Document";
-
-    }
-
-  }
-}
-
-
-// ======================================================
-// SHOW VEHICLE DOCUMENTS
-// ======================================================
-
-function renderVehicleDocumentsList(){
-
-  const container =
-    $("vehicleDocumentsList");
-
-  if(!container){
-    return;
-  }
-
-  const list =
-    documents[
-      selectedVehicleDocumentVehicleId
-    ] || [];
-
-  if(!list.length){
-
-    container.innerHTML =
-      `
-        <div class="card">
-          No vehicle documents uploaded yet.
-        </div>
-      `;
-
-    return;
-  }
-
-  container.innerHTML =
-    list.map(
-      document => `
-
-        <div
-          class="card"
-          style="
-            margin-bottom:12px;
-          "
-        >
-
-          <h3>
-            ${escapeHtml(
-              vehicleDocumentLabel(
-                document.document_type
-              )
-            )}
-          </h3>
-
-          <p class="small">
-            ${escapeHtml(
-              document.file_name ||
-              ""
-            )}
-          </p>
-
-          <button
-            class="blue"
-            onclick="viewVehicleDocument('${document.id}')"
-          >
-            View Document
-          </button>
-
-          <button
-            class="danger"
-            onclick="deleteVehicleDocument('${document.id}')"
-          >
-            Delete Document
-          </button>
-
-        </div>
-      `
-    ).join("");
-}
-
-
-// ======================================================
-// VIEW VEHICLE DOCUMENT
-// ======================================================
-
-async function viewVehicleDocument(
-  documentId
-){
-
-  const document =
-    Object
-      .values(
-        documents
-      )
-      .flat()
-      .find(
-        item =>
-          item.id ===
-          documentId
-      );
-
-  if(!document){
-
-    alert(
-      "Document could not be found."
-    );
-
-    return;
-  }
-
-  try{
-
-    const {
-      data,
-      error
-    } =
-      await sb.storage
-        .from(
-          "vehicle-documents"
-        )
-        .createSignedUrl(
-          document.file_path,
-          300
-        );
-
-    if(error){
-      throw error;
-    }
-
-    if(
-      !data ||
-      !data.signedUrl
-    ){
-
-      throw new Error(
-        "Could not create document link."
-      );
-
-    }
-
-    window.open(
-      data.signedUrl,
-      "_blank"
-    );
-
-  } catch(error){
-
-    alert(
-      "Could not open document: " +
-      error.message
-    );
-
-  }
-}
-
-
-// ======================================================
-// DELETE VEHICLE DOCUMENT
-// ======================================================
-
-async function deleteVehicleDocument(
-  documentId
-){
-
-  const document =
-    Object
-      .values(
-        documents
-      )
-      .flat()
-      .find(
-        item =>
-          item.id ===
-          documentId
-      );
-
-  if(!document){
-    return;
-  }
-
-  if(
-    !confirm(
-      `Delete ${vehicleDocumentLabel(document.document_type)}?`
-    )
-  ){
-    return;
-  }
-
-  try{
-
-    const {
-      error: storageError
-    } =
-      await sb.storage
-        .from(
-          "vehicle-documents"
-        )
-        .remove([
-          document.file_path
-        ]);
-
-    if(storageError){
-
-      console.warn(
-        storageError
-      );
-
-    }
-
-    const {
-      error
-    } =
-      await sb
-        .from(
-          "vehicle_documents"
-        )
-        .delete()
-        .eq(
-          "id",
-          documentId
-        );
-
-    if(error){
-      throw error;
-    }
-
-    await loadDocuments();
-
-    renderVehicleDocumentsList();
-
-    renderVehicles();
-
-  } catch(error){
-
-    alert(
-      "Could not delete document: " +
-      error.message
-    );
-
-  }
-}
-
-
-// ======================================================
-// BUILD SECURE VEHICLE DOCUMENT LINKS
-// NOW INCLUDES INSURANCE
-// ======================================================
-
-async function getVehicleDocumentLinks(
-  vehicleId
-){
-
-  const vehicleDocs =
-    documents[
-      vehicleId
-    ] || [];
-
-  const wantedTypes = [
-    "mot",
-    "v5",
-    "logbook",
-    "insurance",
-    "insurance_certificate",
-    "taxi_licence",
-    "taxi_license",
-    "private_hire_licence",
-    "private_hire_license"
-  ];
-
-  const matchingDocs =
-    vehicleDocs.filter(
-      document => {
-
-        const type =
-          String(
-            document.document_type ||
-            document.type ||
-            ""
-          )
-            .toLowerCase();
-
-        return wantedTypes.some(
-          wanted =>
-            type.includes(wanted)
-        );
-
-      }
-    );
-
-  const links = [];
-
-  for(const document of matchingDocs){
-
-    const bucket =
-      document.bucket_name ||
-      document.bucket ||
-      "vehicle-documents";
-
-    const path =
-      document.file_path ||
-      document.path;
-
-    if(!path){
-      continue;
-    }
-
-    const {
-      data,
-      error
-    } =
-      await sb.storage
-        .from(bucket)
-        .createSignedUrl(
-          path,
-          86400
-        );
-
-    if(
-      error ||
-      !data?.signedUrl
-    ){
-
-      console.warn(
-        "Could not create document link:",
-        error
-      );
-
-      continue;
-    }
-
-    links.push({
-
-      label:
-        vehicleDocumentLabel(
-          document.document_type
-        ),
-
-      url:
-        data.signedUrl
-
-    });
-
-  }
-
-  return links;
-}
