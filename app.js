@@ -4970,3 +4970,1151 @@ Car 4 U 1 Ltd`
   );
 
 }
+// ======================================================
+// VEHICLE DOCUMENT MANAGEMENT
+// MOT / V5 / TAXI LICENCE
+// ======================================================
+
+let selectedVehicleDocumentVehicleId = null;
+
+
+// ======================================================
+// OVERRIDE VEHICLE LIST
+// ADD DOCUMENT BUTTON
+// ======================================================
+
+renderVehicles = function(){
+
+  const container =
+    $("vehicleList");
+
+  if(!container){
+    return;
+  }
+
+  const search =
+    (
+      $("vehicleSearch")
+        ?.value ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const filtered =
+    fleet.filter(
+      car =>
+        [
+          car.registration,
+          car.make_model,
+          car.driver_name,
+          car.driver_phone,
+          car.status
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(search)
+    );
+
+  if(!filtered.length){
+
+    container.innerHTML =
+      `
+        <div class="card">
+          No vehicles found.
+        </div>
+      `;
+
+    return;
+  }
+
+  container.innerHTML =
+    filtered.map(
+      car => `
+
+        <div class="vehicle-card">
+
+          <div class="row">
+
+            <div>
+
+              <h3>
+                ${escapeHtml(
+                  car.registration ||
+                  ""
+                )}
+              </h3>
+
+              <div class="small">
+                ${escapeHtml(
+                  car.make_model ||
+                  ""
+                )}
+              </div>
+
+            </div>
+
+            <span class="badge">
+              ${escapeHtml(
+                car.status ||
+                ""
+              )}
+            </span>
+
+          </div>
+
+          <hr>
+
+          <p>
+            <b>Driver:</b>
+            ${escapeHtml(
+              car.driver_name ||
+              "No driver"
+            )}
+          </p>
+
+          <p>
+            <b>Phone:</b>
+            ${escapeHtml(
+              car.driver_phone ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            <b>Weekly Rent:</b>
+            £${Number(
+              car.weekly_rent ||
+              0
+            ).toFixed(2)}
+          </p>
+
+          <p>
+            <b>Outstanding:</b>
+            £${Number(
+              car.outstanding ||
+              0
+            ).toFixed(2)}
+          </p>
+
+          <p>
+            <b>Expenses:</b>
+            £${vehicleExpenseTotal(
+              car.id
+            ).toFixed(2)}
+          </p>
+
+          <p>
+            <b>Vehicle Documents:</b>
+            ${
+              (
+                documents[
+                  car.id
+                ] || []
+              ).length
+            }
+          </p>
+
+          <div class="actions">
+
+            <button
+              onclick="editVehicle('${car.id}')"
+            >
+              Edit
+            </button>
+
+            <button
+              class="blue"
+              onclick="openVehicleDocuments('${car.id}')"
+            >
+              📂 Vehicle Documents
+            </button>
+
+            <button
+              onclick="openExpenses('${car.id}')"
+            >
+              Expenses
+            </button>
+
+            <button
+              class="blue"
+              onclick="sendWhatsApp('${car.id}')"
+            >
+              WhatsApp
+            </button>
+
+            <button
+              class="danger"
+              onclick="deleteVehicle('${car.id}')"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </div>
+      `
+    ).join("");
+};
+
+
+// ======================================================
+// OPEN VEHICLE DOCUMENT MANAGER
+// ======================================================
+
+function openVehicleDocuments(
+  vehicleId
+){
+
+  selectedVehicleDocumentVehicleId =
+    vehicleId;
+
+  const vehicle =
+    fleet.find(
+      item =>
+        item.id === vehicleId
+    );
+
+  if(!vehicle){
+
+    alert(
+      "Vehicle could not be found."
+    );
+
+    return;
+  }
+
+  let modal =
+    $("vehicleDocumentsModal");
+
+  if(!modal){
+
+    modal =
+      document.createElement(
+        "div"
+      );
+
+    modal.id =
+      "vehicleDocumentsModal";
+
+    modal.style.cssText =
+      `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.60);
+        z-index:10000;
+        padding:20px;
+        overflow:auto;
+      `;
+
+    modal.innerHTML = `
+
+      <div
+        style="
+          max-width:650px;
+          margin:40px auto;
+          background:white;
+          border-radius:20px;
+          padding:22px;
+        "
+      >
+
+        <h2 id="vehicleDocumentsTitle">
+          Vehicle Documents
+        </h2>
+
+        <p>
+          Upload the documents that should be
+          available for the assigned driver.
+        </p>
+
+        <label>
+          <b>Document Type</b>
+        </label>
+
+        <select
+          id="vehicleDocumentType"
+          style="
+            width:100%;
+            margin-top:8px;
+            margin-bottom:15px;
+          "
+        >
+
+          <option value="mot">
+            MOT Certificate
+          </option>
+
+          <option value="v5">
+            V5 / Logbook
+          </option>
+
+          <option value="taxi_licence">
+            Taxi / Private Hire Licence
+          </option>
+
+        </select>
+
+        <label>
+          <b>Choose Document</b>
+        </label>
+
+        <input
+          id="vehicleDocumentFile"
+          type="file"
+          accept="image/*,.pdf"
+          style="
+            width:100%;
+            margin-top:8px;
+            margin-bottom:15px;
+          "
+        >
+
+        <button
+          id="uploadVehicleDocumentButton"
+          class="green"
+          onclick="uploadVehicleDocument()"
+        >
+          Upload Document
+        </button>
+
+        <hr>
+
+        <h3>
+          Uploaded Documents
+        </h3>
+
+        <div
+          id="vehicleDocumentsList"
+        ></div>
+
+        <button
+          class="secondary"
+          onclick="closeVehicleDocumentsModal()"
+        >
+          Close
+        </button>
+
+      </div>
+    `;
+
+    document.body.appendChild(
+      modal
+    );
+  }
+
+  $("vehicleDocumentsTitle").innerText =
+    `Documents - ${vehicle.registration}`;
+
+  $("vehicleDocumentFile").value =
+    "";
+
+  renderVehicleDocumentsList();
+
+  modal.style.display =
+    "block";
+}
+
+
+// ======================================================
+// CLOSE DOCUMENT MANAGER
+// ======================================================
+
+function closeVehicleDocumentsModal(){
+
+  const modal =
+    $("vehicleDocumentsModal");
+
+  if(modal){
+
+    modal.style.display =
+      "none";
+
+  }
+}
+
+
+// ======================================================
+// VEHICLE DOCUMENT NAME
+// ======================================================
+
+function vehicleDocumentLabel(
+  type
+){
+
+  const labels = {
+
+    mot:
+      "MOT Certificate",
+
+    v5:
+      "V5 / Logbook",
+
+    taxi_licence:
+      "Taxi / Private Hire Licence"
+
+  };
+
+  return (
+    labels[type] ||
+    type ||
+    "Vehicle Document"
+  );
+}
+
+
+// ======================================================
+// SAFE FILE NAME
+// ======================================================
+
+function safeVehicleDocumentFileName(
+  name
+){
+
+  return String(
+    name || "document"
+  )
+    .replace(
+      /[^a-zA-Z0-9._-]/g,
+      "_"
+    );
+}
+
+
+// ======================================================
+// UPLOAD VEHICLE DOCUMENT
+// ======================================================
+
+async function uploadVehicleDocument(){
+
+  if(
+    !selectedVehicleDocumentVehicleId
+  ){
+
+    alert(
+      "No vehicle selected."
+    );
+
+    return;
+  }
+
+  if(
+    !currentUser
+  ){
+
+    alert(
+      "Please login first."
+    );
+
+    return;
+  }
+
+  const fileInput =
+    $("vehicleDocumentFile");
+
+  const file =
+    fileInput?.files?.[0];
+
+  const documentType =
+    $("vehicleDocumentType")
+      ?.value;
+
+  if(!file){
+
+    alert(
+      "Please choose a document first."
+    );
+
+    return;
+  }
+
+  const button =
+    $("uploadVehicleDocumentButton");
+
+  if(button){
+
+    button.disabled = true;
+
+    button.innerText =
+      "Uploading...";
+
+  }
+
+  try{
+
+    const safeName =
+      safeVehicleDocumentFileName(
+        file.name
+      );
+
+    const filePath =
+      `${currentUser.id}/${selectedVehicleDocumentVehicleId}/${Date.now()}-${safeName}`;
+
+    const {
+      error: uploadError
+    } =
+      await sb.storage
+        .from(
+          "vehicle-documents"
+        )
+        .upload(
+          filePath,
+          file,
+          {
+            upsert: false
+          }
+        );
+
+    if(uploadError){
+      throw uploadError;
+    }
+
+    const {
+      error: insertError
+    } =
+      await sb
+        .from(
+          "vehicle_documents"
+        )
+        .insert({
+
+          vehicle_id:
+            selectedVehicleDocumentVehicleId,
+
+          manager_id:
+            currentUser.id,
+
+          document_type:
+            documentType,
+
+          file_name:
+            file.name,
+
+          file_path:
+            filePath
+
+        });
+
+    if(insertError){
+
+      await sb.storage
+        .from(
+          "vehicle-documents"
+        )
+        .remove([
+          filePath
+        ]);
+
+      throw insertError;
+    }
+
+    await loadDocuments();
+
+    fileInput.value =
+      "";
+
+    renderVehicleDocumentsList();
+
+    renderVehicles();
+
+    alert(
+      `${vehicleDocumentLabel(documentType)} uploaded successfully.`
+    );
+
+  } catch(error){
+
+    console.error(
+      error
+    );
+
+    alert(
+      "Could not upload document: " +
+      error.message
+    );
+
+  } finally {
+
+    if(button){
+
+      button.disabled = false;
+
+      button.innerText =
+        "Upload Document";
+
+    }
+
+  }
+}
+
+
+// ======================================================
+// SHOW VEHICLE DOCUMENTS
+// ======================================================
+
+function renderVehicleDocumentsList(){
+
+  const container =
+    $("vehicleDocumentsList");
+
+  if(!container){
+    return;
+  }
+
+  const list =
+    documents[
+      selectedVehicleDocumentVehicleId
+    ] || [];
+
+  if(!list.length){
+
+    container.innerHTML =
+      `
+        <div class="card">
+          No vehicle documents uploaded yet.
+        </div>
+      `;
+
+    return;
+  }
+
+  container.innerHTML =
+    list.map(
+      document => `
+
+        <div
+          class="card"
+          style="
+            margin-bottom:12px;
+          "
+        >
+
+          <h3>
+            ${escapeHtml(
+              vehicleDocumentLabel(
+                document.document_type
+              )
+            )}
+          </h3>
+
+          <p class="small">
+            ${escapeHtml(
+              document.file_name ||
+              ""
+            )}
+          </p>
+
+          <button
+            class="blue"
+            onclick="viewVehicleDocument('${document.id}')"
+          >
+            View Document
+          </button>
+
+          <button
+            class="danger"
+            onclick="deleteVehicleDocument('${document.id}')"
+          >
+            Delete Document
+          </button>
+
+        </div>
+      `
+    ).join("");
+}
+
+
+// ======================================================
+// VIEW VEHICLE DOCUMENT
+// ======================================================
+
+async function viewVehicleDocument(
+  documentId
+){
+
+  const document =
+    Object
+      .values(
+        documents
+      )
+      .flat()
+      .find(
+        item =>
+          item.id ===
+          documentId
+      );
+
+  if(!document){
+
+    alert(
+      "Document could not be found."
+    );
+
+    return;
+  }
+
+  try{
+
+    const {
+      data,
+      error
+    } =
+      await sb.storage
+        .from(
+          "vehicle-documents"
+        )
+        .createSignedUrl(
+          document.file_path,
+          300
+        );
+
+    if(error){
+      throw error;
+    }
+
+    if(
+      !data ||
+      !data.signedUrl
+    ){
+
+      throw new Error(
+        "Could not create document link."
+      );
+
+    }
+
+    window.open(
+      data.signedUrl,
+      "_blank"
+    );
+
+  } catch(error){
+
+    alert(
+      "Could not open document: " +
+      error.message
+    );
+
+  }
+}
+
+
+// ======================================================
+// DELETE VEHICLE DOCUMENT
+// ======================================================
+
+async function deleteVehicleDocument(
+  documentId
+){
+
+  const document =
+    Object
+      .values(
+        documents
+      )
+      .flat()
+      .find(
+        item =>
+          item.id ===
+          documentId
+      );
+
+  if(!document){
+    return;
+  }
+
+  if(
+    !confirm(
+      `Delete ${vehicleDocumentLabel(document.document_type)}?`
+    )
+  ){
+    return;
+  }
+
+  try{
+
+    const {
+      error: storageError
+    } =
+      await sb.storage
+        .from(
+          "vehicle-documents"
+        )
+        .remove([
+          document.file_path
+        ]);
+
+    if(storageError){
+
+      console.warn(
+        storageError
+      );
+
+    }
+
+    const {
+      error
+    } =
+      await sb
+        .from(
+          "vehicle_documents"
+        )
+        .delete()
+        .eq(
+          "id",
+          documentId
+        );
+
+    if(error){
+      throw error;
+    }
+
+    await loadDocuments();
+
+    renderVehicleDocumentsList();
+
+    renderVehicles();
+
+  } catch(error){
+
+    alert(
+      "Could not delete document: " +
+      error.message
+    );
+
+  }
+}
+
+
+// ======================================================
+// FIX ASSIGNED VEHICLE DISPLAY
+// ======================================================
+
+renderDrivers = function(){
+
+  const container =
+    $("driverList");
+
+  if(!container){
+    return;
+  }
+
+  const approvedDrivers =
+    driverApplications.filter(
+      application =>
+        application.status ===
+        "approved"
+    );
+
+  const oldFleetDrivers =
+    fleet.filter(
+      car =>
+        car.driver_name
+    );
+
+  if(
+    !approvedDrivers.length &&
+    !oldFleetDrivers.length
+  ){
+
+    container.innerHTML =
+      `
+        <div class="card">
+          No approved drivers yet.
+        </div>
+      `;
+
+    return;
+  }
+
+  let html = "";
+
+  approvedDrivers.forEach(
+    driver => {
+
+      let assignedCar = null;
+
+      if(
+        driver.assigned_vehicle_id
+      ){
+
+        assignedCar =
+          fleet.find(
+            car =>
+              car.id ===
+              driver.assigned_vehicle_id
+          );
+
+      }
+
+      if(!assignedCar){
+
+        assignedCar =
+          fleet.find(
+            car => {
+
+              const appPhone =
+                String(
+                  driver.phone ||
+                  ""
+                ).replace(
+                  /[^0-9]/g,
+                  ""
+                );
+
+              const carPhone =
+                String(
+                  car.driver_phone ||
+                  ""
+                ).replace(
+                  /[^0-9]/g,
+                  ""
+                );
+
+              return (
+                appPhone &&
+                carPhone &&
+                appPhone ===
+                carPhone
+              );
+
+            }
+          );
+
+      }
+
+      const docs =
+        driverApplicationDocuments[
+          driver.id
+        ] || [];
+
+      html += `
+
+        <div class="vehicle-card">
+
+          <div class="row">
+
+            <div>
+
+              <h3>
+                ${escapeHtml(
+                  driver.full_name ||
+                  "Approved Driver"
+                )}
+              </h3>
+
+              <p class="small">
+                Approved Driver
+              </p>
+
+            </div>
+
+            <span class="badge greenText">
+              Approved
+            </span>
+
+          </div>
+
+          <hr>
+
+          <p>
+            <b>Phone:</b>
+            ${escapeHtml(
+              driver.phone ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            <b>Email:</b>
+            ${escapeHtml(
+              driver.email ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            <b>Postcode:</b>
+            ${escapeHtml(
+              driver.postcode ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            <b>Driving Licence:</b>
+            ${escapeHtml(
+              driver.driving_licence_number ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            <b>Licence Expiry:</b>
+            ${escapeHtml(
+              formatDate(
+                driver.driving_licence_expiry
+              )
+            )}
+          </p>
+
+          <p>
+            <b>Taxi Badge:</b>
+            ${escapeHtml(
+              driver.taxi_badge_number ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            <b>Badge Expiry:</b>
+            ${escapeHtml(
+              formatDate(
+                driver.taxi_badge_expiry
+              )
+            )}
+          </p>
+
+          <p>
+            <b>Licence Points:</b>
+            ${driver.licence_points ?? "-"}
+          </p>
+
+          <p>
+            <b>Accidents Last 5 Years:</b>
+            ${escapeHtml(
+              driver.accidents_last_5_years ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            <b>Uploaded Documents:</b>
+            ${docs.length}
+          </p>
+
+          <p>
+            <b>Vehicle:</b>
+            ${
+              assignedCar
+                ? escapeHtml(
+                    assignedCar.registration
+                  )
+                : "Not assigned"
+            }
+          </p>
+
+          <button
+            class="blue"
+            onclick="viewDriverApplication('${driver.id}')"
+          >
+            View Driver Profile & Documents
+          </button>
+
+          <button
+            class="green"
+            onclick="assignApprovedDriverToVehicle('${driver.id}')"
+          >
+            Assign to Vehicle
+          </button>
+
+          <button
+            onclick="whatsappApplicationDriver('${driver.id}')"
+          >
+            WhatsApp Driver
+          </button>
+
+        </div>
+      `;
+
+    }
+  );
+
+  oldFleetDrivers.forEach(
+    car => {
+
+      const alreadyShown =
+        approvedDrivers.some(
+          driver => {
+
+            if(
+              driver.assigned_vehicle_id ===
+              car.id
+            ){
+              return true;
+            }
+
+            const appPhone =
+              String(
+                driver.phone ||
+                ""
+              ).replace(
+                /[^0-9]/g,
+                ""
+              );
+
+            const carPhone =
+              String(
+                car.driver_phone ||
+                ""
+              ).replace(
+                /[^0-9]/g,
+                ""
+              );
+
+            return (
+              appPhone &&
+              carPhone &&
+              appPhone ===
+              carPhone
+            );
+
+          }
+        );
+
+      if(alreadyShown){
+        return;
+      }
+
+      html += `
+
+        <div class="card">
+
+          <h3>
+            ${escapeHtml(
+              car.driver_name
+            )}
+          </h3>
+
+          <p>
+            Vehicle:
+            <b>
+              ${escapeHtml(
+                car.registration ||
+                ""
+              )}
+            </b>
+          </p>
+
+          <p>
+            ${escapeHtml(
+              car.driver_phone ||
+              ""
+            )}
+          </p>
+
+          <button
+            class="blue"
+            onclick="sendWhatsApp('${car.id}')"
+          >
+            WhatsApp Driver
+          </button>
+
+        </div>
+      `;
+
+    }
+  );
+
+  container.innerHTML =
+    html;
+};
