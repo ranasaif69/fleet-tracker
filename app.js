@@ -9004,3 +9004,518 @@ window.addEventListener(
 // COMPLETE APP.JS
 // END PART 5 OF 5
 // ======================================================
+// ======================================================
+// CAR 4 U 1 LTD - V8 STABILITY & RECOVERY BLOCK
+// ADD AFTER PART 5
+// ======================================================
+
+(function () {
+
+  // Prevent this block being installed twice
+  if (window.__CAR4U_STABILITY_INSTALLED__) {
+    return;
+  }
+
+  window.__CAR4U_STABILITY_INSTALLED__ = true;
+
+
+  // ====================================================
+  // SETTINGS
+  // ====================================================
+
+  const HEALTH_CHECK_INTERVAL = 60000; // 60 seconds
+  const MAX_RETRIES = 3;
+
+  let healthCheckRunning = false;
+  let consecutiveFailures = 0;
+
+
+  // ====================================================
+  // SAFE DELAY
+  // ====================================================
+
+  function stabilityDelay(ms) {
+
+    return new Promise(
+      resolve =>
+        setTimeout(resolve, ms)
+    );
+  }
+
+
+  // ====================================================
+  // SAFE RETRY
+  // ====================================================
+
+  window.safeRetry = async function (
+    operation,
+    retries = MAX_RETRIES
+  ) {
+
+    let lastError = null;
+
+    for (
+      let attempt = 1;
+      attempt <= retries;
+      attempt++
+    ) {
+
+      try {
+
+        return await operation();
+
+      } catch (error) {
+
+        lastError = error;
+
+        console.warn(
+          `CAR 4 U retry ${attempt}/${retries}:`,
+          error
+        );
+
+        if (attempt < retries) {
+
+          await stabilityDelay(
+            attempt * 1000
+          );
+        }
+      }
+    }
+
+    throw lastError;
+  };
+
+
+  // ====================================================
+  // RECOVERY MESSAGE
+  // ====================================================
+
+  function showRecoveryMessage(message) {
+
+    let box =
+      document.getElementById(
+        "car4uRecoveryMessage"
+      );
+
+    if (!box) {
+
+      box =
+        document.createElement(
+          "div"
+        );
+
+      box.id =
+        "car4uRecoveryMessage";
+
+      box.style.cssText = `
+        position:fixed;
+        left:15px;
+        right:15px;
+        bottom:85px;
+        z-index:20000;
+        max-width:600px;
+        margin:auto;
+        padding:14px;
+        border-radius:14px;
+        background:#fff3cd;
+        color:#664d03;
+        border:1px solid #ffecb5;
+        font-family:Arial,sans-serif;
+        font-weight:600;
+        box-shadow:0 4px 20px rgba(0,0,0,.20);
+      `;
+
+      document.body.appendChild(
+        box
+      );
+    }
+
+    box.textContent =
+      message;
+  }
+
+
+  function removeRecoveryMessage() {
+
+    const box =
+      document.getElementById(
+        "car4uRecoveryMessage"
+      );
+
+    if (box) {
+      box.remove();
+    }
+  }
+
+
+  // ====================================================
+  // CHECK SUPABASE CONNECTION
+  // ====================================================
+
+  async function checkSupabaseHealth() {
+
+    if (healthCheckRunning) {
+      return;
+    }
+
+    if (!navigator.onLine) {
+
+      showRecoveryMessage(
+        "Internet connection lost. Your fleet data has not been deleted. The app will reconnect automatically."
+      );
+
+      return;
+    }
+
+    if (
+      typeof sb ===
+      "undefined"
+    ) {
+
+      showRecoveryMessage(
+        "Fleet Manager did not load correctly. Tap Recovery Reload."
+      );
+
+      return;
+    }
+
+    healthCheckRunning = true;
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await sb.auth
+          .getSession();
+
+      if (error) {
+        throw error;
+      }
+
+      consecutiveFailures = 0;
+
+      removeRecoveryMessage();
+
+      // Restore current user if necessary
+      if (
+        data?.session?.user &&
+        !currentUser
+      ) {
+
+        currentUser =
+          data.session.user;
+
+        if (
+          typeof loadProfile ===
+          "function"
+        ) {
+
+          await loadProfile();
+        }
+
+        if (
+          typeof showApp ===
+          "function"
+        ) {
+
+          showApp();
+        }
+
+        if (
+          typeof refreshAll ===
+          "function"
+        ) {
+
+          await safeRetry(
+            () => refreshAll()
+          );
+        }
+      }
+
+    } catch (error) {
+
+      consecutiveFailures++;
+
+      console.warn(
+        "CAR 4 U health check:",
+        error
+      );
+
+      if (
+        consecutiveFailures >= 2
+      ) {
+
+        showRecoveryMessage(
+          "Cloud connection problem detected. Your saved data is protected. The app will keep trying automatically."
+        );
+      }
+
+    } finally {
+
+      healthCheckRunning = false;
+    }
+  }
+
+
+  // ====================================================
+  // RECOVERY RELOAD BUTTON
+  // ====================================================
+
+  function addRecoveryButton() {
+
+    if (
+      document.getElementById(
+        "car4uRecoveryButton"
+      )
+    ) {
+      return;
+    }
+
+    const button =
+      document.createElement(
+        "button"
+      );
+
+    button.id =
+      "car4uRecoveryButton";
+
+    button.type =
+      "button";
+
+    button.textContent =
+      "🛠 Recovery Reload";
+
+    button.style.cssText = `
+      position:fixed;
+      right:15px;
+      bottom:75px;
+      z-index:8998;
+      width:auto;
+      padding:10px 14px;
+      border:0;
+      border-radius:12px;
+      background:#344054;
+      color:white;
+      font-weight:700;
+      display:none;
+      box-shadow:0 4px 14px rgba(0,0,0,.20);
+    `;
+
+    button.onclick =
+      function () {
+
+        sessionStorage.setItem(
+          "car4uRecoveryReload",
+          "1"
+        );
+
+        window.location.reload();
+      };
+
+    document.body.appendChild(
+      button
+    );
+
+    // Long failure = show recovery button
+    setInterval(
+      function () {
+
+        button.style.display =
+          consecutiveFailures >= 2
+            ? "block"
+            : "none";
+
+      },
+      2000
+    );
+  }
+
+
+  // ====================================================
+  // GLOBAL JAVASCRIPT ERROR MONITOR
+  // ====================================================
+
+  window.addEventListener(
+    "error",
+    function (event) {
+
+      console.error(
+        "CAR 4 U protected error:",
+        event.error ||
+        event.message
+      );
+
+      showRecoveryMessage(
+        "A temporary app error was detected. Your cloud data has not been deleted. If the app stops responding, use Recovery Reload."
+      );
+    }
+  );
+
+
+  window.addEventListener(
+    "unhandledrejection",
+    function (event) {
+
+      console.error(
+        "CAR 4 U protected promise error:",
+        event.reason
+      );
+
+      // Do not reload automatically.
+      // This prevents unsaved form data being lost.
+    }
+  );
+
+
+  // ====================================================
+  // ONLINE RECOVERY
+  // ====================================================
+
+  window.addEventListener(
+    "online",
+    async function () {
+
+      consecutiveFailures = 0;
+
+      removeRecoveryMessage();
+
+      await checkSupabaseHealth();
+
+      if (
+        typeof refreshAll ===
+        "function" &&
+        currentUser
+      ) {
+
+        try {
+
+          await safeRetry(
+            () => refreshAll()
+          );
+
+        } catch (error) {
+
+          console.warn(
+            "Reconnect refresh failed:",
+            error
+          );
+        }
+      }
+    }
+  );
+
+
+  // ====================================================
+  // OFFLINE PROTECTION
+  // ====================================================
+
+  window.addEventListener(
+    "offline",
+    function () {
+
+      showRecoveryMessage(
+        "You are offline. Do not submit or delete anything until the internet connection returns."
+      );
+    }
+  );
+
+
+  // ====================================================
+  // RETURN FROM BACKGROUND
+  // ====================================================
+
+  document.addEventListener(
+    "visibilitychange",
+    function () {
+
+      if (
+        document.visibilityState ===
+        "visible"
+      ) {
+
+        checkSupabaseHealth();
+      }
+    }
+  );
+
+
+  // ====================================================
+  // START STABILITY SYSTEM
+  // ====================================================
+
+  function startStabilitySystem() {
+
+    addRecoveryButton();
+
+    checkSupabaseHealth();
+
+    setInterval(
+      checkSupabaseHealth,
+      HEALTH_CHECK_INTERVAL
+    );
+
+    if (
+      sessionStorage.getItem(
+        "car4uRecoveryReload"
+      ) === "1"
+    ) {
+
+      sessionStorage.removeItem(
+        "car4uRecoveryReload"
+      );
+
+      setTimeout(
+        async function () {
+
+          if (
+            typeof refreshAll ===
+            "function" &&
+            currentUser
+          ) {
+
+            try {
+
+              await safeRetry(
+                () => refreshAll()
+              );
+
+            } catch (error) {
+
+              console.warn(
+                "Recovery refresh:",
+                error
+              );
+            }
+          }
+
+        },
+        1500
+      );
+    }
+  }
+
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      startStabilitySystem
+    );
+
+  } else {
+
+    startStabilitySystem();
+  }
+
+
+})();
+
+
+// ======================================================
+// END V8 STABILITY & RECOVERY BLOCK
+// ======================================================
