@@ -14,12 +14,9 @@
     Car 4 U 1 Ltd - Driver Application
   </title>
 
-
-  <!-- SUPABASE -->
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
   ></script>
-
 
   <style>
 
@@ -27,642 +24,272 @@
       box-sizing: border-box;
     }
 
-
     body {
-
       margin: 0;
-
-      font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-      background:
-        #f1f4f8;
-
-      color:
-        #101828;
-
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f1f4f8;
+      color: #101828;
     }
-
 
     .page {
-
       width: 100%;
-
       max-width: 850px;
-
       margin: 0 auto;
-
-      padding:
-        20px 16px 60px;
-
+      padding: 20px 16px 60px;
     }
-
 
     .header {
-
-      background:
-        #101828;
-
-      color:
-        white;
-
-      padding:
-        28px 20px;
-
-      border-radius:
-        0 0 24px 24px;
-
-      margin-bottom:
-        22px;
-
+      background: #101828;
+      color: white;
+      padding: 28px 20px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 22px;
     }
-
 
     .header h1 {
-
-      margin:
-        0 0 8px;
-
-      font-size:
-        30px;
-
+      margin: 0 0 8px;
+      font-size: 30px;
     }
-
 
     .header p {
-
       margin: 0;
-
-      color:
-        #d0d5dd;
-
-      line-height:
-        1.5;
-
+      color: #d0d5dd;
+      line-height: 1.5;
     }
-
 
     .card {
-
-      background:
-        white;
-
-      border-radius:
-        22px;
-
-      padding:
-        22px;
-
-      margin-bottom:
-        20px;
-
-      box-shadow:
-        0 5px 18px rgba(
-          16,
-          24,
-          40,
-          .06
-        );
-
+      background: white;
+      border-radius: 22px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 18px rgba(16, 24, 40, .06);
     }
-
 
     h2 {
-
-      margin-top:
-        0;
-
-      font-size:
-        27px;
-
+      margin-top: 0;
+      font-size: 27px;
     }
-
 
     h3 {
-
-      margin-top:
-        18px;
-
+      margin-top: 18px;
     }
-
 
     label {
-
-      display:
-        block;
-
-      font-weight:
-        700;
-
-      margin:
-        18px 0 7px;
-
+      display: block;
+      font-weight: 700;
+      margin: 18px 0 7px;
     }
-
 
     input,
     select,
     textarea {
-
-      width:
-        100%;
-
-      font-size:
-        17px;
-
-      border:
-        1px solid #d0d5dd;
-
-      border-radius:
-        13px;
-
-      padding:
-        14px;
-
-      background:
-        white;
-
-      color:
-        #101828;
-
+      width: 100%;
+      font-size: 17px;
+      border: 1px solid #d0d5dd;
+      border-radius: 13px;
+      padding: 14px;
+      background: white;
+      color: #101828;
     }
-
 
     input:focus,
     select:focus,
     textarea:focus {
-
-      outline:
-        2px solid #84adff;
-
-      border-color:
-        #2e6df6;
-
+      outline: 2px solid #84adff;
+      border-color: #2e6df6;
     }
-
 
     textarea {
-
-      min-height:
-        130px;
-
-      resize:
-        vertical;
-
+      min-height: 130px;
+      resize: vertical;
     }
-
 
     button {
-
-      width:
-        100%;
-
-      border:
-        none;
-
-      border-radius:
-        14px;
-
-      padding:
-        16px;
-
-      margin-top:
-        12px;
-
-      font-size:
-        18px;
-
-      font-weight:
-        700;
-
-      cursor:
-        pointer;
-
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
     }
-
 
     .green {
-
-      background:
-        #168a3d;
-
-      color:
-        white;
-
+      background: #168a3d;
+      color: white;
     }
-
 
     .blue {
-
-      background:
-        #2867e8;
-
-      color:
-        white;
-
+      background: #2867e8;
+      color: white;
     }
-
 
     .secondary {
-
-      background:
-        #e4e7ec;
-
-      color:
-        #101828;
-
+      background: #e4e7ec;
+      color: #101828;
     }
-
-
-    .danger {
-
-      background:
-        #c91d1d;
-
-      color:
-        white;
-
-    }
-
 
     .small {
-
-      font-size:
-        15px;
-
-      color:
-        #667085;
-
-      line-height:
-        1.5;
-
+      font-size: 15px;
+      color: #667085;
+      line-height: 1.5;
     }
-
 
     .notice {
-
-      padding:
-        15px;
-
-      border-radius:
-        13px;
-
-      margin-bottom:
-        18px;
-
-      background:
-        #eff6ff;
-
-      border:
-        1px solid #bfdbfe;
-
-      color:
-        #1e3a8a;
-
+      padding: 15px;
+      border-radius: 13px;
+      margin-bottom: 18px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
     }
-
 
     .success-message {
-
-      display:
-        none;
-
-      padding:
-        18px;
-
-      border:
-        1px solid #86efac;
-
-      background:
-        #dcfce7;
-
-      color:
-        #166534;
-
-      border-radius:
-        14px;
-
-      font-size:
-        18px;
-
-      font-weight:
-        700;
-
-      line-height:
-        1.5;
-
-      margin-top:
-        18px;
-
+      display: none;
+      padding: 18px;
+      border: 1px solid #86efac;
+      background: #dcfce7;
+      color: #166534;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-top: 18px;
     }
-
 
     .error-message {
-
-      display:
-        none;
-
-      padding:
-        18px;
-
-      border:
-        1px solid #fca5a5;
-
-      background:
-        #fee2e2;
-
-      color:
-        #991b1b;
-
-      border-radius:
-        14px;
-
-      font-size:
-        17px;
-
-      font-weight:
-        700;
-
-      line-height:
-        1.5;
-
-      margin-top:
-        18px;
-
+      display: none;
+      padding: 18px;
+      border: 1px solid #fca5a5;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-top: 18px;
     }
-
 
     .document-box {
-
-      border:
-        2px dashed #d0d5dd;
-
-      border-radius:
-        17px;
-
-      padding:
-        18px;
-
-      margin:
-        14px 0;
-
-      background:
-        #fafafa;
-
+      border: 2px dashed #d0d5dd;
+      border-radius: 17px;
+      padding: 18px;
+      margin: 14px 0;
+      background: #fafafa;
     }
-
 
     .document-box h3 {
-
-      margin-top:
-        0;
-
+      margin-top: 0;
     }
-
 
     .agreement-box {
-
-      max-height:
-        550px;
-
-      overflow-y:
-        auto;
-
-      border:
-        1px solid #d0d5dd;
-
-      border-radius:
-        15px;
-
-      padding:
-        18px;
-
-      background:
-        #fafafa;
-
-      line-height:
-        1.6;
-
+      max-height: 550px;
+      overflow-y: auto;
+      border: 1px solid #d0d5dd;
+      border-radius: 15px;
+      padding: 18px;
+      background: #fafafa;
+      line-height: 1.6;
     }
-
 
     .agreement-box li {
-
-      margin-bottom:
-        14px;
-
+      margin-bottom: 14px;
     }
-
 
     .agreement-company {
-
-      text-align:
-        center;
-
-      border-bottom:
-        2px solid #174c86;
-
-      padding-bottom:
-        15px;
-
-      margin-bottom:
-        20px;
-
+      text-align: center;
+      border-bottom: 2px solid #174c86;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
     }
-
 
     .agreement-company h2 {
-
-      color:
-        #174c86;
-
-      margin-bottom:
-        8px;
-
+      color: #174c86;
+      margin-bottom: 8px;
     }
-
 
     .agreement-details {
-
-      display:
-        grid;
-
-      grid-template-columns:
-        1fr 1fr;
-
-      gap:
-        10px;
-
-      margin:
-        20px 0;
-
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 20px 0;
     }
-
 
     .agreement-detail {
-
-      padding:
-        9px 0;
-
-      border-bottom:
-        1px solid #98a2b3;
-
+      padding: 9px 0;
+      border-bottom: 1px solid #98a2b3;
     }
-
 
     .signature-wrapper {
-
-      border:
-        2px solid #98a2b3;
-
-      border-radius:
-        15px;
-
-      background:
-        white;
-
-      overflow:
-        hidden;
-
-      margin-top:
-        10px;
-
+      border: 2px solid #98a2b3;
+      border-radius: 15px;
+      background: white;
+      overflow: hidden;
+      margin-top: 10px;
     }
-
 
     #driverSignatureCanvas {
-
-      display:
-        block;
-
-      width:
-        100%;
-
-      height:
-        190px;
-
-      background:
-        white;
-
-      touch-action:
-        none;
-
+      display: block;
+      width: 100%;
+      height: 190px;
+      background: white;
+      touch-action: none;
     }
-
 
     .accept-row {
-
-      display:
-        flex;
-
-      align-items:
-        flex-start;
-
-      gap:
-        12px;
-
-      margin-top:
-        20px;
-
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-top: 20px;
     }
-
 
     .accept-row input {
-
-      width:
-        24px;
-
-      height:
-        24px;
-
-      margin:
-        1px 0 0;
-
-      flex:
-        0 0 auto;
-
+      width: 24px;
+      height: 24px;
+      margin: 1px 0 0;
+      flex: 0 0 auto;
     }
-
 
     .accept-row label {
-
-      margin:
-        0;
-
-      font-weight:
-        600;
-
-      line-height:
-        1.5;
-
+      margin: 0;
+      font-weight: 600;
+      line-height: 1.5;
     }
-
 
     .hidden {
-
-      display:
-        none !important;
-
+      display: none !important;
     }
-
 
     .required {
-
-      color:
-        #d92d20;
-
+      color: #d92d20;
     }
 
-
-    @media (
-      max-width: 600px
-    ) {
+    @media (max-width: 600px) {
 
       .page {
-
-        padding:
-          14px 12px 50px;
-
+        padding: 14px 12px 50px;
       }
-
 
       .card {
-
-        padding:
-          18px;
-
-        border-radius:
-          18px;
-
+        padding: 18px;
+        border-radius: 18px;
       }
-
 
       .header h1 {
-
-        font-size:
-          26px;
-
+        font-size: 26px;
       }
-
 
       .agreement-details {
-
-        grid-template-columns:
-          1fr;
-
+        grid-template-columns: 1fr;
       }
-
     }
 
   </style>
 
 </head>
 
-
 <body>
-
 
   <div class="header">
 
@@ -680,11 +307,7 @@
 
   </div>
 
-
   <main class="page">
-
-
-    <!-- INVALID / EXPIRED LINK -->
 
     <div
       id="invalidLinkCard"
@@ -702,16 +325,10 @@
 
     </div>
 
-
-    <!-- MAIN APPLICATION -->
-
     <form
       id="driverApplicationForm"
       novalidate
     >
-
-
-      <!-- INTRODUCTION -->
 
       <div class="card">
 
@@ -720,25 +337,14 @@
         </h2>
 
         <div class="notice">
-
-          Please complete all required information
-          accurately and upload clear copies of your
-          documents.
-
+          Please complete all required information accurately and upload clear copies of your documents.
         </div>
 
         <p class="small">
-
-          Your information will be reviewed by
-          Car 4 U 1 Ltd before you can be approved
-          as a driver.
-
+          Your information will be reviewed by Car 4 U 1 Ltd before you can be approved as a driver.
         </p>
 
       </div>
-
-
-      <!-- PERSONAL DETAILS -->
 
       <div class="card">
 
@@ -746,12 +352,9 @@
           👤 Personal Details
         </h2>
 
-
         <label for="fullName">
-
           Full Name
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -763,12 +366,9 @@
           placeholder="Your full legal name"
         >
 
-
         <label for="dateOfBirth">
-
           Date of Birth
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -778,12 +378,9 @@
           required
         >
 
-
         <label for="phone">
-
           Mobile Number
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -795,12 +392,9 @@
           placeholder="07..."
         >
 
-
         <label for="email">
-
           Email Address
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -812,12 +406,9 @@
           placeholder="name@example.com"
         >
 
-
         <label for="nationalInsuranceNumber">
-
           National Insurance Number
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -831,21 +422,15 @@
 
       </div>
 
-
-      <!-- ADDRESS -->
-
       <div class="card">
 
         <h2>
           🏠 Home Address
         </h2>
 
-
         <label for="addressLine1">
-
           Address Line 1
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -856,7 +441,6 @@
           required
           placeholder="House number and street"
         >
-
 
         <label for="addressLine2">
           Address Line 2
@@ -870,12 +454,9 @@
           placeholder="Optional"
         >
 
-
         <label for="city">
-
           City
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -887,12 +468,9 @@
           value="Glasgow"
         >
 
-
         <label for="postcode">
-
           Postcode
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -906,21 +484,15 @@
 
       </div>
 
-
-      <!-- DRIVING LICENCE -->
-
       <div class="card">
 
         <h2>
           🚘 Driving Licence
         </h2>
 
-
         <label for="drivingLicenceNumber">
-
           Driving Licence Number
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -931,12 +503,9 @@
           autocapitalize="characters"
         >
 
-
         <label for="drivingLicenceExpiry">
-
           Driving Licence Expiry
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -946,12 +515,9 @@
           required
         >
 
-
         <label for="licencePoints">
-
           Current Licence Points
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -964,9 +530,7 @@
           value="0"
         >
 
-
         <label for="licencePointsDetails">
-
           Penalty Point Details
         </label>
 
@@ -978,21 +542,15 @@
 
       </div>
 
-
-      <!-- TAXI DETAILS -->
-
       <div class="card">
 
         <h2>
           🚕 Taxi / Private Hire Details
         </h2>
 
-
         <label for="taxiBadgeNumber">
-
           Taxi / Private Hire Badge Number
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -1002,12 +560,9 @@
           required
         >
 
-
         <label for="taxiBadgeExpiry">
-
           Taxi / Private Hire Badge Expiry
           <span class="required">*</span>
-
         </label>
 
         <input
@@ -1019,10 +574,9 @@
 
       </div>
 
-
-      <!-- END PART 1 -      <!-- ===================================================== -->
+      <!-- END PART 1 -->      <!-- ================================================= -->
       <!-- ACCIDENT HISTORY -->
-      <!-- ===================================================== -->
+      <!-- ================================================= -->
 
       <div class="card">
 
@@ -1030,22 +584,16 @@
           💥 Accident History
         </h2>
 
-
         <label for="accidentsLast5Years">
-
-          Have you had any accidents
-          in the last 5 years?
+          Have you had any accidents in the last 5 years?
           <span class="required">*</span>
-
         </label>
 
         <select
           id="accidentsLast5Years"
           name="accidentsLast5Years"
           required
-          onchange="toggleAccidentDetails()"
         >
-
           <option value="">
             Please select
           </option>
@@ -1087,7 +635,7 @@
           <textarea
             id="accidentDetails"
             name="accidentDetails"
-            placeholder="Please give the date, what happened and whether you were at fault."
+            placeholder="Please give the date, circumstances and any other relevant information."
           ></textarea>
 
         </div>
@@ -1095,60 +643,157 @@
       </div>
 
 
-      <!-- ===================================================== -->
+      <!-- ================================================= -->
       <!-- EMERGENCY CONTACT -->
-      <!-- ===================================================== -->
+      <!-- ================================================= -->
 
       <div class="card">
 
         <h2>
-          ☎️ Emergency Contact
+          📞 Emergency Contact
         </h2>
 
-
         <label for="emergencyContactName">
-
           Emergency Contact Name
-          <span class="required">*</span>
-
         </label>
 
         <input
           id="emergencyContactName"
           name="emergencyContactName"
           type="text"
-          required
+          placeholder="Full name"
         >
 
 
         <label for="emergencyContactPhone">
-
           Emergency Contact Number
-          <span class="required">*</span>
-
         </label>
 
         <input
           id="emergencyContactPhone"
           name="emergencyContactPhone"
           type="tel"
-          required
           placeholder="07..."
         >
 
       </div>
 
 
-      <!-- ===================================================== -->
-      <!-- ADDITIONAL INFORMATION -->
-      <!-- ===================================================== -->
+      <!-- ================================================= -->
+      <!-- DOCUMENT UPLOADS -->
+      <!-- ================================================= -->
+
+      <div class="card">
+
+        <h2>
+          📄 Driver Documents
+        </h2>
+
+        <p class="small">
+          Please upload clear photographs or PDF copies.
+        </p>
+
+
+        <div class="document-box">
+
+          <h3>
+            Driving Licence Front
+          </h3>
+
+          <input
+            id="drivingLicenceFront"
+            name="drivingLicenceFront"
+            type="file"
+            accept="image/*,.pdf"
+            required
+          >
+
+        </div>
+
+
+        <div class="document-box">
+
+          <h3>
+            Driving Licence Back
+          </h3>
+
+          <input
+            id="drivingLicenceBack"
+            name="drivingLicenceBack"
+            type="file"
+            accept="image/*,.pdf"
+            required
+          >
+
+        </div>
+
+
+        <div class="document-box">
+
+          <h3>
+            Taxi / Private Hire Badge
+          </h3>
+
+          <input
+            id="taxiBadgeDocument"
+            name="taxiBadgeDocument"
+            type="file"
+            accept="image/*,.pdf"
+            required
+          >
+
+        </div>
+
+
+        <div class="document-box">
+
+          <h3>
+            Taxi / Private Hire Paper Licence
+          </h3>
+
+          <input
+            id="taxiPaperLicence"
+            name="taxiPaperLicence"
+            type="file"
+            accept="image/*,.pdf"
+            required
+          >
+
+        </div>
+
+
+        <div class="document-box">
+
+          <h3>
+            Proof of Address
+          </h3>
+
+          <p class="small">
+            Optional — for example a recent utility bill,
+            bank statement or council tax letter.
+          </p>
+
+          <input
+            id="proofOfAddress"
+            name="proofOfAddress"
+            type="file"
+            accept="image/*,.pdf"
+          >
+
+        </div>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- ADDITIONAL NOTES -->
+      <!-- ================================================= -->
 
       <div class="card">
 
         <h2>
           📝 Additional Information
         </h2>
-
 
         <label for="notes">
           Anything else we should know?
@@ -1163,585 +808,278 @@
       </div>
 
 
-      <!-- ===================================================== -->
-      <!-- DRIVER DOCUMENTS -->
-      <!-- ===================================================== -->
-
-      <div class="card">
-
-        <h2>
-          📂 Required Documents
-        </h2>
-
-        <p class="small">
-
-          Please upload clear photographs or files.
-          Make sure all information is readable.
-
-        </p>
-
-
-        <!-- DRIVING LICENCE FRONT -->
-
-        <div class="document-box">
-
-          <h3>
-            Driving Licence — Front
-          </h3>
-
-          <input
-            id="drivingLicenceFront"
-            type="file"
-            accept="image/*,.pdf"
-            required
-          >
-
-        </div>
-
-
-        <!-- DRIVING LICENCE BACK -->
-
-        <div class="document-box">
-
-          <h3>
-            Driving Licence — Back
-          </h3>
-
-          <input
-            id="drivingLicenceBack"
-            type="file"
-            accept="image/*,.pdf"
-            required
-          >
-
-        </div>
-
-
-        <!-- TAXI BADGE -->
-
-        <div class="document-box">
-
-          <h3>
-            Taxi / Private Hire Badge
-          </h3>
-
-          <input
-            id="taxiBadgeDocument"
-            type="file"
-            accept="image/*,.pdf"
-            required
-          >
-
-        </div>
-
-
-        <!-- TAXI PAPER LICENCE -->
-
-        <div class="document-box">
-
-          <h3>
-            Taxi / Private Hire Paper Licence
-          </h3>
-
-          <input
-            id="taxiPaperLicence"
-            type="file"
-            accept="image/*,.pdf"
-            required
-          >
-
-        </div>
-
-
-        <!-- PROOF OF ADDRESS -->
-
-        <div class="document-box">
-
-          <h3>
-            Proof of Address
-          </h3>
-
-          <p class="small">
-            For example: bank statement,
-            council tax letter or utility bill.
-          </p>
-
-          <input
-            id="proofOfAddress"
-            type="file"
-            accept="image/*,.pdf"
-          >
-
-        </div>
-
-      </div>
-
-
-      <!-- ===================================================== -->
+      <!-- ================================================= -->
       <!-- RENTAL AGREEMENT -->
-      <!-- ===================================================== -->
+      <!-- ================================================= -->
 
       <div
-        class="card"
         id="driverAgreementSection"
+        class="card"
       >
 
         <h2>
-          📄 Private Hire Long Term Car Rental Agreement
+          ✍️ Private Hire Long Term Car Rental Agreement
         </h2>
 
-        <p class="small">
-
-          Please read the complete agreement carefully.
-          You must accept the terms and sign electronically
-          before submitting your application.
-
-        </p>
-
-
-        <div
-          id="driverAgreementText"
-          class="agreement-box"
-        >
-
-
-          <!-- COMPANY DETAILS -->
+        <div class="agreement-box">
 
           <div class="agreement-company">
 
             <h2>
-              CARS 4U 1 LIMITED
+              CARS 4 U 1 LIMITED
             </h2>
 
             <p>
-              01,112 Mavisbank Gardens,
+              0/1, 112 Mavisbank Gardens,
               Glasgow G51 1HR
             </p>
 
             <p>
-              Company Number:
-              <b>SC331432</b>
+              Company Number: SC331432
             </p>
 
             <p>
-              Consumer Credit License Number:
-              <b>629911</b>
+              Consumer Credit License Number: 629911
             </p>
 
           </div>
 
 
-          <h3
-            style="
-              text-align:center;
-              text-decoration:underline;
-            "
-          >
+          <h3 style="text-align:center;">
             Private Hire Long Term Car Rental Agreement
           </h3>
 
 
-          <!-- DRIVER / VEHICLE DETAILS -->
-
           <div class="agreement-details">
 
             <div class="agreement-detail">
-
-              <b>Driver Name:</b>
-
+              <strong>Driver:</strong>
               <span id="agreementDriverName">
-                To be completed
+                To be completed above
               </span>
-
             </div>
 
-
             <div class="agreement-detail">
-
-              <b>Contact:</b>
-
+              <strong>Contact:</strong>
               <span id="agreementDriverPhone">
-                To be completed
+                To be completed above
               </span>
-
             </div>
 
-
             <div class="agreement-detail">
-
-              <b>Address:</b>
-
+              <strong>Address:</strong>
               <span id="agreementDriverAddress">
-                To be completed
+                To be completed above
               </span>
-
             </div>
 
-
             <div class="agreement-detail">
-
-              <b>Postcode:</b>
-
+              <strong>Postcode:</strong>
               <span id="agreementDriverPostcode">
-                To be completed
+                To be completed above
               </span>
-
             </div>
 
-
             <div class="agreement-detail">
-
-              <b>Car Reg:</b>
-
-              <span id="agreementVehicleReg">
-                To be assigned later
-              </span>
-
+              <strong>Car Reg:</strong>
+              To be assigned by Car 4 U 1 Ltd
             </div>
 
-
             <div class="agreement-detail">
-
-              <b>Start Date:</b>
-
-              <span id="agreementStartDate">
-                To be assigned later
-              </span>
-
+              <strong>Start Date:</strong>
+              To be confirmed when vehicle is assigned
             </div>
 
-
             <div class="agreement-detail">
-
-              <b>End Date:</b>
-
-              <span id="agreementEndDate">
-                To be assigned later
-              </span>
-
+              <strong>End Date:</strong>
+              To be confirmed
             </div>
 
-
             <div class="agreement-detail">
-
-              <b>Mileage:</b>
-
-              <span id="agreementMileage">
-                To be assigned later
-              </span>
-
+              <strong>Mileage:</strong>
+              To be recorded when vehicle is supplied
             </div>
 
           </div>
 
 
-          <hr>
-
-
-          <!-- TERMS -->
-
-          <h2
-            style="
-              color:#174c86;
-              margin-top:25px;
-            "
-          >
+          <h3>
             TERMS AND CONDITIONS
-          </h2>
-
+          </h3>
 
           <ol>
 
             <li>
-
-              Daily checks of oil, tyres and water
-              must be carried out.
-
-              If any damage to the engine is caused
-              through failure to comply with the above,
-              the driver may be responsible for the
-              cost of repair.
-
-              It is the driver's responsibility to
-              check that the tyres are safe and legal.
-
+              Daily checks of oil, tyres and water must be
+              carried out. If any damage to the engine is
+              caused through failure to comply with the above,
+              I will be responsible for the repair. It is the
+              driver's responsibility to check the tyres. If
+              stopped by the police for a worn or illegal tyre,
+              the company will not accept responsibility.
             </li>
 
-
             <li>
-
-              The vehicle must be kept clean and tidy
-              at all times.
-
-              Regular inspections may take place.
-
-              Any vehicle failing to meet company
-              standards may be rendered off call until
-              the vehicle has been inspected and
-              approved.
-
+              The vehicle must be kept clean and tidy at all
+              times. Regular inspections may take place.
+              Any vehicle failing to meet company standards
+              may be rendered OFF CALL until the vehicle is
+              returned for inspection and approval is granted.
             </li>
 
-
             <li>
-
-              The driver agrees to pay any applicable
-              insurance excess in the event of an
-              accident or damage for which the driver
-              is responsible.
-
-              The driver also accepts responsibility
-              for loss or damage to equipment supplied
-              with the vehicle where the driver is
-              responsible.
-
-              This may include mirrors, wheel trims,
-              headlights, windows and other vehicle
-              equipment.
-
+              I agree to pay the applicable insurance excess
+              in the event of an accident or damage to the
+              vehicle where I am responsible under the rental
+              agreement. I also agree to be responsible for
+              loss or damage to vehicle equipment or parts,
+              including mirrors, wheel trims, lights and
+              windows, where such loss or damage is my
+              responsibility.
             </li>
 
-
             <li>
-
-              The driver accepts responsibility for
-              punctures, parking tickets, penalties
-              and traffic offences incurred during
-              the rental period where legally
-              applicable.
-
+              I accept responsibility for punctures, parking
+              charges, penalties and traffic offences incurred
+              during my rental period where I am legally
+              responsible for them.
             </li>
 
-
             <li>
-
-              The driver must regularly check the
-              condition of the tyres and immediately
-              inform the company if a tyre is damaged,
-              unsafe or below the legal limit.
-
+              I will check the tyres regularly and will inform
+              Car 4 U 1 Ltd immediately if a tyre is damaged,
+              unsafe or approaching its legal limit.
             </li>
 
-
             <li>
-
-              Where a fire extinguisher or other
-              safety equipment is supplied with the
-              vehicle, it must remain with the vehicle
-              and be returned in good condition.
-
-              Where loss or damage is the driver's
-              responsibility, replacement costs may
-              be charged.
-
+              Where the vehicle is supplied with a fire
+              extinguisher or other safety equipment, it must
+              remain with the vehicle and be returned in the
+              condition supplied, allowing for reasonable wear.
             </li>
 
-
             <li>
-
-              The driver agrees to provide at least
-              two weeks written notice when ending
-              the rental, subject to the terms of
-              this agreement.
-
+              I agree to provide at least 2 weeks' written
+              notice when ending the rental, unless Car 4 U 1
+              Ltd agrees otherwise. Any deposit or excess
+              refund remains subject to the vehicle being
+              returned and checked.
             </li>
 
-
             <li>
-
-              Any accident, collision, damage or
-              significant vehicle fault must be
-              reported to Car 4 U 1 Ltd as soon as
-              reasonably possible.
-
+              Any accident, damage, theft or significant fault
+              involving the vehicle must be reported to
+              Car 4 U 1 Ltd as soon as reasonably possible.
             </li>
 
-
             <li>
-
-              Vehicle servicing must be carried out
-              at the required service intervals.
-
-              The driver must inform Car 4 U 1 Ltd
-              when the vehicle is approaching its
-              required service interval.
-
-              The driver may be responsible for
-              damage caused by knowingly failing to
-              follow required servicing instructions.
-
+              Vehicle servicing must be carried out at the
+              required intervals. I agree to inform
+              Car 4 U 1 Ltd when the vehicle is approaching
+              its service interval and not knowingly continue
+              driving where doing so may cause damage.
             </li>
 
           </ol>
 
-
-          <hr>
-
-
-          <p>
-
-            <b>
-              Rental Period:
-            </b>
-
-            12 months unless otherwise agreed
-            in writing by Car 4 U 1 Ltd and the driver.
-
-          </p>
+        </div>
 
 
-          <p class="small">
+        <div class="accept-row">
 
-            The vehicle-specific information will be
-            completed when a vehicle is assigned to
-            the approved driver.
+          <input
+            id="agreementAccepted"
+            name="agreementAccepted"
+            type="checkbox"
+          >
 
-          </p>
-
+          <label for="agreementAccepted">
+            I have read and agree to the Private Hire Long
+            Term Car Rental Agreement and the terms and
+            conditions shown above.
+          </label>
 
         </div>
 
 
-      <!-- END PART 2 -->->      <!-- ===================================================== -->
-      <!-- AGREEMENT ACCEPTANCE -->
-      <!-- ===================================================== -->
-
-      <div class="accept-row">
-
-        <input
-          type="checkbox"
-          id="agreementAccepted"
-          required
-        >
-
-        <label for="agreementAccepted">
-
-          I confirm that I have read and understood
-          the Private Hire Long Term Car Rental Agreement
-          and agree to its Terms and Conditions.
-
+        <label for="agreementSignedName">
+          Full Legal Name
           <span class="required">*</span>
-
         </label>
 
-      </div>
+        <input
+          id="agreementSignedName"
+          name="agreementSignedName"
+          type="text"
+          autocomplete="name"
+          placeholder="Type your full legal name"
+        >
 
 
-      <!-- ===================================================== -->
-      <!-- ELECTRONIC SIGNATURE -->
-      <!-- ===================================================== -->
+        <label>
+          Electronic Signature
+          <span class="required">*</span>
+        </label>
 
-      <h3>
-        ✍️ Electronic Signature
-      </h3>
-
-      <p class="small">
-
-        Please sign inside the box below using your finger.
-
-        Your electronic signature confirms your acceptance
-        of the agreement above.
-
-      </p>
+        <p class="small">
+          Sign inside the box below using your finger.
+        </p>
 
 
-      <div class="signature-wrapper">
+        <div class="signature-wrapper">
 
-        <canvas
-          id="driverSignatureCanvas"
-          width="700"
-          height="260"
-        ></canvas>
+          <canvas
+            id="driverSignatureCanvas"
+          ></canvas>
 
-      </div>
+        </div>
 
 
-      <button
-        type="button"
-        class="secondary"
-        id="clearSignatureButton"
-      >
-        Clear Signature
-      </button>
+        <button
+          id="clearSignatureButton"
+          type="button"
+          class="secondary"
+        >
+          Clear Signature
+        </button>
 
 
-      <label for="agreementSignedName">
+        <label for="agreementSignedDate">
+          Date Signed
+        </label>
 
-        Full Legal Name
-        <span class="required">*</span>
-
-      </label>
-
-      <input
-        id="agreementSignedName"
-        type="text"
-        required
-        autocomplete="name"
-        placeholder="Type your full legal name"
-      >
-
-
-      <label for="agreementSignedDate">
-
-        Agreement Date
-        <span class="required">*</span>
-
-      </label>
-
-      <input
-        id="agreementSignedDate"
-        type="date"
-        required
-        readonly
-      >
-
-
-      <p class="small">
-
-        By signing electronically, you confirm that
-        the signature above is your signature and that
-        you intend to sign this agreement electronically.
-
-      </p>
-
-
-      <div
-        id="agreementSignatureMessage"
-        class="small"
-      ></div>
-
-
-      <!-- CLOSE AGREEMENT CARD -->
+        <input
+          id="agreementSignedDate"
+          name="agreementSignedDate"
+          type="date"
+          readonly
+        >
 
       </div>
 
 
-      <!-- ===================================================== -->
-      <!-- DECLARATION -->
-      <!-- ===================================================== -->
+      <!-- ================================================= -->
+      <!-- FINAL DECLARATIONS -->
+      <!-- ================================================= -->
 
       <div class="card">
 
         <h2>
-          ✅ Final Declaration
+          Declaration
         </h2>
+
 
         <div class="accept-row">
 
           <input
             id="applicationDeclaration"
             type="checkbox"
-            required
           >
 
           <label for="applicationDeclaration">
-
-            I confirm that the information I have
-            provided in this application is true and
-            accurate to the best of my knowledge.
-
-            <span class="required">*</span>
-
+            I confirm that the information provided in this
+            application is true and accurate to the best of
+            my knowledge.
           </label>
 
         </div>
@@ -1752,29 +1090,15 @@
           <input
             id="documentDeclaration"
             type="checkbox"
-            required
           >
 
           <label for="documentDeclaration">
-
-            I confirm that the documents I have uploaded
-            belong to me and are genuine copies of my
-            current documents.
-
-            <span class="required">*</span>
-
+            I confirm that the documents uploaded with this
+            application are genuine and relate to me.
           </label>
 
         </div>
 
-      </div>
-
-
-      <!-- ===================================================== -->
-      <!-- SUBMIT -->
-      <!-- ===================================================== -->
-
-      <div class="card">
 
         <button
           id="submitButton"
@@ -1802,27 +1126,23 @@
     </form>
 
 
-  </main>
+    <!-- ================================================= -->
+    <!-- END PART 2 -->
+    <!-- PART 3 CONTINUES DIRECTLY BELOW -->
+    <!-- ================================================= -->  </main>
 
-
-  <!-- ===================================================== -->
-  <!-- JAVASCRIPT -->
-  <!-- ===================================================== -->
 
   <script>
 
-
     // =====================================================
-    // SUPABASE
+    // SUPABASE CONNECTION
     // =====================================================
 
     const SUPABASE_URL =
       "https://ugsxnraeivhluhpzuful.supabase.co";
 
-
     const SUPABASE_KEY =
       "sb_publishable_tBBhN_wybueoX75Copcd2w_f5s9w4b7";
-
 
     const sb =
       supabase.createClient(
@@ -1832,28 +1152,25 @@
 
 
     // =====================================================
-    // BASIC HELPERS
+    // VARIABLES
     // =====================================================
 
     const $ =
       id =>
         document.getElementById(id);
 
-
     let applicationToken =
       null;
 
-
     let currentApplication =
       null;
-
 
     let signatureHasInk =
       false;
 
 
     // =====================================================
-    // START
+    // PAGE START
     // =====================================================
 
     document.addEventListener(
@@ -1862,11 +1179,11 @@
 
         setAgreementDate();
 
-        setupSignaturePad();
-
-        setupLiveAgreementDetails();
-
         setupAccidentSection();
+
+        setupAgreementDetails();
+
+        setupSignaturePad();
 
         setupApplicationForm();
 
@@ -1877,27 +1194,23 @@
 
 
     // =====================================================
-    // AGREEMENT DATE
+    // SET AGREEMENT DATE
     // =====================================================
 
     function setAgreementDate(){
 
-      const input =
+      const dateInput =
         $("agreementSignedDate");
 
-
-      if(!input){
+      if(!dateInput){
         return;
       }
-
 
       const today =
         new Date();
 
-
       const year =
         today.getFullYear();
-
 
       const month =
         String(
@@ -1907,7 +1220,6 @@
           "0"
         );
 
-
       const day =
         String(
           today.getDate()
@@ -1916,8 +1228,7 @@
           "0"
         );
 
-
-      input.value =
+      dateInput.value =
         `${year}-${month}-${day}`;
 
     }
@@ -1929,6 +1240,18 @@
 
     function setupAccidentSection(){
 
+      const select =
+        $("accidentsLast5Years");
+
+      if(!select){
+        return;
+      }
+
+      select.addEventListener(
+        "change",
+        toggleAccidentDetails
+      );
+
       toggleAccidentDetails();
 
     }
@@ -1939,10 +1262,8 @@
       const select =
         $("accidentsLast5Years");
 
-
       const section =
         $("accidentDetailsSection");
-
 
       if(
         !select ||
@@ -1950,7 +1271,6 @@
       ){
         return;
       }
-
 
       if(
         select.value ===
@@ -1973,12 +1293,12 @@
 
 
     // =====================================================
-    // LIVE AGREEMENT DETAILS
+    // AGREEMENT DETAILS
     // =====================================================
 
-    function setupLiveAgreementDetails(){
+    function setupAgreementDetails(){
 
-      const fieldIds = [
+      const fields = [
 
         "fullName",
         "phone",
@@ -1989,13 +1309,11 @@
 
       ];
 
-
-      fieldIds.forEach(
+      fields.forEach(
         id => {
 
           const field =
             $(id);
-
 
           if(field){
 
@@ -2013,7 +1331,6 @@
       const fullName =
         $("fullName");
 
-
       const signedName =
         $("agreementSignedName");
 
@@ -2027,15 +1344,8 @@
           "input",
           function(){
 
-            /*
-             * Automatically copy the driver's name
-             * into the signature-name field.
-             *
-             * The driver can still edit it.
-             */
-
             if(
-              !signedName.dataset.manuallyChanged
+              !signedName.dataset.changed
             ){
 
               signedName.value =
@@ -2051,7 +1361,7 @@
           "input",
           function(){
 
-            signedName.dataset.manuallyChanged =
+            signedName.dataset.changed =
               "true";
 
           }
@@ -2067,12 +1377,11 @@
 
     function updateAgreementDetails(){
 
-      const fullName =
+      const name =
         $("fullName")
           ?.value
           .trim() ||
         "";
-
 
       const phone =
         $("phone")
@@ -2080,13 +1389,11 @@
           .trim() ||
         "";
 
-
       const address1 =
         $("addressLine1")
           ?.value
           .trim() ||
         "";
-
 
       const address2 =
         $("addressLine2")
@@ -2094,13 +1401,11 @@
           .trim() ||
         "";
 
-
       const city =
         $("city")
           ?.value
           .trim() ||
         "";
-
 
       const postcode =
         $("postcode")
@@ -2125,8 +1430,8 @@
 
         $("agreementDriverName")
           .textContent =
-          fullName ||
-          "To be completed";
+          name ||
+          "To be completed above";
 
       }
 
@@ -2138,7 +1443,7 @@
         $("agreementDriverPhone")
           .textContent =
           phone ||
-          "To be completed";
+          "To be completed above";
 
       }
 
@@ -2150,7 +1455,7 @@
         $("agreementDriverAddress")
           .textContent =
           address ||
-          "To be completed";
+          "To be completed above";
 
       }
 
@@ -2162,7 +1467,7 @@
         $("agreementDriverPostcode")
           .textContent =
           postcode ||
-          "To be completed";
+          "To be completed above";
 
       }
 
@@ -2178,10 +1483,21 @@
       const canvas =
         $("driverSignatureCanvas");
 
-
       if(!canvas){
         return;
       }
+
+
+      /*
+       * Give the canvas a proper internal resolution.
+       * This makes the signature much clearer on phones.
+       */
+
+      canvas.width =
+        700;
+
+      canvas.height =
+        260;
 
 
       const context =
@@ -2189,18 +1505,14 @@
           "2d"
         );
 
-
       context.lineWidth =
-        3;
-
+        4;
 
       context.lineCap =
         "round";
 
-
       context.lineJoin =
         "round";
-
 
       context.strokeStyle =
         "#101828";
@@ -2225,7 +1537,7 @@
 
         if(
           event.touches &&
-          event.touches.length
+          event.touches.length > 0
         ){
 
           clientX =
@@ -2278,7 +1590,6 @@
 
         event.preventDefault();
 
-
         drawing =
           true;
 
@@ -2290,7 +1601,6 @@
 
 
         context.beginPath();
-
 
         context.moveTo(
           position.x,
@@ -2304,12 +1614,9 @@
         event
       ){
 
-        if(
-          !drawing
-        ){
+        if(!drawing){
           return;
         }
-
 
         event.preventDefault();
 
@@ -2325,7 +1632,6 @@
           position.y
         );
 
-
         context.stroke();
 
 
@@ -2339,18 +1645,12 @@
         event
       ){
 
-        if(
-          event
-        ){
-
+        if(event){
           event.preventDefault();
-
         }
-
 
         drawing =
           false;
-
 
         context.closePath();
 
@@ -2362,12 +1662,10 @@
         startDrawing
       );
 
-
       canvas.addEventListener(
         "mousemove",
         draw
       );
-
 
       window.addEventListener(
         "mouseup",
@@ -2379,59 +1677,40 @@
         "touchstart",
         startDrawing,
         {
-          passive:
-            false
+          passive: false
         }
       );
-
 
       canvas.addEventListener(
         "touchmove",
         draw,
         {
-          passive:
-            false
+          passive: false
         }
       );
-
 
       canvas.addEventListener(
         "touchend",
         stopDrawing,
         {
-          passive:
-            false
+          passive: false
         }
       );
 
 
-      const clearButton =
-        $("clearSignatureButton");
-
-
-      if(
-        clearButton
-      ){
-
-        clearButton.addEventListener(
+      $("clearSignatureButton")
+        ?.addEventListener(
           "click",
           clearDriverSignature
         );
 
-      }
-
     }
 
-
-    // =====================================================
-    // CLEAR SIGNATURE
-    // =====================================================
 
     function clearDriverSignature(){
 
       const canvas =
         $("driverSignatureCanvas");
-
 
       if(!canvas){
         return;
@@ -2455,25 +1734,11 @@
       signatureHasInk =
         false;
 
-
-      const message =
-        $("agreementSignatureMessage");
-
-
-      if(
-        message
-      ){
-
-        message.textContent =
-          "Signature cleared.";
-
-      }
-
     }
 
 
     // =====================================================
-    // LOAD DRIVER INVITATION
+    // LOAD APPLICATION TOKEN
     // =====================================================
 
     async function loadInvitation(){
@@ -2503,28 +1768,48 @@
 
       try{
 
+        /*
+         * IMPORTANT:
+         *
+         * We now use the secure Supabase function
+         * created in SQL:
+         *
+         * get_driver_application_by_token
+         *
+         * This avoids the public page needing direct
+         * SELECT access to driver_applications.
+         */
+
         const {
           data,
           error
         } =
-          await sb
-            .from(
-              "driver_applications"
-            )
-            .select("*")
-            .eq(
-              "application_token",
-              applicationToken
-            )
-            .maybeSingle();
+          await sb.rpc(
+            "get_driver_application_by_token",
+            {
+              p_token:
+                applicationToken
+            }
+          );
 
 
         if(error){
+
+          console.error(
+            "Token lookup error:",
+            error
+          );
+
           throw error;
+
         }
 
 
-        if(!data){
+        if(
+          !data ||
+          !Array.isArray(data) ||
+          data.length === 0
+        ){
 
           showInvalidLink();
 
@@ -2534,18 +1819,22 @@
 
 
         currentApplication =
-          data;
+          data[0];
 
+
+        // -------------------------------------------------
+        // ALREADY SUBMITTED?
+        // -------------------------------------------------
 
         if(
-          data.status ===
-          "submitted" ||
-          data.status ===
-          "approved"
+          currentApplication.status ===
+            "submitted" ||
+          currentApplication.status ===
+            "approved"
         ){
 
           showAlreadySubmitted(
-            data
+            currentApplication
           );
 
           return;
@@ -2553,26 +1842,29 @@
         }
 
 
-        /*
-         * If the invitation already contains
-         * some driver information, restore it.
-         */
+        // -------------------------------------------------
+        // RESTORE ANY EXISTING DETAILS
+        // -------------------------------------------------
 
         fillExistingApplication(
-          data
+          currentApplication
         );
 
 
       } catch(error){
 
         console.error(
+          "Load invitation error:",
           error
         );
 
 
         showError(
-          "Could not load this driver application link. " +
-          error.message
+          "We could not load this driver application. " +
+          (
+            error?.message ||
+            "Please try again."
+          )
         );
 
       }
@@ -2581,12 +1873,17 @@
 
 
     // =====================================================
-    // RESTORE EXISTING APPLICATION
+    // RESTORE EXISTING DETAILS
     // =====================================================
 
     function fillExistingApplication(
       application
     ){
+
+      if(!application){
+        return;
+      }
+
 
       const mappings = {
 
@@ -2688,7 +1985,6 @@
 
       toggleAccidentDetails();
 
-
       updateAgreementDetails();
 
 
@@ -2744,55 +2040,56 @@
         $("driverApplicationForm");
 
 
-      if(
-        form
-      ){
+      if(!form){
+        return;
+      }
 
-        form.innerHTML =
-          `
 
-            <div class="card">
+      form.innerHTML =
+        `
 
-              <h2>
-                ✅ Application Already Submitted
-              </h2>
+          <div class="card">
 
-              <p>
-                Thank you
-                <b>
-                  ${escapeHtml(
-                    application.full_name ||
-                    ""
-                  )}
-                </b>.
-              </p>
+            <h2>
+              ✅ Application Already Submitted
+            </h2>
 
-              <p>
-                Your driver application has already
-                been submitted to Car 4 U 1 Ltd.
-              </p>
-
-              <p class="small">
-                Current status:
+            <p>
+              Thank you
+              <strong>
                 ${
                   escapeHtml(
-                    application.status ||
-                    "submitted"
+                    application.full_name ||
+                    ""
                   )
                 }
-              </p>
+              </strong>.
+            </p>
 
-            </div>
+            <p>
+              Your driver application has already
+              been submitted to Car 4 U 1 Ltd.
+            </p>
 
-          `;
+            <p class="small">
+              Status:
+              ${
+                escapeHtml(
+                  application.status ||
+                  "submitted"
+                )
+              }
+            </p>
 
-      }
+          </div>
+
+        `;
 
     }
 
 
     // =====================================================
-    // FORM SETUP
+    // FORM SUBMISSION LISTENER
     // =====================================================
 
     function setupApplicationForm(){
@@ -2815,7 +2112,7 @@
 
 
     // =====================================================
-    // END PART 3
+    // PART 4 CONTINUES DIRECTLY BELOW
     // =====================================================    // =====================================================
     // SUBMIT DRIVER APPLICATION
     // =====================================================
@@ -2826,23 +2123,20 @@
 
       hideMessages();
 
-
       const form =
         $("driverApplicationForm");
 
-
       const submitButton =
         $("submitButton");
-
 
       if(!form){
         return;
       }
 
 
-      // -----------------------------------------------------
-      // NORMAL FORM VALIDATION
-      // -----------------------------------------------------
+      // -------------------------------------------------
+      // NORMAL REQUIRED FIELD VALIDATION
+      // -------------------------------------------------
 
       if(
         !form.checkValidity()
@@ -2854,9 +2148,9 @@
       }
 
 
-      // -----------------------------------------------------
-      // AGREEMENT MUST BE ACCEPTED
-      // -----------------------------------------------------
+      // -------------------------------------------------
+      // AGREEMENT ACCEPTANCE REQUIRED
+      // -------------------------------------------------
 
       if(
         !$("agreementAccepted")
@@ -2869,16 +2163,17 @@
 
         $("driverAgreementSection")
           ?.scrollIntoView({
-            behavior: "smooth"
+            behavior: "smooth",
+            block: "start"
           });
 
         return;
       }
 
 
-      // -----------------------------------------------------
-      // SIGNATURE REQUIRED
-      // -----------------------------------------------------
+      // -------------------------------------------------
+      // ELECTRONIC SIGNATURE REQUIRED
+      // -------------------------------------------------
 
       if(
         !signatureHasInk
@@ -2915,17 +2210,18 @@
       if(!signedName){
 
         showError(
-          "Please enter your full legal name under the signature."
+          "Please type your full legal name under the signature."
         );
 
         return;
       }
 
 
-      // Require signed name to match driver name
       if(
-        fullName.toLowerCase() !==
-        signedName.toLowerCase()
+        fullName
+          .toLowerCase() !==
+        signedName
+          .toLowerCase()
       ){
 
         showError(
@@ -2936,20 +2232,39 @@
       }
 
 
+      // -------------------------------------------------
+      // DECLARATIONS REQUIRED
+      // -------------------------------------------------
+
       if(
         !$("applicationDeclaration")
-          ?.checked ||
-        !$("documentDeclaration")
           ?.checked
       ){
 
         showError(
-          "Please accept both final declarations."
+          "Please confirm that the information provided is true and accurate."
         );
 
         return;
       }
 
+
+      if(
+        !$("documentDeclaration")
+          ?.checked
+      ){
+
+        showError(
+          "Please confirm that the uploaded documents are genuine."
+        );
+
+        return;
+      }
+
+
+      // -------------------------------------------------
+      // TOKEN / APPLICATION REQUIRED
+      // -------------------------------------------------
 
       if(
         !applicationToken ||
@@ -2964,9 +2279,9 @@
       }
 
 
-      // -----------------------------------------------------
+      // -------------------------------------------------
       // REQUIRED DOCUMENTS
-      // -----------------------------------------------------
+      // -------------------------------------------------
 
       const requiredFiles = [
 
@@ -3014,13 +2329,12 @@
 
           return;
         }
-
       }
 
 
-      // -----------------------------------------------------
-      // LOCK BUTTON
-      // -----------------------------------------------------
+      // -------------------------------------------------
+      // LOCK SUBMIT BUTTON
+      // -------------------------------------------------
 
       if(submitButton){
 
@@ -3035,9 +2349,9 @@
 
       try{
 
-        // ---------------------------------------------------
-        // 1. SAVE DRIVER APPLICATION DETAILS
-        // ---------------------------------------------------
+        // -------------------------------------------------
+        // 1. UPDATE DRIVER APPLICATION
+        // -------------------------------------------------
 
         const applicationUpdate = {
 
@@ -3189,9 +2503,9 @@
 
         const {
           data:
-            updatedApplication,
+            updatedRows,
           error:
-            applicationError
+            updateError
         } =
           await sb
             .from(
@@ -3208,105 +2522,86 @@
               "application_token",
               applicationToken
             )
-            .select("id");
+            .select(
+              "id"
+            );
 
 
-        if(applicationError){
-          throw applicationError;
+        if(updateError){
+          throw updateError;
         }
 
 
         if(
-          !updatedApplication ||
-          updatedApplication.length !== 1
+          !updatedRows ||
+          updatedRows.length !== 1
         ){
 
           throw new Error(
-            "The driver application could not be updated."
+            "The application could not be updated safely."
           );
-
         }
 
 
-        // ---------------------------------------------------
-        // 2. UPLOAD REQUIRED DRIVER DOCUMENTS
-        // ---------------------------------------------------
+        // -------------------------------------------------
+        // 2. UPLOAD REQUIRED DOCUMENTS
+        // -------------------------------------------------
 
         await uploadDriverDocument(
-
           currentApplication.id,
-
           "driving_licence_front",
-
           $("drivingLicenceFront")
             .files[0]
-
         );
 
 
         await uploadDriverDocument(
-
           currentApplication.id,
-
           "driving_licence_back",
-
           $("drivingLicenceBack")
             .files[0]
-
         );
 
 
         await uploadDriverDocument(
-
           currentApplication.id,
-
           "taxi_badge",
-
           $("taxiBadgeDocument")
             .files[0]
-
         );
 
 
         await uploadDriverDocument(
-
           currentApplication.id,
-
           "taxi_paper_licence",
-
           $("taxiPaperLicence")
             .files[0]
-
         );
 
 
-        // ---------------------------------------------------
+        // -------------------------------------------------
         // OPTIONAL PROOF OF ADDRESS
-        // ---------------------------------------------------
+        // -------------------------------------------------
 
-        const proofFile =
+        const proofOfAddress =
           $("proofOfAddress")
             ?.files?.[0];
 
 
-        if(proofFile){
+        if(proofOfAddress){
 
           await uploadDriverDocument(
-
             currentApplication.id,
-
             "proof_of_address",
-
-            proofFile
-
+            proofOfAddress
           );
 
         }
 
 
-        // ---------------------------------------------------
-        // 3. SAVE ELECTRONIC SIGNATURE IMAGE
-        // ---------------------------------------------------
+        // -------------------------------------------------
+        // 3. SAVE SIGNATURE AS PNG
+        // -------------------------------------------------
 
         const signatureBlob =
           await signatureCanvasToBlob();
@@ -3317,48 +2612,35 @@
           throw new Error(
             "The electronic signature could not be saved."
           );
-
         }
 
 
         const signatureFile =
           new File(
-
             [
               signatureBlob
             ],
-
             "driver-signature.png",
-
             {
-              type:
-                "image/png"
+              type: "image/png"
             }
-
           );
 
 
         await uploadDriverDocument(
-
           currentApplication.id,
-
           "rental_agreement_signature",
-
           signatureFile
-
         );
 
 
-        // ---------------------------------------------------
-        // 4. SAVE AGREEMENT ACCEPTANCE RECORD AS JSON FILE
-        //
-        // This means we do NOT need to add new database
-        // columns just to preserve the signed agreement data.
-        // ---------------------------------------------------
+        // -------------------------------------------------
+        // 4. SAVE AGREEMENT RECORD AS JSON
+        // -------------------------------------------------
 
         const agreementRecord = {
 
-          agreement:
+          agreement_name:
             "Private Hire Long Term Car Rental Agreement",
 
           agreement_version:
@@ -3366,9 +2648,6 @@
 
           application_id:
             currentApplication.id,
-
-          application_token:
-            applicationToken,
 
           driver_name:
             fullName,
@@ -3387,6 +2666,31 @@
               ?.value
               .trim() ||
             "",
+
+          driver_address:
+            [
+              $("addressLine1")
+                ?.value
+                .trim() ||
+              "",
+
+              $("addressLine2")
+                ?.value
+                .trim() ||
+              "",
+
+              $("city")
+                ?.value
+                .trim() ||
+              "",
+
+              $("postcode")
+                ?.value
+                .trim() ||
+              ""
+            ]
+              .filter(Boolean)
+              .join(", "),
 
           agreement_accepted:
             true,
@@ -3426,7 +2730,6 @@
 
         const agreementBlob =
           new Blob(
-
             [
               JSON.stringify(
                 agreementRecord,
@@ -3434,46 +2737,40 @@
                 2
               )
             ],
-
             {
               type:
                 "application/json"
             }
-
           );
 
 
         const agreementFile =
           new File(
-
             [
               agreementBlob
             ],
-
             "rental-agreement-acceptance.json",
-
             {
               type:
                 "application/json"
             }
-
           );
 
 
         await uploadDriverDocument(
-
           currentApplication.id,
-
           "rental_agreement_acceptance",
-
           agreementFile
-
         );
 
 
-        // ---------------------------------------------------
-        // SUCCESS
-        // ---------------------------------------------------
+        // -------------------------------------------------
+        // 5. SUCCESS
+        // -------------------------------------------------
+
+        currentApplication.status =
+          "submitted";
+
 
         showSuccess(
           "Thank you. Your driver application, documents and electronically signed rental agreement have been submitted successfully."
@@ -3482,38 +2779,34 @@
 
         if(submitButton){
 
-          submitButton.textContent =
-            "Application Submitted";
-
           submitButton.disabled =
             true;
+
+          submitButton.textContent =
+            "Application Submitted";
 
         }
 
 
         window.scrollTo({
-
           top:
             document.body.scrollHeight,
-
           behavior:
             "smooth"
-
         });
 
 
       } catch(error){
 
         console.error(
-          "Driver application submission error:",
+          "Submission error:",
           error
         );
 
 
         showError(
-          error instanceof Error
-            ? error.message
-            : "Something went wrong. Please try again."
+          error?.message ||
+          "Something went wrong while submitting the application."
         );
 
 
@@ -3526,9 +2819,7 @@
             "Submit Driver Application & Sign Agreement";
 
         }
-
       }
-
     }
 
 
@@ -3550,7 +2841,6 @@
         throw new Error(
           "Document information is missing."
         );
-
       }
 
 
@@ -3561,6 +2851,8 @@
 
 
       const uniqueName =
+        typeof crypto !==
+          "undefined" &&
         crypto.randomUUID
           ? crypto.randomUUID()
           : (
@@ -3576,13 +2868,9 @@
         `${applicationId}/${uniqueName}-${safeName}`;
 
 
-      // -----------------------------------------------------
-      // UPLOAD TO PRIVATE STORAGE
-      // -----------------------------------------------------
-
       const {
         error:
-          storageError
+          uploadError
       } =
         await sb.storage
           .from(
@@ -3594,7 +2882,6 @@
             {
               upsert:
                 false,
-
               contentType:
                 file.type ||
                 undefined
@@ -3602,18 +2889,14 @@
           );
 
 
-      if(storageError){
-        throw storageError;
+      if(uploadError){
+        throw uploadError;
       }
 
 
-      // -----------------------------------------------------
-      // SAVE DOCUMENT DATABASE RECORD
-      // -----------------------------------------------------
-
       const {
         error:
-          recordError
+          insertError
       } =
         await sb
           .from(
@@ -3636,10 +2919,7 @@
           });
 
 
-      if(recordError){
-
-        // If database insert fails,
-        // remove the uploaded file again.
+      if(insertError){
 
         await sb.storage
           .from(
@@ -3649,11 +2929,8 @@
             filePath
           ]);
 
-
-        throw recordError;
-
+        throw insertError;
       }
-
     }
 
 
@@ -3675,16 +2952,13 @@
             resolve(null);
 
             return;
-
           }
 
 
           canvas.toBlob(
             blob => {
 
-              resolve(
-                blob
-              );
+              resolve(blob);
 
             },
             "image/png"
@@ -3692,7 +2966,6 @@
 
         }
       );
-
     }
 
 
@@ -3710,7 +2983,6 @@
           /[^a-zA-Z0-9._-]/g,
           "_"
         );
-
     }
 
 
@@ -3723,16 +2995,13 @@
       const success =
         $("successMessage");
 
-
       const error =
         $("errorMessage");
 
 
       if(error){
-
         error.style.display =
           "none";
-
       }
 
 
@@ -3745,7 +3014,6 @@
           "block";
 
       }
-
     }
 
 
@@ -3758,16 +3026,13 @@
       const success =
         $("successMessage");
 
-
       const error =
         $("errorMessage");
 
 
       if(success){
-
         success.style.display =
           "none";
-
       }
 
 
@@ -3781,23 +3046,16 @@
 
 
         error.scrollIntoView({
-
           behavior:
             "smooth",
-
           block:
             "center"
-
         });
 
       } else {
 
-        alert(
-          message
-        );
-
+        alert(message);
       }
-
     }
 
 
@@ -3810,26 +3068,20 @@
       const success =
         $("successMessage");
 
-
       const error =
         $("errorMessage");
 
 
       if(success){
-
         success.style.display =
           "none";
-
       }
 
 
       if(error){
-
         error.style.display =
           "none";
-
       }
-
     }
 
 
@@ -3840,8 +3092,7 @@
     function escapeHtml(value){
 
       return String(
-        value ??
-        ""
+        value ?? ""
       )
         .replaceAll(
           "&",
@@ -3863,7 +3114,6 @@
           "'",
           "&#039;"
         );
-
     }
 
 
@@ -3872,7 +3122,6 @@
     // =====================================================
 
   </script>
-
 
 </body>
 
