@@ -5977,14 +5977,13 @@ async function approveDriverApplication(
         .from(
           "driver_applications"
         )
-        .update({
+.update({
 
-          status:
-            "approved",
+  status:
+    "approved"
 
-          approved_at:
-            new Date()
-              .toISOString()
+})
+ 
 
         })
         .eq(
@@ -6122,15 +6121,10 @@ async function rejectDriverApplication(
         )
         .update({
 
-          status:
-            "rejected",
+  status:
+    "rejected"
 
-          rejection_reason:
-            reason.trim(),
-
-          rejected_at:
-            new Date()
-              .toISOString()
+})
 
         })
         .eq(
