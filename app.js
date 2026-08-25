@@ -4552,13 +4552,10 @@ async function viewSignedAgreement(
   const application =
     driverApplications.find(
       item =>
-        item.id ===
-        applicationId
+        item.id === applicationId
     );
 
-  if (
-    !application
-  ) {
+  if (!application) {
 
     alert(
       "Driver application could not be found."
@@ -4567,10 +4564,12 @@ async function viewSignedAgreement(
     return;
   }
 
+
   const docs =
     driverApplicationDocuments[
       applicationId
     ] || [];
+
 
   const agreementDoc =
     docs.find(
@@ -4579,6 +4578,7 @@ async function viewSignedAgreement(
         "rental_agreement_acceptance"
     );
 
+
   const signatureDoc =
     docs.find(
       item =>
@@ -4586,9 +4586,8 @@ async function viewSignedAgreement(
         "rental_agreement_signature"
     );
 
-  if (
-    !agreementDoc
-  ) {
+
+  if (!agreementDoc) {
 
     alert(
       "Signed agreement record could not be found."
@@ -4597,7 +4596,12 @@ async function viewSignedAgreement(
     return;
   }
 
+
   try {
+
+    // ==================================================
+    // LOAD AGREEMENT RECORD
+    // ==================================================
 
     const {
       data:
@@ -4614,42 +4618,45 @@ async function viewSignedAgreement(
           3600
         );
 
-    if (
-      agreementUrlError
-    ) {
+
+    if (agreementUrlError) {
       throw agreementUrlError;
     }
+
 
     const agreementResponse =
       await fetch(
         agreementUrlData.signedUrl
       );
 
-    if (
-      !agreementResponse.ok
-    ) {
+
+    if (!agreementResponse.ok) {
 
       throw new Error(
         "Could not read the signed agreement."
       );
     }
 
+
     const agreement =
       await agreementResponse.json();
 
 
+    // ==================================================
+    // LOAD SIGNATURE IMAGE
+    // ==================================================
+
     let signatureUrl =
       "";
 
-    if (
-      signatureDoc
-    ) {
+
+    if (signatureDoc) {
 
       const {
         data:
-          signatureUrlData,
+          signatureData,
         error:
-          signatureUrlError
+          signatureError
       } =
         await sb.storage
           .from(
@@ -4660,17 +4667,19 @@ async function viewSignedAgreement(
             3600
           );
 
-      if (
-        !signatureUrlError
-      ) {
+
+      if (!signatureError) {
 
         signatureUrl =
-          signatureUrlData
-            ?.signedUrl ||
+          signatureData?.signedUrl ||
           "";
       }
     }
 
+
+    // ==================================================
+    // OPEN PRINTABLE AGREEMENT
+    // ==================================================
 
     const agreementWindow =
       window.open(
@@ -4678,9 +4687,8 @@ async function viewSignedAgreement(
         "_blank"
       );
 
-    if (
-      !agreementWindow
-    ) {
+
+    if (!agreementWindow) {
 
       alert(
         "Please allow pop-ups to view the signed agreement."
@@ -4692,319 +4700,965 @@ async function viewSignedAgreement(
 
     agreementWindow.document.write(`
 
-      <!DOCTYPE html>
+<!DOCTYPE html>
 
-      <html>
+<html>
 
-      <head>
+<head>
 
-        <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        >
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1"
+>
 
-        <title>
-          Signed Rental Agreement
-        </title>
-
-        <style>
-
-          body {
-            font-family:
-              Arial,
-              sans-serif;
-            max-width:
-              850px;
-            margin:
-              0 auto;
-            padding:
-              30px;
-            color:
-              #111827;
-            line-height:
-              1.55;
-          }
-
-          h1 {
-            text-align:
-              center;
-            margin-bottom:
-              4px;
-          }
-
-          .company {
-            text-align:
-              center;
-            color:
-              #475467;
-            margin-bottom:
-              25px;
-          }
-
-          .box {
-            border:
-              1px solid #d0d5dd;
-            border-radius:
-              12px;
-            padding:
-              18px;
-            margin-bottom:
-              18px;
-          }
-
-          .rowItem {
-            margin:
-              8px 0;
-          }
-
-          .label {
-            font-weight:
-              bold;
-          }
-
-          .accepted {
-            background:
-              #ecfdf3;
-            border:
-              1px solid #abefc6;
-            padding:
-              12px;
-            border-radius:
-              10px;
-            font-weight:
-              bold;
-          }
-
-          .signature {
-            margin-top:
-              25px;
-            border-top:
-              1px solid #d0d5dd;
-            padding-top:
-              20px;
-          }
-
-          .signature img {
-            max-width:
-              420px;
-            width:
-              100%;
-            border:
-              1px solid #d0d5dd;
-            border-radius:
-              10px;
-          }
-
-          .terms {
-            margin-top:
-              25px;
-          }
-
-          button {
-            margin-top:
-              20px;
-            padding:
-              12px 18px;
-            border:
-              none;
-            border-radius:
-              8px;
-            background:
-              #101828;
-            color:
-              white;
-            font-size:
-              16px;
-          }
-
-          @media print {
-
-            button {
-              display:
-                none;
-            }
-
-          }
-
-        </style>
-
-      </head>
-
-      <body>
-
-        <h1>
-          CAR 4 U 1 LTD
-        </h1>
-
-        <div class="company">
-          Private Hire Long Term Car Rental Agreement
-        </div>
+<title>
+  Signed Rental Agreement
+</title>
 
 
-        <div class="box">
+<style>
 
-          <div class="rowItem">
-            <span class="label">
-              Driver:
-            </span>
+body {
 
-            ${escapeHtml(
-              agreement.driver_name ||
-              application.full_name ||
-              ""
-            )}
-          </div>
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
 
+  max-width:
+    850px;
 
-          <div class="rowItem">
-            <span class="label">
-              Address:
-            </span>
+  margin:
+    0 auto;
 
-            ${escapeHtml(
-              agreement.address ||
-              ""
-            )}
-          </div>
+  padding:
+    28px;
 
+  color:
+    #111827;
 
-          <div class="rowItem">
-            <span class="label">
-              Phone:
-            </span>
+  line-height:
+    1.55;
 
-            ${escapeHtml(
-              agreement.phone ||
-              application.phone ||
-              ""
-            )}
-          </div>
+  background:
+    white;
+}
 
 
-          <div class="rowItem">
-            <span class="label">
-              Email:
-            </span>
+h1 {
 
-            ${escapeHtml(
-              agreement.email ||
-              application.email ||
-              ""
-            )}
-          </div>
+  margin:
+    0;
 
+  text-align:
+    center;
 
-          <div class="rowItem">
-            <span class="label">
-              Signed Name:
-            </span>
-
-            ${escapeHtml(
-              agreement.signed_name ||
-              application.full_name ||
-              ""
-            )}
-          </div>
+  color:
+    #123d73;
+}
 
 
-          <div class="rowItem">
-            <span class="label">
-              Signed Date:
-            </span>
+.company-info {
 
-            ${escapeHtml(
-              agreement.signed_date ||
-              ""
-            )}
-          </div>
+  text-align:
+    center;
 
+  margin-top:
+    8px;
 
-          <div class="rowItem">
-            <span class="label">
-              Signed At:
-            </span>
+  margin-bottom:
+    28px;
 
-            ${escapeHtml(
-              agreement.signed_at
-                ? new Date(
-                    agreement.signed_at
-                  ).toLocaleString(
-                    "en-GB"
-                  )
-                : ""
-            )}
-          </div>
-
-        </div>
+  color:
+    #475467;
+}
 
 
-        <div class="accepted">
-          ✓ Agreement accepted electronically
-        </div>
+.title {
+
+  text-align:
+    center;
+
+  font-size:
+    22px;
+
+  font-weight:
+    bold;
+
+  text-decoration:
+    underline;
+
+  margin-bottom:
+    25px;
+}
 
 
-        <div class="terms">
+.details {
 
-          <h2>
-            Agreement Confirmation
-          </h2>
+  border:
+    1px solid #cfd4dc;
+
+  border-radius:
+    10px;
+
+  padding:
+    16px;
+
+  margin-bottom:
+    22px;
+}
+
+
+.details p {
+
+  margin:
+    7px 0;
+}
+
+
+.term {
+
+  margin-bottom:
+    18px;
+}
+
+
+.term h3 {
+
+  margin-bottom:
+    5px;
+
+  font-size:
+    17px;
+}
+
+
+.term p {
+
+  margin:
+    5px 0;
+}
+
+
+.accepted {
+
+  margin-top:
+    25px;
+
+  padding:
+    14px;
+
+  border:
+    1px solid #86d6a4;
+
+  background:
+    #ecfdf3;
+
+  border-radius:
+    10px;
+
+  font-weight:
+    bold;
+}
+
+
+.signature {
+
+  margin-top:
+    28px;
+
+  border-top:
+    2px solid #111827;
+
+  padding-top:
+    20px;
+}
+
+
+.signature img {
+
+  display:
+    block;
+
+  max-width:
+    420px;
+
+  width:
+    100%;
+
+  margin-top:
+    12px;
+
+  border:
+    1px solid #d0d5dd;
+
+  border-radius:
+    10px;
+}
+
+
+.print-button {
+
+  margin-top:
+    30px;
+
+  width:
+    100%;
+
+  padding:
+    14px;
+
+  border:
+    none;
+
+  border-radius:
+    9px;
+
+  background:
+    #101828;
+
+  color:
+    white;
+
+  font-size:
+    17px;
+
+  font-weight:
+    bold;
+}
+
+
+@media print {
+
+  body {
+
+    max-width:
+      none;
+
+    padding:
+      0;
+
+    font-size:
+      11pt;
+  }
+
+
+  .print-button {
+
+    display:
+      none;
+  }
+
+
+  .term {
+
+    break-inside:
+      avoid;
+  }
+
+
+  .signature {
+
+    break-inside:
+      avoid;
+  }
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>
+  CARS 4 U 1 LIMITED
+</h1>
+
+
+<div class="company-info">
+
+  01,112 Mavisbank Gardens,
+  Glasgow G51 1HR
+
+  <br>
+
+  Company Number:
+  SC331432
+
+  <br>
+
+  Consumer Credit License Number:
+  629911
+
+</div>
+
+
+<div class="title">
+  Private Hire Long Term Car Rental Agreement
+</div>
+
+
+<div class="details">
+
+  <p>
+    <b>Driver Name:</b>
+    ${escapeHtml(
+      agreement.driver_name ||
+      application.full_name ||
+      ""
+    )}
+  </p>
+
+
+  <p>
+    <b>Address:</b>
+    ${escapeHtml(
+      agreement.address ||
+      ""
+    )}
+  </p>
+
+
+  <p>
+    <b>Contact:</b>
+    ${escapeHtml(
+      agreement.phone ||
+      application.phone ||
+      ""
+    )}
+  </p>
+
+
+  <p>
+    <b>Email:</b>
+    ${escapeHtml(
+      agreement.email ||
+      application.email ||
+      ""
+    )}
+  </p>
+
+</div>
+
+
+<h2>
+  Terms and Conditions
+</h2>
+
+
+<div class="term">
+
+  <h3>
+    1. Parties
+  </h3>
+
+  <p>
+    This agreement is between CAR 4 U 1 LTD
+    ("the Company") and the driver named in
+    this agreement ("the Driver").
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    2. Vehicle Hire
+  </h3>
+
+  <p>
+    The Company agrees to provide the Driver
+    with a vehicle for private hire work,
+    subject to availability, licensing,
+    insurance requirements and the terms of
+    this agreement.
+  </p>
+
+  <p>
+    The specific vehicle registration,
+    mileage, rental start date and other
+    vehicle details may be recorded by the
+    Company when a vehicle is assigned.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    3. Rental Payments
+  </h3>
+
+  <p>
+    The Driver agrees to pay the agreed
+    vehicle rental charge at the frequency
+    and amount agreed with CAR 4 U 1 LTD.
+  </p>
+
+  <p>
+    Rental payments must be made on time.
+    Any unpaid rental, charges or other sums
+    due may be recorded as an outstanding
+    balance.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    4. Deposit
+  </h3>
+
+  <p>
+    Where a deposit is required, the Driver
+    agrees to pay the amount requested by
+    the Company.
+  </p>
+
+  <p>
+    Subject to applicable law, the deposit
+    may be applied towards sums properly due
+    under this agreement, including unpaid
+    rental or damage for which the Driver is
+    responsible.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    5. Vehicle Condition
+  </h3>
+
+  <p>
+    The Driver must take reasonable care of
+    the vehicle and keep it in a clean and
+    roadworthy condition.
+  </p>
+
+  <p>
+    Warning lights, mechanical problems,
+    damage, tyre problems or safety concerns
+    must be reported promptly.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    6. Daily Checks
+  </h3>
+
+  <p>
+    The Driver is responsible for carrying
+    out reasonable routine checks before
+    using the vehicle, including tyres,
+    lights, fluid levels where appropriate
+    and obvious safety defects.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    7. Authorised Driver
+  </h3>
+
+  <p>
+    Only a person authorised by CAR 4 U 1 LTD
+    and properly covered by the relevant
+    insurance and licensing requirements may
+    drive the vehicle.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    8. Private Hire Use
+  </h3>
+
+  <p>
+    The Driver must hold all licences,
+    badges and permissions required by the
+    relevant licensing authority and comply
+    with the applicable private hire
+    conditions.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    9. Insurance
+  </h3>
+
+  <p>
+    The Driver must comply with all
+    conditions of the applicable motor
+    insurance policy.
+  </p>
+
+  <p>
+    The Driver must immediately inform the
+    Company of penalty points, convictions,
+    accidents, licence restrictions or other
+    changes that could affect insurance.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    10. Driving Behaviour
+  </h3>
+
+  <p>
+    The Driver must operate the vehicle
+    safely and responsibly and comply with
+    road traffic law.
+  </p>
+
+  <p>
+    Dangerous driving, excessive speeding,
+    harsh braking, aggressive acceleration
+    or other unacceptable driving behaviour
+    may result in action by the Company.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    11. Accidents and Damage
+  </h3>
+
+  <p>
+    Any accident, collision, theft,
+    vandalism or damage involving the vehicle
+    must be reported to CAR 4 U 1 LTD as soon
+    as reasonably possible.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    12. Insurance Excess
+  </h3>
+
+  <p>
+    Where an insurance excess or other charge
+    is properly payable by the Driver
+    following an incident, the Driver agrees
+    to pay the applicable amount subject to
+    the insurance policy and applicable law.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    13. Fines and Penalties
+  </h3>
+
+  <p>
+    The Driver is responsible for fines,
+    penalties, parking charges, toll charges
+    and similar charges arising from their
+    use of the vehicle where legally
+    applicable.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    14. Fuel
+  </h3>
+
+  <p>
+    Unless otherwise agreed, the Driver is
+    responsible for fuel used during the
+    rental period and must use the correct
+    fuel for the vehicle.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    15. Smoking
+  </h3>
+
+  <p>
+    Smoking or vaping inside the vehicle is
+    not permitted where prohibited by law,
+    licensing conditions or Company policy.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    16. Illegal Use
+  </h3>
+
+  <p>
+    The vehicle must not be used for any
+    unlawful purpose, racing, deliberate
+    misuse or activity that would invalidate
+    insurance or breach licensing
+    requirements.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    17. Maintenance and Repairs
+  </h3>
+
+  <p>
+    The Driver must not arrange substantial
+    repairs, modifications or alterations
+    without prior authorisation from
+    CAR 4 U 1 LTD except where immediate
+    action is reasonably necessary for safety.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    18. Servicing, MOT and Inspections
+  </h3>
+
+  <p>
+    The Driver must make the vehicle
+    available when reasonably requested for
+    servicing, MOT testing, licensing
+    inspections, repairs, tyre replacement,
+    recalls or other necessary work.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    19. Vehicle Documents
+  </h3>
+
+  <p>
+    Documents supplied by the Company
+    relating to the vehicle, insurance or
+    private hire licensing must be kept
+    secure and used only for their intended
+    purpose.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    20. Change of Circumstances
+  </h3>
+
+  <p>
+    The Driver must promptly notify
+    CAR 4 U 1 LTD of material changes to
+    contact details, address, driving licence,
+    penalty points, taxi/private hire badge,
+    licensing status or insurance-related
+    circumstances.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    21. Return of Vehicle
+  </h3>
+
+  <p>
+    When the rental ends, the Driver must
+    return the vehicle, keys and any Company
+    property or vehicle documents in
+    accordance with arrangements made with
+    CAR 4 U 1 LTD.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    22. Ending the Rental
+  </h3>
+
+  <p>
+    Either party may end the rental in
+    accordance with any notice period
+    separately agreed between the parties
+    and subject to applicable law.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    23. Serious Breach
+  </h3>
+
+  <p>
+    The Company may require the vehicle to
+    be returned immediately where reasonably
+    necessary because of a serious breach,
+    loss of insurance or licensing
+    eligibility, unlawful use or serious
+    safety concerns.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    24. Information Provided by Driver
+  </h3>
+
+  <p>
+    The Driver confirms that the information
+    provided in the application is true and
+    accurate to the best of their knowledge.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    25. Electronic Documents
+  </h3>
+
+  <p>
+    The Driver agrees that documents relating
+    to the rental may be provided
+    electronically, including by email,
+    secure web link or messaging service.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    26. Electronic Signature
+  </h3>
+
+  <p>
+    By signing electronically and selecting
+    the acceptance checkbox, the Driver
+    intends to sign this agreement and
+    confirms agreement to its terms.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    27. Data and Records
+  </h3>
+
+  <p>
+    CAR 4 U 1 LTD may retain information and
+    documents reasonably required to
+    administer the rental, licensing,
+    insurance, compliance and related
+    business records, subject to applicable
+    data protection law.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    28. Governing Law
+  </h3>
+
+  <p>
+    This agreement is governed by the law of
+    Scotland and disputes will be subject to
+    the jurisdiction of the Scottish courts
+    where applicable.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    29. Entire Agreement
+  </h3>
+
+  <p>
+    This document, together with any
+    vehicle-specific rental details
+    subsequently recorded and other terms
+    expressly agreed between the parties,
+    forms the agreement relating to the
+    vehicle rental.
+  </p>
+
+</div>
+
+
+<div class="term">
+
+  <h3>
+    30. Driver Confirmation
+  </h3>
+
+  <p>
+    By signing below, the Driver confirms
+    that they had the opportunity to read
+    this agreement, understand its contents
+    and agree to be bound by its terms.
+  </p>
+
+</div>
+
+
+<div class="accepted">
+
+  ✓ I have read and agreed to the
+  CAR 4 U 1 LTD Private Hire Long Term
+  Car Rental Agreement and its terms
+  and conditions.
+
+</div>
+
+
+<div class="signature">
+
+  <h2>
+    Electronic Signature
+  </h2>
+
+
+  <p>
+    <b>Signed by:</b>
+
+    ${escapeHtml(
+      agreement.signed_name ||
+      application.full_name ||
+      ""
+    )}
+  </p>
+
+
+  <p>
+    <b>Date Signed:</b>
+
+    ${escapeHtml(
+      agreement.signed_date ||
+      ""
+    )}
+  </p>
+
+
+  ${
+    signatureUrl
+
+      ? `
+
+          <img
+            src="${signatureUrl}"
+            alt="Driver Electronic Signature"
+          >
+        `
+
+      : `
 
           <p>
-            The driver confirmed that they read and accepted
-            the Car 4 U 1 Ltd Private Hire Long Term Car Rental
-            Agreement during the electronic onboarding process.
+            Signature image unavailable.
           </p>
+        `
+  }
 
-          <p>
-            The driver's electronic acceptance record,
-            signed name, date and signature are shown on this page.
-          </p>
-
-        </div>
+</div>
 
 
-        <div class="signature">
-
-          <h2>
-            Electronic Signature
-          </h2>
-
-          ${
-            signatureUrl
-
-              ? `
-
-                  <img
-                    src="${signatureUrl}"
-                    alt="Driver Electronic Signature"
-                  >
-                `
-
-              : `
-
-                  <p>
-                    Signature image unavailable.
-                  </p>
-                `
-          }
-
-        </div>
+<button
+  class="print-button"
+  onclick="window.print()"
+>
+  Print / Save as PDF
+</button>
 
 
-        <button
-          onclick="window.print()"
-        >
-          Print / Save as PDF
-        </button>
+</body>
 
-      </body>
+</html>
 
-      </html>
     `);
 
+
     agreementWindow.document.close();
+
 
   } catch (error) {
 
@@ -5012,6 +5666,7 @@ async function viewSignedAgreement(
       "View signed agreement:",
       error
     );
+
 
     alert(
       "Could not open signed agreement: " +
