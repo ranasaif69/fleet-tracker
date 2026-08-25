@@ -2502,46 +2502,96 @@
 
 
         const {
-          data:
-            updatedRows,
-          error:
-            updateError
-        } =
-          await sb
-            .from(
-              "driver_applications"
-            )
-            .update(
-              applicationUpdate
-            )
-            .eq(
-              "id",
-              currentApplication.id
-            )
-            .eq(
-              "application_token",
-              applicationToken
-            )
-            .select(
-              "id"
-            );
+  data:
+    submittedApplicationId,
+  error:
+    updateError
+} =
+  await sb.rpc(
+    "submit_driver_application",
+    {
+
+      p_token:
+        applicationToken,
+
+      p_full_name:
+        applicationUpdate.full_name,
+
+      p_date_of_birth:
+        applicationUpdate.date_of_birth,
+
+      p_phone:
+        applicationUpdate.phone,
+
+      p_email:
+        applicationUpdate.email,
+
+      p_national_insurance_number:
+        applicationUpdate.national_insurance_number,
+
+      p_address_line_1:
+        applicationUpdate.address_line_1,
+
+      p_address_line_2:
+        applicationUpdate.address_line_2,
+
+      p_city:
+        applicationUpdate.city,
+
+      p_postcode:
+        applicationUpdate.postcode,
+
+      p_driving_licence_number:
+        applicationUpdate.driving_licence_number,
+
+      p_driving_licence_expiry:
+        applicationUpdate.driving_licence_expiry,
+
+      p_licence_points:
+        applicationUpdate.licence_points,
+
+      p_licence_points_details:
+        applicationUpdate.licence_points_details,
+
+      p_taxi_badge_number:
+        applicationUpdate.taxi_badge_number,
+
+      p_taxi_badge_expiry:
+        applicationUpdate.taxi_badge_expiry,
+
+      p_accidents_last_5_years:
+        applicationUpdate.accidents_last_5_years,
+
+      p_accident_count:
+        applicationUpdate.accident_count,
+
+      p_accident_details:
+        applicationUpdate.accident_details,
+
+      p_emergency_contact_name:
+        applicationUpdate.emergency_contact_name,
+
+      p_emergency_contact_phone:
+        applicationUpdate.emergency_contact_phone,
+
+      p_notes:
+        applicationUpdate.notes
+
+    }
+  );
 
 
-        if(updateError){
-          throw updateError;
-        }
+if(updateError){
+  throw updateError;
+}
 
 
-        if(
-          !updatedRows ||
-          updatedRows.length !== 1
-        ){
+if(!submittedApplicationId){
 
-          throw new Error(
-            "The application could not be updated safely."
-          );
-        }
-
+  throw new Error(
+    "The application could not be submitted."
+  );
+}
 
         // -------------------------------------------------
         // 2. UPLOAD REQUIRED DOCUMENTS
