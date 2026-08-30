@@ -2887,20 +2887,12 @@ function buildAlerts() {
           ) {
 
             alerts.push({
-
-              registration:
-                car.registration,
-
-              label:
-                label,
-
-              date:
-                date,
-
-              days:
-                days
-
-            });
+    vehicleId: car.id,
+    registration: car.registration,
+    label: label,
+    date: date,
+    days: days
+});
 
           }
 
@@ -3074,7 +3066,7 @@ function renderDashboard() {
     alerts.map(
       alert => `
 
-        <div class="card">
+        <div class="card" onclick="editVehicle('${alert.vehicleId}')" style="cursor:pointer;">
 
           <b>
             ${escapeHtml(
